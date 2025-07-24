@@ -293,7 +293,7 @@ export class DatabaseStorage implements IStorage {
   }> {
     // Revenue (sum of all paid invoices)
     const revenueResult = await db
-      .select({ total: sum(invoices.total) })
+      .select({ total: sum(invoices.totalTTC) })
       .from(invoices)
       .where(and(eq(invoices.userId, userId), eq(invoices.status, "paid")));
     

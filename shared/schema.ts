@@ -67,7 +67,7 @@ export const products = pgTable("products", {
   id: serial("id").primaryKey(),
   name: varchar("name", { length: 255 }).notNull(),
   description: text("description"),
-  price: decimal("price", { precision: 10, scale: 2 }).notNull(),
+  priceHT: decimal("price_ht", { precision: 10, scale: 2 }).notNull(), // Prix HT uniquement
   stock: integer("stock").default(0),
   categoryId: integer("category_id").references(() => categories.id),
   userId: varchar("user_id").notNull().references(() => users.id),
@@ -79,9 +79,10 @@ export const invoices = pgTable("invoices", {
   number: varchar("number", { length: 50 }).notNull(),
   clientId: integer("client_id").notNull().references(() => clients.id),
   status: varchar("status", { length: 50 }).notNull().default("pending"), // pending, paid, overdue
-  subtotal: decimal("subtotal", { precision: 10, scale: 2 }).notNull(),
-  tax: decimal("tax", { precision: 10, scale: 2 }).notNull().default("0"),
-  total: decimal("total", { precision: 10, scale: 2 }).notNull(),
+  totalHT: decimal("total_ht", { precision: 10, scale: 2 }).notNull(), // Total HT
+  tvaRate: decimal("tva_rate", { precision: 5, scale: 2 }).notNull(), // Taux TVA choisi (3%, 5%, 10%, 15%, 18%, 21%)
+  totalTVA: decimal("total_tva", { precision: 10, scale: 2 }).notNull(), // Montant TVA calculé
+  totalTTC: decimal("total_ttc", { precision: 10, scale: 2 }).notNull(), // Total TTC final
   dueDate: timestamp("due_date"),
   notes: text("notes"),
   userId: varchar("user_id").notNull().references(() => users.id),
@@ -94,9 +95,8 @@ export const invoiceItems = pgTable("invoice_items", {
   productId: integer("product_id").references(() => products.id),
   productName: varchar("product_name", { length: 255 }).notNull(),
   quantity: integer("quantity").notNull(),
-  unitPrice: decimal("unit_price", { precision: 10, scale: 2 }).notNull(),
-  taxRate: decimal("tax_rate", { precision: 5, scale: 2 }).default("18.00"), // TVA appliquée lors de la vente
-  total: decimal("total", { precision: 10, scale: 2 }).notNull(),
+  priceHT: decimal("price_ht", { precision: 10, scale: 2 }).notNull(), // Prix HT unitaire
+  totalHT: decimal("total_ht", { precision: 10, scale: 2 }).notNull(), // Total HT ligne (quantity * priceHT)
 });
 
 export const sales = pgTable("sales", {
@@ -186,6 +186,16 @@ export const salesRelations = relations(sales, ({ one }) => ({
     references: [products.id],
   }),
 }));
+
+// Tax rates available for invoices
+export const TAX_RATES = [
+  { value: "3.00", label: "3%" },
+  { value: "5.00", label: "5%" },
+  { value: "10.00", label: "10%" },
+  { value: "15.00", label: "15%" },
+  { value: "18.00", label: "18%" },
+  { value: "21.00", label: "21%" },
+] as const;
 
 // Insert schemas
 export const insertCategorySchema = createInsertSchema(categories).omit({

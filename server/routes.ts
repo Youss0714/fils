@@ -337,9 +337,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const products = await storage.getProducts(userId);
       
       const csv = [
-        "ID,Nom,Description,Prix,Stock,Date de création",
+        "ID,Nom,Description,Prix HT,Stock,Date de création",
         ...products.map(product => 
-          `${product.id},"${product.name}","${product.description || ''}","${product.price}","${product.stock}","${product.createdAt?.toISOString() || ''}"`
+          `${product.id},"${product.name}","${product.description || ''}","${product.priceHT}","${product.stock}","${product.createdAt?.toISOString() || ''}"`
         )
       ].join('\n');
       
@@ -358,9 +358,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const invoices = await storage.getInvoices(userId);
       
       const csv = [
-        "ID,Numéro,Client ID,Statut,Sous-total,TVA,Total,Échéance,Date de création",
+        "ID,Numéro,Client ID,Statut,Total HT,Taux TVA,Total TVA,Total TTC,Échéance,Date de création",
         ...invoices.map(invoice => 
-          `${invoice.id},"${invoice.number}","${invoice.clientId}","${invoice.status}","${invoice.subtotal}","${invoice.tax}","${invoice.total}","${invoice.dueDate?.toISOString() || ''}","${invoice.createdAt?.toISOString() || ''}"`
+          `${invoice.id},"${invoice.number}","${invoice.clientId}","${invoice.status}","${invoice.totalHT}","${invoice.tvaRate}","${invoice.totalTVA}","${invoice.totalTTC}","${invoice.dueDate?.toISOString() || ''}","${invoice.createdAt?.toISOString() || ''}"`
         )
       ].join('\n');
       

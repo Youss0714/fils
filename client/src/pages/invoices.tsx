@@ -22,7 +22,7 @@ import {
   Download,
   Minus
 } from "lucide-react";
-import { insertInvoiceSchema, insertInvoiceItemSchema, type Invoice, type InsertInvoice, type Client, type Product } from "@shared/schema";
+import { insertInvoiceSchema, insertInvoiceItemSchema, TAX_RATES, type Invoice, type InsertInvoice, type Client, type Product } from "@shared/schema";
 import { useForm, useFieldArray } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
@@ -31,13 +31,14 @@ import InvoicePDF from "@/components/invoice-pdf";
 
 const createInvoiceFormSchema = z.object({
   clientId: z.number().min(1, "Veuillez sélectionner un client"),
+  tvaRate: z.string().min(1, "Veuillez sélectionner un taux de TVA"),
   dueDate: z.string().optional(),
   notes: z.string().optional(),
   items: z.array(z.object({
     productId: z.number().optional(),
     productName: z.string().min(1, "Nom du produit requis"),
     quantity: z.number().min(1, "Quantité doit être supérieure à 0"),
-    unitPrice: z.string().min(1, "Prix unitaire requis"),
+    priceHT: z.string().min(1, "Prix HT requis"),
   })).min(1, "Au moins un article est requis"),
 });
 
@@ -66,17 +67,17 @@ export default function Invoices() {
     }
   }, [isAuthenticated, isLoading, toast]);
 
-  const { data: invoices = [], isLoading: invoicesLoading } = useQuery({
+  const { data: invoices = [], isLoading: invoicesLoading } = useQuery<Invoice[]>({
     queryKey: ["/api/invoices"],
     retry: false,
   });
 
-  const { data: clients = [] } = useQuery({
+  const { data: clients = [] } = useQuery<Client[]>({
     queryKey: ["/api/clients"],
     retry: false,
   });
 
-  const { data: products = [] } = useQuery({
+  const { data: products = [] } = useQuery<Product[]>({
     queryKey: ["/api/products"],
     retry: false,
   });
@@ -85,9 +86,10 @@ export default function Invoices() {
     resolver: zodResolver(createInvoiceFormSchema),
     defaultValues: {
       clientId: 0,
+      tvaRate: "18.00",
       dueDate: "",
       notes: "",
-      items: [{ productId: 0, productName: "", quantity: 1, unitPrice: "" }],
+      items: [{ productId: 0, productName: "", quantity: 1, priceHT: "" }],
     },
   });
 
@@ -105,19 +107,22 @@ export default function Invoices() {
 
   const createMutation = useMutation({
     mutationFn: async (data: CreateInvoiceForm) => {
-      const subtotal = data.items.reduce((sum, item) => 
-        sum + (item.quantity * parseFloat(item.unitPrice)), 0
+      // Calculate totals with new tax logic
+      const totalHT = data.items.reduce((sum, item) => 
+        sum + (item.quantity * parseFloat(item.priceHT)), 0
       );
-      const tax = subtotal * 0.20; // 20% TVA
-      const total = subtotal + tax;
+      const tvaRateNum = parseFloat(data.tvaRate);
+      const totalTVA = totalHT * (tvaRateNum / 100);
+      const totalTTC = totalHT + totalTVA;
 
       const invoiceData: InsertInvoice = {
         number: generateInvoiceNumber(),
         clientId: data.clientId,
         status: "pending",
-        subtotal: subtotal.toFixed(2),
-        tax: tax.toFixed(2),
-        total: total.toFixed(2),
+        totalHT: totalHT.toFixed(2),
+        tvaRate: data.tvaRate,
+        totalTVA: totalTVA.toFixed(2),
+        totalTTC: totalTTC.toFixed(2),
         dueDate: data.dueDate ? new Date(data.dueDate) : undefined,
         notes: data.notes,
         userId: "", // Will be set by backend
@@ -127,8 +132,8 @@ export default function Invoices() {
         productId: item.productId || null,
         productName: item.productName,
         quantity: item.quantity,
-        unitPrice: item.unitPrice,
-        total: (item.quantity * parseFloat(item.unitPrice)).toFixed(2),
+        priceHT: item.priceHT,
+        totalHT: (item.quantity * parseFloat(item.priceHT)).toFixed(2),
       }));
 
       await apiRequest("POST", "/api/invoices", { invoice: invoiceData, items });
@@ -237,7 +242,7 @@ export default function Invoices() {
 
   const getProductPrice = (productId: number) => {
     const product = products.find((p: Product) => p.id === productId);
-    return product?.price || "0";
+    return product?.priceHT || "0";
   };
 
   const getProductName = (productId: number) => {
@@ -253,10 +258,22 @@ export default function Invoices() {
   });
 
   const watchedItems = form.watch("items");
+  
+  // Tax rates for the selector
+  const TAX_RATES = [
+    { value: "3.00", label: "3%" },
+    { value: "5.00", label: "5%" },
+    { value: "10.00", label: "10%" },
+    { value: "15.00", label: "15%" },
+    { value: "18.00", label: "18%" },
+    { value: "21.00", label: "21%" },
+  ];
+  const watchedTvaRate = form.watch("tvaRate");
   const subtotal = watchedItems.reduce((sum, item) => 
-    sum + (item.quantity * parseFloat(item.unitPrice || "0")), 0
+    sum + (item.quantity * parseFloat(item.priceHT || "0")), 0
   );
-  const tax = subtotal * 0.20;
+  const tvaRateNum = parseFloat(watchedTvaRate || "18.00");
+  const tax = subtotal * (tvaRateNum / 100);
   const total = subtotal + tax;
 
   if (isLoading || invoicesLoading) {
@@ -373,7 +390,7 @@ export default function Invoices() {
                           {getClientName(invoice.clientId)}
                         </td>
                         <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                          {formatCurrency(invoice.total)}
+                          {formatCurrency(invoice.totalTTC)}
                         </td>
                         <td className="px-6 py-4 whitespace-nowrap">
                           <Select
@@ -445,7 +462,7 @@ export default function Invoices() {
             </DialogHeader>
             <Form {...form}>
               <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
                   <FormField
                     control={form.control}
                     name="clientId"
@@ -465,6 +482,34 @@ export default function Invoices() {
                             {clients.map((client: Client) => (
                               <SelectItem key={client.id} value={client.id.toString()}>
                                 {client.name}
+                              </SelectItem>
+                            ))}
+                          </SelectContent>
+                        </Select>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+
+                  <FormField
+                    control={form.control}
+                    name="tvaRate"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Taux de TVA *</FormLabel>
+                        <Select 
+                          onValueChange={field.onChange}
+                          value={field.value || "18.00"}
+                        >
+                          <FormControl>
+                            <SelectTrigger>
+                              <SelectValue placeholder="Sélectionner TVA" />
+                            </SelectTrigger>
+                          </FormControl>
+                          <SelectContent>
+                            {TAX_RATES.map((rate) => (
+                              <SelectItem key={rate.value} value={rate.value}>
+                                {rate.label}
                               </SelectItem>
                             ))}
                           </SelectContent>
@@ -499,7 +544,7 @@ export default function Invoices() {
                           <tr>
                             <th className="px-4 py-2 text-left text-sm font-medium text-gray-700">Produit</th>
                             <th className="px-4 py-2 text-left text-sm font-medium text-gray-700">Quantité</th>
-                            <th className="px-4 py-2 text-left text-sm font-medium text-gray-700">Prix Unitaire</th>
+                            <th className="px-4 py-2 text-left text-sm font-medium text-gray-700">Prix HT</th>
                             <th className="px-4 py-2 text-left text-sm font-medium text-gray-700">Total</th>
                             <th className="px-4 py-2"></th>
                           </tr>
@@ -514,7 +559,7 @@ export default function Invoices() {
                                       const productId = parseInt(value);
                                       form.setValue(`items.${index}.productId`, productId);
                                       form.setValue(`items.${index}.productName`, getProductName(productId));
-                                      form.setValue(`items.${index}.unitPrice`, getProductPrice(productId));
+                                      form.setValue(`items.${index}.priceHT`, getProductPrice(productId));
                                     }}
                                   >
                                     <SelectTrigger className="w-full">
@@ -564,13 +609,14 @@ export default function Invoices() {
                               <td className="px-4 py-2">
                                 <FormField
                                   control={form.control}
-                                  name={`items.${index}.unitPrice`}
+                                  name={`items.${index}.priceHT`}
                                   render={({ field }) => (
                                     <FormItem>
                                       <FormControl>
                                         <Input 
                                           type="number" 
                                           step="0.01"
+                                          placeholder="0.00"
                                           {...field}
                                         />
                                       </FormControl>
@@ -581,7 +627,7 @@ export default function Invoices() {
                               </td>
                               <td className="px-4 py-2 text-gray-900">
                                 {formatCurrency(
-                                  watchedItems[index]?.quantity * parseFloat(watchedItems[index]?.unitPrice || "0") || 0
+                                  watchedItems[index]?.quantity * parseFloat(watchedItems[index]?.priceHT || "0") || 0
                                 )}
                               </td>
                               <td className="px-4 py-2">
@@ -605,7 +651,7 @@ export default function Invoices() {
                       <Button
                         type="button"
                         variant="ghost"
-                        onClick={() => append({ productId: 0, productName: "", quantity: 1, unitPrice: "" })}
+                        onClick={() => append({ productId: 0, productName: "", quantity: 1, priceHT: "" })}
                       >
                         <Plus className="mr-1 w-4 h-4" />
                         Ajouter une ligne
@@ -637,15 +683,15 @@ export default function Invoices() {
                   <div></div>
                   <div className="space-y-2">
                     <div className="flex justify-between">
-                      <span className="text-sm text-gray-600">Sous-total:</span>
+                      <span className="text-sm text-gray-600">Total HT:</span>
                       <span className="text-sm font-medium">{formatCurrency(subtotal)}</span>
                     </div>
                     <div className="flex justify-between">
-                      <span className="text-sm text-gray-600">TVA (20%):</span>
+                      <span className="text-sm text-gray-600">TVA ({tvaRateNum}%):</span>
                       <span className="text-sm font-medium">{formatCurrency(tax)}</span>
                     </div>
                     <div className="flex justify-between border-t pt-2">
-                      <span className="text-base font-semibold">Total:</span>
+                      <span className="text-base font-semibold">Total TTC:</span>
                       <span className="text-base font-semibold">{formatCurrency(total)}</span>
                     </div>
                   </div>

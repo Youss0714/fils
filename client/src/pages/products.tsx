@@ -66,7 +66,7 @@ export default function Products() {
     defaultValues: {
       name: "",
       description: "",
-      price: "",
+      priceHT: "",
       stock: 0,
       categoryId: undefined,
     },
@@ -177,20 +177,18 @@ export default function Products() {
       form.reset({
         name: product.name,
         description: product.description || "",
-        price: product.price,
+        priceHT: product.priceHT,
         stock: product.stock || 0,
         categoryId: product.categoryId || undefined,
-
       });
     } else {
       setEditingProduct(null);
       form.reset({
         name: "",
         description: "",
-        price: "",
+        priceHT: "",
         stock: 0,
         categoryId: undefined,
-
       });
     }
     setIsDialogOpen(true);
@@ -345,7 +343,7 @@ export default function Products() {
                     <div className="flex items-center justify-between">
                       <div>
                         <p className="text-lg font-semibold text-gray-900">
-                          {formatProductPrice(product.price)}
+                          {formatProductPrice(product.priceHT)} HT
                         </p>
                         <p className="text-sm text-gray-500">
                           Stock: {product.stock || 0} unités
@@ -408,10 +406,10 @@ export default function Products() {
                 <div className="grid grid-cols-2 gap-4">
                   <FormField
                     control={form.control}
-                    name="price"
+                    name="priceHT"
                     render={({ field }) => (
                       <FormItem>
-                        <FormLabel>Prix ({settings?.currency === 'GHS' ? 'GH₵' : 'XOF'}) *</FormLabel>
+                        <FormLabel>Prix HT ({settings?.currency === 'GHS' ? 'GH₵' : 'XOF'}) *</FormLabel>
                         <FormControl>
                           <Input 
                             type="number" 
@@ -475,33 +473,7 @@ export default function Products() {
                   )}
                 />
 
-                <FormField
-                  control={form.control}
-                  name="taxRate"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Taux de TVA (%)</FormLabel>
-                      <Select 
-                        onValueChange={field.onChange}
-                        value={field.value || "18.00"}
-                      >
-                        <FormControl>
-                          <SelectTrigger>
-                            <SelectValue placeholder="Sélectionner un taux de TVA" />
-                          </SelectTrigger>
-                        </FormControl>
-                        <SelectContent>
-                          {taxRates.map((rate) => (
-                            <SelectItem key={rate.value} value={rate.value}>
-                              {rate.label}
-                            </SelectItem>
-                          ))}
-                        </SelectContent>
-                      </Select>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
+
 
                 <div className="flex justify-end space-x-4 pt-4">
                   <Button 
