@@ -33,10 +33,11 @@ Preferred communication style: Simple, everyday language.
 ## Key Components
 
 ### Authentication System
-- **Provider**: Replit Auth (OpenID Connect)
-- **Session Storage**: PostgreSQL sessions table
-- **User Management**: User profile storage with automatic provisioning
-- **Security**: HTTP-only cookies, secure sessions, CSRF protection
+- **Provider**: Local Authentication (Email/Password)
+- **Session Storage**: In-memory sessions with express-session
+- **User Management**: Local user registration and profile management
+- **Security**: Bcrypt password hashing, HTTP-only cookies, secure sessions
+- **Features**: User registration, login/logout, profile completion
 
 ### Data Models
 - **Users**: Profile information and authentication data

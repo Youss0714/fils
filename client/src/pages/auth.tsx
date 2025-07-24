@@ -75,10 +75,20 @@ export default function AuthPage() {
 
   const loginMutation = useMutation({
     mutationFn: async (data: LoginData) => {
-      const response = await apiRequest("/api/login", {
+      const response = await fetch("/api/login", {
         method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
         body: JSON.stringify(data),
+        credentials: "include",
       });
+      
+      if (!response.ok) {
+        const error = await response.json();
+        throw new Error(error.message || "Erreur de connexion");
+      }
+      
       return response.json();
     },
     onSuccess: (user) => {
@@ -101,10 +111,20 @@ export default function AuthPage() {
   const registerMutation = useMutation({
     mutationFn: async (data: RegisterData) => {
       const { confirmPassword, ...registerData } = data;
-      const response = await apiRequest("/api/register", {
+      const response = await fetch("/api/register", {
         method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
         body: JSON.stringify(registerData),
+        credentials: "include",
       });
+      
+      if (!response.ok) {
+        const error = await response.json();
+        throw new Error(error.message || "Erreur lors de l'inscription");
+      }
+      
       return response.json();
     },
     onSuccess: (user) => {
