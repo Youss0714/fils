@@ -44,7 +44,7 @@ export default function Dashboard() {
     }
   }, [isAuthenticated, isLoading, toast]);
 
-  const { data: stats, isLoading: statsLoading } = useQuery({
+  const { data: stats = {}, isLoading: statsLoading } = useQuery({
     queryKey: ["/api/dashboard/stats"],
     retry: false,
   });
@@ -129,7 +129,7 @@ export default function Dashboard() {
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
           <StatsCard
             title="Chiffre d'Affaires"
-            value={formatCurrency(stats.revenue)}
+            value={formatCurrency((stats as any)?.revenue || 0)}
             change="+12% ce mois"
             changeType="positive"
             icon={Euro}
@@ -137,7 +137,7 @@ export default function Dashboard() {
           />
           <StatsCard
             title="Factures"
-            value={stats.invoiceCount}
+            value={(stats as any)?.invoiceCount || 0}
             change="+8 cette semaine"
             changeType="positive"
             icon={FileText}
@@ -145,7 +145,7 @@ export default function Dashboard() {
           />
           <StatsCard
             title="Clients Actifs"
-            value={stats.clientCount}
+            value={(stats as any)?.clientCount || 0}
             change="+5 nouveaux"
             changeType="positive"
             icon={Users}
@@ -153,9 +153,9 @@ export default function Dashboard() {
           />
           <StatsCard
             title="Produits"
-            value={stats.productCount}
-            change={`${stats.lowStockProducts.length} ruptures de stock`}
-            changeType={stats.lowStockProducts.length > 0 ? "negative" : "neutral"}
+            value={(stats as any)?.productCount || 0}
+            change={`${((stats as any)?.lowStockProducts || []).length} ruptures de stock`}
+            changeType={((stats as any)?.lowStockProducts || []).length > 0 ? "negative" : "neutral"}
             icon={Package}
             iconColor="bg-orange-50 text-orange-500"
           />
@@ -202,14 +202,14 @@ export default function Dashboard() {
                       </tr>
                     </thead>
                     <tbody className="bg-white divide-y divide-gray-200">
-                      {stats.recentInvoices.length === 0 ? (
+                      {((stats as any)?.recentInvoices || []).length === 0 ? (
                         <tr>
                           <td colSpan={6} className="px-6 py-4 text-center text-gray-500">
                             Aucune facture trouvée
                           </td>
                         </tr>
                       ) : (
-                        stats.recentInvoices.map((invoice) => (
+                        ((stats as any)?.recentInvoices || []).map((invoice: any) => (
                           <tr key={invoice.id} className="hover:bg-gray-50">
                             <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
                               {invoice.number}
@@ -290,10 +290,10 @@ export default function Dashboard() {
                 <CardTitle>Produits les Plus Vendus</CardTitle>
               </CardHeader>
               <CardContent className="space-y-4">
-                {stats.topProducts.length === 0 ? (
+                {((stats as any)?.topProducts || []).length === 0 ? (
                   <p className="text-center text-gray-500 py-4">Aucune vente enregistrée</p>
                 ) : (
-                  stats.topProducts.map((product, index) => (
+                  ((stats as any)?.topProducts || []).map((product: any, index: number) => (
                     <div key={product.id} className="flex items-center justify-between">
                       <div className="flex items-center space-x-3">
                         <div className="w-10 h-10 bg-gray-100 rounded-lg flex items-center justify-center">
@@ -315,18 +315,18 @@ export default function Dashboard() {
             </Card>
 
             {/* Low Stock Alert */}
-            {stats.lowStockProducts.length > 0 && (
+            {((stats as any)?.lowStockProducts || []).length > 0 && (
               <Card>
                 <CardHeader>
                   <div className="flex items-center justify-between">
                     <CardTitle>Alertes Stock</CardTitle>
                     <Badge variant="destructive">
-                      {stats.lowStockProducts.length} alertes
+                      {((stats as any)?.lowStockProducts || []).length} alertes
                     </Badge>
                   </div>
                 </CardHeader>
                 <CardContent className="space-y-3">
-                  {stats.lowStockProducts.slice(0, 3).map((product) => (
+                  {((stats as any)?.lowStockProducts || []).slice(0, 3).map((product: any) => (
                     <div key={product.id} className="flex items-center justify-between p-3 bg-red-50 rounded-lg">
                       <div className="flex items-center space-x-3">
                         <AlertTriangle className="w-5 h-5 text-red-500" />

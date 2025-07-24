@@ -27,6 +27,29 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Complete user profile
+  app.post('/api/auth/complete-profile', isAuthenticated, async (req: any, res) => {
+    try {
+      const userId = req.user.claims.sub;
+      const profileData = {
+        firstName: req.body.firstName,
+        lastName: req.body.lastName,
+        phone: req.body.phone,
+        company: req.body.company,
+        position: req.body.position,
+        address: req.body.address,
+        businessType: req.body.businessType,
+      };
+
+      // Mise à jour du profil utilisateur
+      const updatedUser = await storage.updateUserProfile(userId, profileData);
+      res.json(updatedUser);
+    } catch (error) {
+      console.error("Error updating user profile:", error);
+      res.status(500).json({ message: "Failed to update user profile" });
+    }
+  });
+
   // Dashboard stats
   app.get("/api/dashboard/stats", isAuthenticated, async (req: any, res) => {
     try {

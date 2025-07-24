@@ -32,6 +32,11 @@ export const users = pgTable("users", {
   firstName: varchar("first_name"),
   lastName: varchar("last_name"),
   profileImageUrl: varchar("profile_image_url"),
+  phone: varchar("phone", { length: 50 }),
+  company: varchar("company", { length: 255 }),
+  position: varchar("position", { length: 255 }),
+  address: text("address"),
+  businessType: varchar("business_type", { length: 255 }),
   createdAt: timestamp("created_at").defaultNow(),
   updatedAt: timestamp("updated_at").defaultNow(),
 });

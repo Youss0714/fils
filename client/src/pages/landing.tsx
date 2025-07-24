@@ -20,13 +20,26 @@ export default function Landing() {
             Application complète de gestion commerciale pour optimiser vos ventes, 
             gérer vos clients et suivre votre activité en temps réel.
           </p>
-          <Button 
-            size="lg" 
-            className="text-lg px-8 py-4"
-            onClick={() => window.location.href = '/api/login'}
-          >
-            Se connecter pour commencer
-          </Button>
+          <div className="flex flex-col sm:flex-row gap-4 justify-center">
+            <Button 
+              size="lg" 
+              className="text-lg px-8 py-4"
+              onClick={() => window.location.href = '/api/login'}
+            >
+              Se connecter
+            </Button>
+            <Button 
+              size="lg" 
+              variant="outline"
+              className="text-lg px-8 py-4"
+              onClick={() => window.location.href = '/api/login'}
+            >
+              Créer un compte
+            </Button>
+          </div>
+          <p className="text-sm text-gray-500 mt-4">
+            Nouveau sur GestionPro ? Créez votre compte et complétez votre profil pour commencer.
+          </p>
         </div>
 
         {/* Features Grid */}

@@ -50,7 +50,7 @@ export default function Clients() {
     }
   }, [isAuthenticated, isLoading, toast]);
 
-  const { data: clients = [], isLoading: clientsLoading } = useQuery({
+  const { data: clients = [], isLoading: clientsLoading } = useQuery<Client[]>({
     queryKey: ["/api/clients"],
     retry: false,
   });
@@ -190,7 +190,7 @@ export default function Clients() {
     }
   };
 
-  const filteredClients = clients.filter((client: Client) =>
+  const filteredClients = clients.filter((client) =>
     client.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
     client.email?.toLowerCase().includes(searchTerm.toLowerCase()) ||
     client.company?.toLowerCase().includes(searchTerm.toLowerCase())
@@ -353,7 +353,7 @@ export default function Clients() {
                     <FormItem>
                       <FormLabel>Entreprise</FormLabel>
                       <FormControl>
-                        <Input placeholder="Entreprise SARL" {...field} />
+                        <Input placeholder="Entreprise SARL" {...field} value={field.value || ""} />
                       </FormControl>
                       <FormMessage />
                     </FormItem>
@@ -368,7 +368,7 @@ export default function Clients() {
                       <FormItem>
                         <FormLabel>Email</FormLabel>
                         <FormControl>
-                          <Input type="email" placeholder="jean@exemple.com" {...field} />
+                          <Input type="email" placeholder="jean@exemple.com" {...field} value={field.value || ""} />
                         </FormControl>
                         <FormMessage />
                       </FormItem>
@@ -382,7 +382,7 @@ export default function Clients() {
                       <FormItem>
                         <FormLabel>Téléphone</FormLabel>
                         <FormControl>
-                          <Input placeholder="01 23 45 67 89" {...field} />
+                          <Input placeholder="01 23 45 67 89" {...field} value={field.value || ""} />
                         </FormControl>
                         <FormMessage />
                       </FormItem>
@@ -401,6 +401,7 @@ export default function Clients() {
                           placeholder="123 Rue de la Paix, 75001 Paris"
                           rows={3}
                           {...field} 
+                          value={field.value || ""}
                         />
                       </FormControl>
                       <FormMessage />

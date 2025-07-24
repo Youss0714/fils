@@ -14,6 +14,7 @@ import Invoices from "@/pages/invoices";
 import Sales from "@/pages/sales";
 import Settings from "@/pages/settings";
 import Export from "@/pages/export";
+import UserRegistration from "@/pages/user-registration";
 import Sidebar from "@/components/sidebar";
 
 function Router() {
@@ -35,6 +36,7 @@ function Router() {
             <Route path="/sales" component={Sales} />
             <Route path="/settings" component={Settings} />
             <Route path="/export" component={Export} />
+            <Route path="/complete-profile" component={UserRegistration} />
             <Route component={NotFound} />
           </Switch>
         </div>
