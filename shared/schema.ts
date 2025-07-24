@@ -70,7 +70,6 @@ export const products = pgTable("products", {
   price: decimal("price", { precision: 10, scale: 2 }).notNull(),
   stock: integer("stock").default(0),
   categoryId: integer("category_id").references(() => categories.id),
-  taxRate: decimal("tax_rate", { precision: 5, scale: 2 }).default("18.00"), // Taux de TVA par défaut 18%
   userId: varchar("user_id").notNull().references(() => users.id),
   createdAt: timestamp("created_at").defaultNow(),
 });
@@ -96,7 +95,7 @@ export const invoiceItems = pgTable("invoice_items", {
   productName: varchar("product_name", { length: 255 }).notNull(),
   quantity: integer("quantity").notNull(),
   unitPrice: decimal("unit_price", { precision: 10, scale: 2 }).notNull(),
-  taxRate: decimal("tax_rate", { precision: 5, scale: 2 }).default("18.00"),
+  taxRate: decimal("tax_rate", { precision: 5, scale: 2 }).default("18.00"), // TVA appliquée lors de la vente
   total: decimal("total", { precision: 10, scale: 2 }).notNull(),
 });
 

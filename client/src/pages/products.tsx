@@ -22,7 +22,7 @@ import {
   AlertTriangle
 } from "lucide-react";
 import { insertProductSchema, type Product, type InsertProduct, type Category } from "@shared/schema";
-import { taxRates, formatPrice } from "@/lib/i18n";
+import { formatPrice } from "@/lib/i18n";
 import { useSettings } from "@/hooks/useSettings";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -69,7 +69,6 @@ export default function Products() {
       price: "",
       stock: 0,
       categoryId: undefined,
-      taxRate: "18.00",
     },
   });
 
@@ -181,7 +180,7 @@ export default function Products() {
         price: product.price,
         stock: product.stock || 0,
         categoryId: product.categoryId || undefined,
-        taxRate: product.taxRate || "18.00",
+
       });
     } else {
       setEditingProduct(null);
@@ -191,7 +190,7 @@ export default function Products() {
         price: "",
         stock: 0,
         categoryId: undefined,
-        taxRate: "18.00",
+
       });
     }
     setIsDialogOpen(true);
