@@ -22,6 +22,8 @@ import {
   AlertTriangle
 } from "lucide-react";
 import { insertProductSchema, type Product, type InsertProduct, type Category } from "@shared/schema";
+import { taxRates, formatPrice } from "@/lib/i18n";
+import { useSettings } from "@/hooks/useSettings";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
@@ -29,6 +31,7 @@ import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "
 export default function Products() {
   const { toast } = useToast();
   const { isAuthenticated, isLoading } = useAuth();
+  const { settings } = useSettings();
   const [searchTerm, setSearchTerm] = useState("");
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [editingProduct, setEditingProduct] = useState<Product | null>(null);
@@ -48,12 +51,12 @@ export default function Products() {
     }
   }, [isAuthenticated, isLoading, toast]);
 
-  const { data: products = [], isLoading: productsLoading } = useQuery({
+  const { data: products = [], isLoading: productsLoading } = useQuery<Product[]>({
     queryKey: ["/api/products"],
     retry: false,
   });
 
-  const { data: categories = [] } = useQuery({
+  const { data: categories = [] } = useQuery<Category[]>({
     queryKey: ["/api/categories"],
     retry: false,
   });
@@ -66,6 +69,7 @@ export default function Products() {
       price: "",
       stock: 0,
       categoryId: undefined,
+      taxRate: "18.00",
     },
   });
 
@@ -177,10 +181,18 @@ export default function Products() {
         price: product.price,
         stock: product.stock || 0,
         categoryId: product.categoryId || undefined,
+        taxRate: product.taxRate || "18.00",
       });
     } else {
       setEditingProduct(null);
-      form.reset();
+      form.reset({
+        name: "",
+        description: "",
+        price: "",
+        stock: 0,
+        categoryId: undefined,
+        taxRate: "18.00",
+      });
     }
     setIsDialogOpen(true);
   };
@@ -204,11 +216,9 @@ export default function Products() {
     return category?.name || "Catégorie inconnue";
   };
 
-  const formatPrice = (price: string) => {
-    return new Intl.NumberFormat('fr-FR', {
-      style: 'currency',
-      currency: 'EUR'
-    }).format(parseFloat(price));
+  const formatProductPrice = (price: string) => {
+    const currency = settings?.currency || 'XOF';
+    return formatPrice(parseFloat(price), currency);
   };
 
   const getStockStatus = (stock: number | null) => {
@@ -336,7 +346,7 @@ export default function Products() {
                     <div className="flex items-center justify-between">
                       <div>
                         <p className="text-lg font-semibold text-gray-900">
-                          {formatPrice(product.price)}
+                          {formatProductPrice(product.price)}
                         </p>
                         <p className="text-sm text-gray-500">
                           Stock: {product.stock || 0} unités
@@ -387,7 +397,8 @@ export default function Products() {
                         <Textarea 
                           placeholder="Plat traditionnel ivoirien à base de manioc"
                           rows={3}
-                          {...field} 
+                          {...field}
+                          value={field.value || ""}
                         />
                       </FormControl>
                       <FormMessage />
@@ -401,7 +412,7 @@ export default function Products() {
                     name="price"
                     render={({ field }) => (
                       <FormItem>
-                        <FormLabel>Prix (€) *</FormLabel>
+                        <FormLabel>Prix ({settings?.currency === 'GHS' ? 'GH₵' : 'XOF'}) *</FormLabel>
                         <FormControl>
                           <Input 
                             type="number" 
@@ -426,6 +437,7 @@ export default function Products() {
                             type="number" 
                             placeholder="0" 
                             {...field}
+                            value={field.value || 0}
                             onChange={(e) => field.onChange(parseInt(e.target.value) || 0)}
                           />
                         </FormControl>
@@ -455,6 +467,34 @@ export default function Products() {
                           {categories.map((category: Category) => (
                             <SelectItem key={category.id} value={category.id.toString()}>
                               {category.name}
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+
+                <FormField
+                  control={form.control}
+                  name="taxRate"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Taux de TVA (%)</FormLabel>
+                      <Select 
+                        onValueChange={field.onChange}
+                        value={field.value || "18.00"}
+                      >
+                        <FormControl>
+                          <SelectTrigger>
+                            <SelectValue placeholder="Sélectionner un taux de TVA" />
+                          </SelectTrigger>
+                        </FormControl>
+                        <SelectContent>
+                          {taxRates.map((rate) => (
+                            <SelectItem key={rate.value} value={rate.value}>
+                              {rate.label}
                             </SelectItem>
                           ))}
                         </SelectContent>

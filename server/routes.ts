@@ -373,6 +373,31 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // User settings routes
+  app.get("/api/user/settings", isAuthenticated, async (req: any, res) => {
+    try {
+      const user = await storage.getUser(req.user.id);
+      res.json({
+        currency: user?.currency || "XOF",
+        language: user?.language || "fr",
+      });
+    } catch (error) {
+      console.error("Error fetching user settings:", error);
+      res.status(500).json({ message: "Erreur lors de la récupération des paramètres" });
+    }
+  });
+
+  app.patch("/api/user/settings", isAuthenticated, async (req: any, res) => {
+    try {
+      const { currency, language } = req.body;
+      const updatedUser = await storage.updateUserSettings(req.user.id, { currency, language });
+      res.json(updatedUser);
+    } catch (error) {
+      console.error("Error updating user settings:", error);
+      res.status(500).json({ message: "Erreur lors de la mise à jour des paramètres" });
+    }
+  });
+
   const httpServer = createServer(app);
   return httpServer;
 }

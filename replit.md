@@ -100,9 +100,20 @@ Preferred communication style: Simple, everyday language.
 ### Key Features
 - **Dashboard**: Real-time business metrics and analytics
 - **Client Management**: Complete customer relationship management
-- **Product Catalog**: Inventory with categories and pricing
+- **Product Catalog**: Inventory with categories, pricing, and dynamic VAT rates
 - **Invoice System**: Professional invoice generation with PDF export
 - **Sales Tracking**: Historical sales data and reporting
+- **Multi-Currency Support**: XOF (Franc CFA) and GHS (Cedi) with proper formatting
+- **Multi-Language**: French and English interface with complete i18n system
+- **Settings Management**: User preferences for currency and language
 - **Export/Backup**: Data export functionality for business continuity
 
-The application follows modern web development best practices with a focus on type safety, user experience, and maintainable code architecture.
+## Recent Changes (January 24, 2025)
+- **Implemented Dynamic VAT Rates**: Added 6 configurable tax rates (3%, 5%, 10%, 15%, 18%, 21%) with database integration
+- **Multi-Currency System**: Full support for XOF and GHS currencies with proper symbols and formatting
+- **Internationalization**: Complete French/English translation system with useTranslation hook
+- **User Settings Page**: Interface for managing currency and language preferences
+- **Enhanced Product Management**: Tax rate selection in product forms with proper validation
+- **Database Schema Updates**: Added taxRate to products table, currency/language to users table
+
+The application follows modern web development best practices with a focus on type safety, user experience, and maintainable code architecture adapted for African markets.
