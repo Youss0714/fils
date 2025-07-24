@@ -255,8 +255,10 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   const createInvoiceSchema = z.object({
-    invoice: insertInvoiceSchema,
-    items: z.array(insertInvoiceItemSchema),
+    invoice: insertInvoiceSchema.omit({ userId: true }).extend({
+      dueDate: z.string().optional().transform(val => val ? new Date(val) : undefined),
+    }),
+    items: z.array(insertInvoiceItemSchema.omit({ invoiceId: true })),
   });
 
   app.post("/api/invoices", isAuthenticated, async (req: any, res) => {

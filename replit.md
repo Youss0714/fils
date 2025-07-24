@@ -109,11 +109,12 @@ Preferred communication style: Simple, everyday language.
 - **Export/Backup**: Data export functionality for business continuity
 
 ## Recent Changes (January 24, 2025)
-- **Implemented Dynamic VAT Rates**: Added 6 configurable tax rates (3%, 5%, 10%, 15%, 18%, 21%) with database integration
-- **Multi-Currency System**: Full support for XOF and GHS currencies with proper symbols and formatting
-- **Internationalization**: Complete French/English translation system with useTranslation hook
-- **User Settings Page**: Interface for managing currency and language preferences
-- **Enhanced Product Management**: Tax rate selection in product forms with proper validation
-- **Database Schema Updates**: Added taxRate to products table, currency/language to users table
+- **Migration Complete**: Successfully migrated from Replit Agent to standard Replit environment
+- **New Tax Logic Implementation**: TVA now calculated exclusively at invoice level instead of product level
+- **Database Schema Restructuring**: Products store only `priceHT` (price excluding tax), removed tax fields from products
+- **Dynamic Invoice VAT**: Invoices now support 6 configurable tax rates (3%, 5%, 10%, 15%, 18%, 21%) with proper calculation
+- **Backend Validation Fixed**: Updated all validation schemas to work with new tax structure
+- **Frontend Tax Calculator**: Added dynamic tax rate selector and real-time total calculation in invoice forms
+- **Multi-Currency Support**: Maintained XOF and GHS currency formatting with new tax structure
 
 The application follows modern web development best practices with a focus on type safety, user experience, and maintainable code architecture adapted for African markets.
