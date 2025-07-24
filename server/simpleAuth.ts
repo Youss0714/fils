@@ -6,7 +6,6 @@ import { scrypt, randomBytes, timingSafeEqual } from "crypto";
 import { promisify } from "util";
 import { storage } from "./storage";
 import { User } from "@shared/schema";
-import connectPg from "connect-pg-simple";
 
 declare global {
   namespace Express {
@@ -30,32 +29,23 @@ async function comparePasswords(supplied: string, stored: string) {
 }
 
 export function setupAuth(app: Express) {
-  // Session configuration
-  const PostgresSessionStore = connectPg(session);
-  const sessionStore = new PostgresSessionStore({ 
-    conString: process.env.DATABASE_URL,
-    createTableIfMissing: true, // Create session table if missing
-    tableName: "session" // Use different table name than existing sessions
-  });
-
+  // Simple session configuration using memory store
   const sessionSettings: session.SessionOptions = {
-    secret: process.env.SESSION_SECRET || "default-secret-key-change-in-production",
+    secret: process.env.SESSION_SECRET || "gestionpro-local-auth-secret",
     resave: false,
     saveUninitialized: false,
-    store: sessionStore,
     cookie: {
       httpOnly: true,
-      secure: false, // Set to true in production with HTTPS
+      secure: false,
       maxAge: 7 * 24 * 60 * 60 * 1000, // 1 week
     },
   };
 
-  app.set("trust proxy", 1);
   app.use(session(sessionSettings));
   app.use(passport.initialize());
   app.use(passport.session());
 
-  // Local strategy for username/password authentication
+  // Local strategy
   passport.use(
     new LocalStrategy(
       {
@@ -98,7 +88,6 @@ export function setupAuth(app: Express) {
     try {
       const { email, password, firstName, lastName } = req.body;
       
-      // Validation basique
       if (!email || !password || !firstName || !lastName) {
         return res.status(400).json({ 
           message: "Email, mot de passe, prénom et nom sont requis" 
@@ -111,7 +100,6 @@ export function setupAuth(app: Express) {
         });
       }
 
-      // Vérifier si l'utilisateur existe déjà
       const existingUser = await storage.getUserByEmail(email);
       if (existingUser) {
         return res.status(400).json({ 
@@ -119,9 +107,8 @@ export function setupAuth(app: Express) {
         });
       }
 
-      // Créer l'utilisateur
       const hashedPassword = await hashPassword(password);
-      const userId = randomBytes(16).toString("hex"); // Générer un ID unique
+      const userId = randomBytes(16).toString("hex");
 
       const newUser = await storage.createLocalUser({
         id: userId,
@@ -131,7 +118,6 @@ export function setupAuth(app: Express) {
         lastName,
       });
 
-      // Connecter automatiquement l'utilisateur
       req.login(newUser, (err) => {
         if (err) return next(err);
         res.status(201).json({
@@ -203,7 +189,6 @@ export function setupAuth(app: Express) {
   });
 }
 
-// Middleware pour protéger les routes
 export function isAuthenticated(req: any, res: any, next: any) {
   if (req.isAuthenticated()) {
     return next();
