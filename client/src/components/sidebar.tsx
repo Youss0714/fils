@@ -123,7 +123,14 @@ export default function Sidebar() {
             variant="ghost"
             size="sm"
             className="text-gray-400 hover:text-gray-600"
-            onClick={() => window.location.href = '/api/logout'}
+            onClick={async () => {
+              try {
+                await fetch('/api/logout', { method: 'POST' });
+                window.location.href = '/';
+              } catch (error) {
+                console.error('Erreur lors de la déconnexion:', error);
+              }
+            }}
           >
             <LogOut className="w-4 h-4" />
           </Button>

@@ -6,6 +6,7 @@ import { TooltipProvider } from "@/components/ui/tooltip";
 import { useAuth } from "@/hooks/useAuth";
 import NotFound from "@/pages/not-found";
 import Landing from "@/pages/landing";
+import AuthPage from "@/pages/auth";
 import Dashboard from "@/pages/dashboard";
 import Clients from "@/pages/clients";
 import Products from "@/pages/products";
@@ -23,7 +24,11 @@ function Router() {
   return (
     <Switch>
       {isLoading || !isAuthenticated ? (
-        <Route path="/" component={Landing} />
+        <>
+          <Route path="/" component={Landing} />
+          <Route path="/auth" component={AuthPage} />
+          <Route component={AuthPage} />
+        </>
       ) : (
         <div className="flex h-screen bg-gray-50">
           <Sidebar />
@@ -41,7 +46,6 @@ function Router() {
           </Switch>
         </div>
       )}
-      <Route component={NotFound} />
     </Switch>
   );
 }
