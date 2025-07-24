@@ -442,8 +442,8 @@ export default function Products() {
                     <FormItem>
                       <FormLabel>Catégorie</FormLabel>
                       <Select 
-                        onValueChange={(value) => field.onChange(value ? parseInt(value) : undefined)}
-                        value={field.value?.toString() || ""}
+                        onValueChange={(value) => field.onChange(value === "none" ? undefined : value ? parseInt(value) : undefined)}
+                        value={field.value?.toString() || "none"}
                       >
                         <FormControl>
                           <SelectTrigger>
@@ -451,7 +451,7 @@ export default function Products() {
                           </SelectTrigger>
                         </FormControl>
                         <SelectContent>
-                          <SelectItem value="">Aucune catégorie</SelectItem>
+                          <SelectItem value="none">Aucune catégorie</SelectItem>
                           {categories.map((category: Category) => (
                             <SelectItem key={category.id} value={category.id.toString()}>
                               {category.name}
