@@ -9,10 +9,21 @@ interface InvoicePDFProps {
 
 export default function InvoicePDF({ invoice }: InvoicePDFProps) {
   const formatCurrency = (amount: string | number) => {
+    const userSettings = JSON.parse(localStorage.getItem('userSettings') || '{"currency":"XOF"}');
+    const currency = userSettings.currency || 'XOF';
+    
+    const numAmount = typeof amount === 'string' ? parseFloat(amount) : amount;
+    
+    if (currency === 'XOF') {
+      return `${numAmount.toLocaleString('fr-FR')} F CFA`;
+    } else if (currency === 'GHS') {
+      return `GHS ${numAmount.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
+    }
+    
     return new Intl.NumberFormat('fr-FR', {
       style: 'currency',
-      currency: 'EUR'
-    }).format(typeof amount === 'string' ? parseFloat(amount) : amount);
+      currency: currency
+    }).format(numAmount);
   };
 
   const formatDate = (date: string | Date) => {
@@ -140,10 +151,10 @@ export default function InvoicePDF({ invoice }: InvoicePDFProps) {
                         {item.quantity}
                       </td>
                       <td className="border border-gray-300 px-4 py-3 text-right text-gray-900">
-                        {formatCurrency(item.unitPrice)}
+                        {formatCurrency(item.priceHT)}
                       </td>
                       <td className="border border-gray-300 px-4 py-3 text-right font-medium text-gray-900">
-                        {formatCurrency(item.total)}
+                        {formatCurrency(item.totalHT)}
                       </td>
                     </tr>
                   ))}
@@ -157,16 +168,16 @@ export default function InvoicePDF({ invoice }: InvoicePDFProps) {
             <div className="w-full max-w-sm space-y-2">
               <div className="flex justify-between text-gray-700">
                 <span>Sous-total :</span>
-                <span>{formatCurrency(invoice.subtotal)}</span>
+                <span>{formatCurrency(invoice.totalHT)}</span>
               </div>
               <div className="flex justify-between text-gray-700">
-                <span>TVA (20%) :</span>
-                <span>{formatCurrency(invoice.tax)}</span>
+                <span>TVA ({invoice.tvaRate}%) :</span>
+                <span>{formatCurrency(invoice.totalTVA)}</span>
               </div>
               <Separator />
               <div className="flex justify-between text-lg font-semibold text-gray-900">
                 <span>Total :</span>
-                <span>{formatCurrency(invoice.total)}</span>
+                <span>{formatCurrency(invoice.totalTTC)}</span>
               </div>
             </div>
           </div>
