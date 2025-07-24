@@ -534,7 +534,7 @@ export default function Invoices() {
                                     render={({ field }) => (
                                       <FormItem>
                                         <FormControl>
-                                          <Input placeholder="Nom personnalisé" {...field} />
+                                          <Input placeholder="Produit personnalisé" {...field} />
                                         </FormControl>
                                         <FormMessage />
                                       </FormItem>

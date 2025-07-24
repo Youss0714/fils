@@ -370,7 +370,7 @@ export default function Products() {
                     <FormItem>
                       <FormLabel>Nom du produit *</FormLabel>
                       <FormControl>
-                        <Input placeholder="Produit Premium" {...field} />
+                        <Input placeholder="Attiéké complet" {...field} />
                       </FormControl>
                       <FormMessage />
                     </FormItem>
@@ -385,7 +385,7 @@ export default function Products() {
                       <FormLabel>Description</FormLabel>
                       <FormControl>
                         <Textarea 
-                          placeholder="Description détaillée du produit"
+                          placeholder="Plat traditionnel ivoirien à base de manioc"
                           rows={3}
                           {...field} 
                         />

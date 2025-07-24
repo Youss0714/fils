@@ -225,7 +225,7 @@ export default function UserRegistration() {
                           <FormItem>
                             <FormLabel>Prénom *</FormLabel>
                             <FormControl>
-                              <Input placeholder="Jean" {...field} />
+                              <Input placeholder="Kouamé" {...field} />
                             </FormControl>
                             <FormMessage />
                           </FormItem>
@@ -239,7 +239,7 @@ export default function UserRegistration() {
                           <FormItem>
                             <FormLabel>Nom *</FormLabel>
                             <FormControl>
-                              <Input placeholder="Dupont" {...field} />
+                              <Input placeholder="Yao" {...field} />
                             </FormControl>
                             <FormMessage />
                           </FormItem>
@@ -254,7 +254,7 @@ export default function UserRegistration() {
                         <FormItem>
                           <FormLabel>Téléphone</FormLabel>
                           <FormControl>
-                            <Input placeholder="01 23 45 67 89" {...field} />
+                            <Input placeholder="07 12 34 56 78" {...field} />
                           </FormControl>
                           <FormMessage />
                         </FormItem>
@@ -269,7 +269,7 @@ export default function UserRegistration() {
                           <FormLabel>Adresse</FormLabel>
                           <FormControl>
                             <Textarea 
-                              placeholder="123 Rue de la Paix, 75001 Paris"
+                              placeholder="Cocody Riviera 3, Abidjan"
                               rows={3}
                               {...field} 
                             />
@@ -297,7 +297,7 @@ export default function UserRegistration() {
                         <FormItem>
                           <FormLabel>Nom de l'entreprise</FormLabel>
                           <FormControl>
-                            <Input placeholder="Mon Entreprise SARL" {...field} />
+                            <Input placeholder="SARL AKWABA" {...field} />
                           </FormControl>
                           <FormMessage />
                         </FormItem>
@@ -311,7 +311,7 @@ export default function UserRegistration() {
                         <FormItem>
                           <FormLabel>Poste/Fonction</FormLabel>
                           <FormControl>
-                            <Input placeholder="Directeur général" {...field} />
+                            <Input placeholder="Gérant" {...field} />
                           </FormControl>
                           <FormMessage />
                         </FormItem>
@@ -325,7 +325,7 @@ export default function UserRegistration() {
                         <FormItem>
                           <FormLabel>Secteur d'activité</FormLabel>
                           <FormControl>
-                            <Input placeholder="Commerce de détail, Services, etc." {...field} />
+                            <Input placeholder="Commerce général, Restauration, etc." {...field} />
                           </FormControl>
                           <FormMessage />
                         </FormItem>

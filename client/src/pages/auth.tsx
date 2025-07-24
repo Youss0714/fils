@@ -211,7 +211,7 @@ export default function AuthPage() {
                           <FormControl>
                             <Input
                               type="email"
-                              placeholder="votre@email.com"
+                              placeholder="kouame@exemple.ci"
                               {...field}
                             />
                           </FormControl>
@@ -261,7 +261,7 @@ export default function AuthPage() {
                           <FormItem>
                             <FormLabel>Prénom</FormLabel>
                             <FormControl>
-                              <Input placeholder="Jean" {...field} />
+                              <Input placeholder="Kouamé" {...field} />
                             </FormControl>
                             <FormMessage />
                           </FormItem>
@@ -275,7 +275,7 @@ export default function AuthPage() {
                           <FormItem>
                             <FormLabel>Nom</FormLabel>
                             <FormControl>
-                              <Input placeholder="Dupont" {...field} />
+                              <Input placeholder="Yao" {...field} />
                             </FormControl>
                             <FormMessage />
                           </FormItem>
@@ -292,7 +292,7 @@ export default function AuthPage() {
                           <FormControl>
                             <Input
                               type="email"
-                              placeholder="votre@email.com"
+                              placeholder="kouame@exemple.ci"
                               {...field}
                             />
                           </FormControl>

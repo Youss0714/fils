@@ -339,7 +339,7 @@ export default function Clients() {
                     <FormItem>
                       <FormLabel>Nom complet *</FormLabel>
                       <FormControl>
-                        <Input placeholder="Jean Dupont" {...field} />
+                        <Input placeholder="Kouamé Yao" {...field} />
                       </FormControl>
                       <FormMessage />
                     </FormItem>
@@ -353,7 +353,7 @@ export default function Clients() {
                     <FormItem>
                       <FormLabel>Entreprise</FormLabel>
                       <FormControl>
-                        <Input placeholder="Entreprise SARL" {...field} value={field.value || ""} />
+                        <Input placeholder="SARL AKWABA" {...field} value={field.value || ""} />
                       </FormControl>
                       <FormMessage />
                     </FormItem>
@@ -368,7 +368,7 @@ export default function Clients() {
                       <FormItem>
                         <FormLabel>Email</FormLabel>
                         <FormControl>
-                          <Input type="email" placeholder="jean@exemple.com" {...field} value={field.value || ""} />
+                          <Input type="email" placeholder="kouame@exemple.ci" {...field} value={field.value || ""} />
                         </FormControl>
                         <FormMessage />
                       </FormItem>
@@ -382,7 +382,7 @@ export default function Clients() {
                       <FormItem>
                         <FormLabel>Téléphone</FormLabel>
                         <FormControl>
-                          <Input placeholder="01 23 45 67 89" {...field} value={field.value || ""} />
+                          <Input placeholder="07 12 34 56 78" {...field} value={field.value || ""} />
                         </FormControl>
                         <FormMessage />
                       </FormItem>
@@ -398,7 +398,7 @@ export default function Clients() {
                       <FormLabel>Adresse</FormLabel>
                       <FormControl>
                         <Textarea 
-                          placeholder="123 Rue de la Paix, 75001 Paris"
+                          placeholder="Cocody Riviera 3, Abidjan"
                           rows={3}
                           {...field} 
                           value={field.value || ""}
