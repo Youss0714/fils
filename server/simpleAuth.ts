@@ -173,7 +173,7 @@ export function setupAuth(app: Express) {
       return res.status(401).json({ message: "Non authentifié" });
     }
     
-    const user = req.user as User;
+    const user = req.user as UserType;
     res.json({
       id: user.id,
       email: user.email,
