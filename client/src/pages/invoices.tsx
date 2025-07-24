@@ -123,7 +123,7 @@ export default function Invoices() {
         tvaRate: data.tvaRate,
         totalTVA: totalTVA.toFixed(2),
         totalTTC: totalTTC.toFixed(2),
-        dueDate: data.dueDate ? new Date(data.dueDate) : undefined,
+        dueDate: data.dueDate ? new Date(data.dueDate) : null,
         notes: data.notes,
         userId: "", // Will be set by backend
       };
@@ -159,9 +159,10 @@ export default function Invoices() {
         }, 500);
         return;
       }
+      console.error("Invoice creation error:", error);
       toast({
         title: "Erreur",
-        description: "Impossible de créer la facture.",
+        description: (error as any)?.message || "Impossible de créer la facture.",
         variant: "destructive",
       });
     },
