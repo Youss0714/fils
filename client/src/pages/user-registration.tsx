@@ -74,17 +74,28 @@ export default function UserRegistration() {
 
   const updateProfileMutation = useMutation({
     mutationFn: async (data: UserRegistrationData) => {
-      await apiRequest("/api/auth/complete-profile", {
+      const response = await fetch("/api/auth/complete-profile", {
         method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
         body: JSON.stringify(data),
+        credentials: "include",
       });
+      
+      if (!response.ok) {
+        const error = await response.json();
+        throw new Error(error.message || "Erreur de mise à jour du profil");
+      }
+      
+      return response.json();
     },
     onSuccess: () => {
       toast({
         title: "Profil complété !",
         description: "Votre profil a été mis à jour avec succès.",
       });
-      queryClient.invalidateQueries({ queryKey: ["/api/auth/user"] });
+      queryClient.invalidateQueries({ queryKey: ["/api/user"] });
       // Rediriger vers le tableau de bord
       setTimeout(() => {
         setLocation("/");
