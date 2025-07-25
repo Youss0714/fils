@@ -121,5 +121,10 @@ Preferred communication style: Simple, everyday language.
 - **Backend Validation Fixed**: Updated all validation schemas to work with new tax structure
 - **Frontend Tax Calculator**: Added dynamic tax rate selector and real-time total calculation in invoice forms
 - **Multi-Currency Support**: Maintained XOF and GHS currency formatting with new tax structure
+- **Sales History Fix**: Fixed sales data display issue by implementing automatic sales creation when invoices are marked as "paid"
+- **Invoice Detail Page**: Added complete invoice detail view with PDF preview and status management
+- **Stock Management**: Implemented automatic stock deduction when invoices are paid, with protection against negative stock
+- **Currency Display Fix**: Corrected dashboard invoice amounts to show proper currency formatting (XOF/GHS/EUR)
+- **Data Integrity**: Fixed deletion cascade for invoices with associated sales records
 
 The application follows modern web development best practices with a focus on type safety, user experience, and maintainable code architecture adapted for African markets.
