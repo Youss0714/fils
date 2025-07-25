@@ -22,7 +22,7 @@ import {
   type InsertSale,
 } from "@shared/schema";
 import { db } from "./db";
-import { eq, desc, and, sum, count } from "drizzle-orm";
+import { eq, desc, and, sum, count, sql } from "drizzle-orm";
 
 export interface IStorage {
   // User operations
@@ -280,7 +280,7 @@ export class DatabaseStorage implements IStorage {
     // Get invoice items
     const items = await db.select().from(invoiceItems).where(eq(invoiceItems.invoiceId, invoiceId));
     
-    // Create sales records for each item
+    // Create sales records for each item and update stock
     const salesData = items
       .filter(item => item.productId) // Only create sales for items with productId
       .map(item => ({
@@ -293,12 +293,30 @@ export class DatabaseStorage implements IStorage {
       }));
 
     if (salesData.length > 0) {
+      // Insert sales records
       await db.insert(sales).values(salesData);
+      
+      // Update stock for each product (prevent negative stock)
+      for (const item of items.filter(item => item.productId)) {
+        await db
+          .update(products)
+          .set({
+            stock: sql`GREATEST(0, ${products.stock} - ${item.quantity})`
+          })
+          .where(and(
+            eq(products.id, item.productId!),
+            eq(products.userId, userId)
+          ));
+      }
     }
   }
 
   async deleteInvoice(id: number, userId: string): Promise<void> {
+    // First delete sales records associated with this invoice
+    await db.delete(sales).where(eq(sales.invoiceId, id));
+    // Then delete invoice items
     await db.delete(invoiceItems).where(eq(invoiceItems.invoiceId, id));
+    // Finally delete the invoice
     await db.delete(invoices).where(and(eq(invoices.id, id), eq(invoices.userId, userId)));
   }
 
