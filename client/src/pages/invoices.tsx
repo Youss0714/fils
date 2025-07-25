@@ -22,7 +22,8 @@ import {
   Download,
   Minus
 } from "lucide-react";
-import { insertInvoiceSchema, insertInvoiceItemSchema, TAX_RATES, type Invoice, type InsertInvoice, type Client, type Product } from "@shared/schema";
+import { insertInvoiceSchema, insertInvoiceItemSchema, TAX_RATES, INVOICE_STATUS, type Invoice, type InsertInvoice, type Client, type Product } from "@shared/schema";
+import { ProductCombobox } from "@/components/product-combobox";
 import { useForm, useFieldArray } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
@@ -31,6 +32,7 @@ import InvoicePDF from "@/components/invoice-pdf";
 
 const createInvoiceFormSchema = z.object({
   clientId: z.number().min(1, "Veuillez sélectionner un client"),
+  status: z.string().min(1, "Veuillez sélectionner un statut"),
   tvaRate: z.string().min(1, "Veuillez sélectionner un taux de TVA"),
   dueDate: z.string().optional(),
   notes: z.string().optional(),
@@ -92,6 +94,7 @@ export default function Invoices() {
     resolver: zodResolver(createInvoiceFormSchema),
     defaultValues: {
       clientId: 0,
+      status: "en_attente",
       tvaRate: "18.00",
       dueDate: "",
       notes: "",
@@ -124,7 +127,7 @@ export default function Invoices() {
       const invoiceData: InsertInvoice = {
         number: generateInvoiceNumber(),
         clientId: data.clientId,
-        status: "pending",
+        status: data.status,
         totalHT: totalHT.toFixed(2),
         tvaRate: data.tvaRate,
         totalTVA: totalTVA.toFixed(2),
@@ -182,6 +185,7 @@ export default function Invoices() {
       queryClient.invalidateQueries({ queryKey: ["/api/invoices"] });
       queryClient.invalidateQueries({ queryKey: ["/api/sales"] });
       queryClient.invalidateQueries({ queryKey: ["/api/dashboard/stats"] });
+      queryClient.invalidateQueries({ queryKey: ["/api/products"] });
       toast({
         title: "Statut mis à jour",
         description: "Le statut de la facture a été mis à jour.",
@@ -221,13 +225,22 @@ export default function Invoices() {
   };
 
   const getStatusBadge = (status: string) => {
+    const statusInfo = INVOICE_STATUS.find(s => s.value === status);
+    if (statusInfo) {
+      return (
+        <Badge className={statusInfo.color}>
+          {statusInfo.icon} {statusInfo.label}
+        </Badge>
+      );
+    }
+    // Fallback for old statuses
     switch (status) {
       case 'paid':
-        return <Badge className="bg-green-100 text-green-800">Payée</Badge>;
+        return <Badge className="bg-green-100 text-green-800">✅ Payée</Badge>;
       case 'pending':
-        return <Badge className="bg-yellow-100 text-yellow-800">En attente</Badge>;
+        return <Badge className="bg-yellow-100 text-yellow-800">⏳ En attente</Badge>;
       case 'overdue':
-        return <Badge className="bg-red-100 text-red-800">En retard</Badge>;
+        return <Badge className="bg-red-100 text-red-800">⚠️ En retard</Badge>;
       default:
         return <Badge variant="secondary">{status}</Badge>;
     }
@@ -406,13 +419,15 @@ export default function Invoices() {
                             value={invoice.status}
                             onValueChange={(status) => updateStatusMutation.mutate({ id: invoice.id, status })}
                           >
-                            <SelectTrigger className="w-32">
+                            <SelectTrigger className="w-44">
                               {getStatusBadge(invoice.status)}
                             </SelectTrigger>
                             <SelectContent>
-                              <SelectItem value="pending">En attente</SelectItem>
-                              <SelectItem value="paid">Payée</SelectItem>
-                              <SelectItem value="overdue">En retard</SelectItem>
+                              {INVOICE_STATUS.map((status) => (
+                                <SelectItem key={status.value} value={status.value}>
+                                  {status.icon} {status.label}
+                                </SelectItem>
+                              ))}
                             </SelectContent>
                           </Select>
                         </td>
@@ -502,6 +517,34 @@ export default function Invoices() {
 
                   <FormField
                     control={form.control}
+                    name="status"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Statut *</FormLabel>
+                        <Select 
+                          onValueChange={field.onChange}
+                          value={field.value || "en_attente"}
+                        >
+                          <FormControl>
+                            <SelectTrigger>
+                              <SelectValue placeholder="Sélectionner statut" />
+                            </SelectTrigger>
+                          </FormControl>
+                          <SelectContent>
+                            {INVOICE_STATUS.map((status) => (
+                              <SelectItem key={status.value} value={status.value}>
+                                {status.icon} {status.label}
+                              </SelectItem>
+                            ))}
+                          </SelectContent>
+                        </Select>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+
+                  <FormField
+                    control={form.control}
                     name="tvaRate"
                     render={({ field }) => (
                       <FormItem>
@@ -563,25 +606,18 @@ export default function Invoices() {
                             <tr key={field.id}>
                               <td className="px-4 py-2">
                                 <div className="space-y-2">
-                                  <Select
-                                    onValueChange={(value) => {
-                                      const productId = parseInt(value);
-                                      form.setValue(`items.${index}.productId`, productId);
-                                      form.setValue(`items.${index}.productName`, getProductName(productId));
-                                      form.setValue(`items.${index}.priceHT`, getProductPrice(productId));
+                                  <ProductCombobox
+                                    products={products}
+                                    value={form.watch(`items.${index}.productId`)}
+                                    onChange={(productId) => {
+                                      if (productId) {
+                                        form.setValue(`items.${index}.productId`, productId);
+                                        form.setValue(`items.${index}.productName`, getProductName(productId));
+                                        form.setValue(`items.${index}.priceHT`, getProductPrice(productId));
+                                      }
                                     }}
-                                  >
-                                    <SelectTrigger className="w-full">
-                                      <SelectValue placeholder="Sélectionner un produit" />
-                                    </SelectTrigger>
-                                    <SelectContent>
-                                      {products.map((product: Product) => (
-                                        <SelectItem key={product.id} value={product.id.toString()}>
-                                          {product.name}
-                                        </SelectItem>
-                                      ))}
-                                    </SelectContent>
-                                  </Select>
+                                    placeholder="Rechercher un produit..."
+                                  />
                                   <FormField
                                     control={form.control}
                                     name={`items.${index}.productName`}

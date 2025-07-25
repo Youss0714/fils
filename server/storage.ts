@@ -267,8 +267,9 @@ export class DatabaseStorage implements IStorage {
       .where(and(eq(invoices.id, id), eq(invoices.userId, userId)))
       .returning();
 
-    // If the status changed to 'paid', create sales records
-    if (invoice.status === 'paid' && currentInvoice?.status !== 'paid') {
+    // If the status changed to 'payee' (or old 'paid'), create sales records
+    if ((invoice.status === 'payee' || invoice.status === 'paid') && 
+        currentInvoice?.status !== 'payee' && currentInvoice?.status !== 'paid') {
       await this.createSalesFromInvoice(id, userId);
     }
 

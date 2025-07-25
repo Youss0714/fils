@@ -78,7 +78,7 @@ export const invoices = pgTable("invoices", {
   id: serial("id").primaryKey(),
   number: varchar("number", { length: 50 }).notNull(),
   clientId: integer("client_id").notNull().references(() => clients.id),
-  status: varchar("status", { length: 50 }).notNull().default("pending"), // pending, paid, overdue
+  status: varchar("status", { length: 50 }).notNull().default("en_attente"), // en_attente, payee, partiellement_reglee
   totalHT: decimal("total_ht", { precision: 10, scale: 2 }).notNull(), // Total HT
   tvaRate: decimal("tva_rate", { precision: 5, scale: 2 }).notNull(), // Taux TVA choisi (3%, 5%, 10%, 15%, 18%, 21%)
   totalTVA: decimal("total_tva", { precision: 10, scale: 2 }).notNull(), // Montant TVA calculé
@@ -195,6 +195,13 @@ export const TAX_RATES = [
   { value: "15.00", label: "15%" },
   { value: "18.00", label: "18%" },
   { value: "21.00", label: "21%" },
+] as const;
+
+// Invoice status options
+export const INVOICE_STATUS = [
+  { value: "en_attente", label: "En attente", icon: "⏳", color: "bg-yellow-100 text-yellow-800" },
+  { value: "payee", label: "Payée", icon: "✅", color: "bg-green-100 text-green-800" },
+  { value: "partiellement_reglee", label: "Partiellement réglée", icon: "💳", color: "bg-blue-100 text-blue-800" },
 ] as const;
 
 // Insert schemas
