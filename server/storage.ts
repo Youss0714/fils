@@ -258,12 +258,43 @@ export class DatabaseStorage implements IStorage {
   }
 
   async updateInvoice(id: number, invoice: Partial<InsertInvoice>, userId: string): Promise<Invoice> {
+    // Get the current invoice before updating
+    const currentInvoice = await this.getInvoice(id, userId);
+    
     const [updatedInvoice] = await db
       .update(invoices)
       .set(invoice)
       .where(and(eq(invoices.id, id), eq(invoices.userId, userId)))
       .returning();
+
+    // If the status changed to 'paid', create sales records
+    if (invoice.status === 'paid' && currentInvoice?.status !== 'paid') {
+      await this.createSalesFromInvoice(id, userId);
+    }
+
     return updatedInvoice;
+  }
+
+  // Helper function to create sales from invoice items
+  private async createSalesFromInvoice(invoiceId: number, userId: string): Promise<void> {
+    // Get invoice items
+    const items = await db.select().from(invoiceItems).where(eq(invoiceItems.invoiceId, invoiceId));
+    
+    // Create sales records for each item
+    const salesData = items
+      .filter(item => item.productId) // Only create sales for items with productId
+      .map(item => ({
+        invoiceId: invoiceId,
+        productId: item.productId!,
+        quantity: item.quantity,
+        unitPrice: item.priceHT,
+        total: item.totalHT,
+        userId: userId,
+      }));
+
+    if (salesData.length > 0) {
+      await db.insert(sales).values(salesData);
+    }
   }
 
   async deleteInvoice(id: number, userId: string): Promise<void> {

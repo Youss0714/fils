@@ -34,12 +34,20 @@ export default function Sales() {
     }
   }, [isAuthenticated, isLoading, toast]);
 
-  const { data: sales = [], isLoading: salesLoading } = useQuery({
+  const { data: sales = [], isLoading: salesLoading } = useQuery<Sale[]>({
     queryKey: ["/api/sales"],
     retry: false,
   });
 
-  const { data: stats } = useQuery({
+  const { data: stats } = useQuery<{
+    revenue: number;
+    invoiceCount: number;
+    clientCount: number;
+    productCount: number;
+    recentInvoices: any[];
+    topProducts: any[];
+    lowStockProducts: any[];
+  }>({
     queryKey: ["/api/dashboard/stats"],
     retry: false,
   });
