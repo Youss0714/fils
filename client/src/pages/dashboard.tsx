@@ -49,6 +49,11 @@ export default function Dashboard() {
     retry: false,
   });
 
+  const { data: userSettings } = useQuery({
+    queryKey: ["/api/user/settings"],
+    retry: false,
+  });
+
   if (isLoading || statsLoading) {
     return (
       <div className="flex-1 flex flex-col overflow-hidden">
@@ -90,10 +95,25 @@ export default function Dashboard() {
   }
 
   const formatCurrency = (amount: number) => {
-    return new Intl.NumberFormat('fr-FR', {
-      style: 'currency',
-      currency: 'EUR'
-    }).format(amount);
+    const currency = (userSettings as any)?.currency || 'XOF';
+    
+    if (currency === 'XOF') {
+      return new Intl.NumberFormat('fr-FR', {
+        style: 'decimal',
+        minimumFractionDigits: 0,
+        maximumFractionDigits: 0,
+      }).format(amount) + ' F CFA';
+    } else if (currency === 'GHS') {
+      return new Intl.NumberFormat('en-GH', {
+        style: 'currency',
+        currency: 'GHS'
+      }).format(amount);
+    } else {
+      return new Intl.NumberFormat('fr-FR', {
+        style: 'currency',
+        currency: 'EUR'
+      }).format(amount);
+    }
   };
 
   const getStatusBadge = (status: string) => {
@@ -218,7 +238,7 @@ export default function Dashboard() {
                               {invoice.client?.name || 'Client inconnu'}
                             </td>
                             <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                              {formatCurrency(parseFloat(invoice.total))}
+                              {formatCurrency(parseFloat(invoice.totalTTC || invoice.total || "0"))}
                             </td>
                             <td className="px-6 py-4 whitespace-nowrap">
                               {getStatusBadge(invoice.status)}
