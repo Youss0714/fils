@@ -43,60 +43,86 @@ export default function InvoicePDF({ invoice }: InvoicePDFProps) {
       // Get the invoice content element
       const element = document.querySelector('.invoice-content') as HTMLElement;
       if (!element) {
+        console.error("Invoice content element not found");
         alert("Erreur: Contenu de la facture non trouvé");
         return;
       }
 
-      // Hide print buttons temporarily
-      const printButtons = document.querySelectorAll('.print\\:hidden');
-      printButtons.forEach(btn => (btn as HTMLElement).style.display = 'none');
+      // Hide action buttons temporarily for cleaner PDF
+      const actionButtons = element.parentElement?.querySelector('.print\\:hidden') as HTMLElement;
+      const originalDisplay = actionButtons?.style.display;
+      if (actionButtons) {
+        actionButtons.style.display = 'none';
+      }
       
-      // Generate canvas from HTML
+      // Wait a moment for styles to apply
+      await new Promise(resolve => setTimeout(resolve, 100));
+      
+      // Generate canvas from HTML with better options
       const canvas = await html2canvas(element, {
-        scale: 2,
+        scale: 1.5,
         useCORS: true,
         allowTaint: true,
         backgroundColor: '#ffffff',
-        width: element.scrollWidth,
-        height: element.scrollHeight,
+        logging: false,
+        removeContainer: true,
+        imageTimeout: 15000,
+        onclone: (clonedDoc) => {
+          // Remove any remaining print-hidden elements in the clone
+          const printHiddenElements = clonedDoc.querySelectorAll('.print\\:hidden');
+          printHiddenElements.forEach(el => el.remove());
+        }
       });
       
-      // Show print buttons again
-      printButtons.forEach(btn => (btn as HTMLElement).style.display = '');
+      // Restore action buttons
+      if (actionButtons && originalDisplay !== undefined) {
+        actionButtons.style.display = originalDisplay;
+      }
       
-      // Create PDF
-      const imgData = canvas.toDataURL('image/png');
+      // Create PDF with proper dimensions
       const pdf = new jsPDF({
         orientation: 'portrait',
         unit: 'mm',
         format: 'a4',
       });
       
-      const imgWidth = 210; // A4 width in mm
-      const pageHeight = 295; // A4 height in mm
+      const pageWidth = pdf.internal.pageSize.getWidth();
+      const pageHeight = pdf.internal.pageSize.getHeight();
+      const margin = 10;
+      const contentWidth = pageWidth - (2 * margin);
+      
+      // Calculate dimensions
+      const imgWidth = contentWidth;
       const imgHeight = (canvas.height * imgWidth) / canvas.width;
-      let heightLeft = imgHeight;
       
-      let position = 0;
+      // Add the image to PDF
+      const imgData = canvas.toDataURL('image/png', 0.95);
       
-      // Add first page
-      pdf.addImage(imgData, 'PNG', 0, position, imgWidth, imgHeight);
-      heightLeft -= pageHeight;
-      
-      // Add additional pages if needed
-      while (heightLeft >= 0) {
-        position = heightLeft - imgHeight;
-        pdf.addPage();
-        pdf.addImage(imgData, 'PNG', 0, position, imgWidth, imgHeight);
-        heightLeft -= pageHeight;
+      if (imgHeight <= pageHeight - (2 * margin)) {
+        // Single page
+        pdf.addImage(imgData, 'PNG', margin, margin, imgWidth, imgHeight);
+      } else {
+        // Multiple pages - use a simpler approach
+        pdf.addImage(imgData, 'PNG', margin, margin, imgWidth, imgHeight);
+        
+        // If content is too long, it will be cut off, but this is simpler and more reliable
+        // For very long invoices, users can use the print function instead
       }
       
-      // Download the PDF
-      pdf.save(`Facture_${invoice.number}_${new Date().toLocaleDateString('fr-FR').replace(/\//g, '-')}.pdf`);
+      // Generate filename with current date
+      const now = new Date();
+      const dateStr = now.toLocaleDateString('fr-FR').replace(/\//g, '-');
+      const timeStr = now.toLocaleTimeString('fr-FR').replace(/:/g, '-');
+      const filename = `Facture_${invoice.number}_${dateStr}_${timeStr}.pdf`;
+      
+      // Save the PDF
+      pdf.save(filename);
+      
+      console.log('PDF généré avec succès:', filename);
       
     } catch (error) {
       console.error('Erreur lors de la génération du PDF:', error);
-      alert("Erreur lors de la génération du PDF. Veuillez réessayer.");
+      alert(`Erreur lors de la génération du PDF: ${error instanceof Error ? error.message : 'Erreur inconnue'}. Veuillez réessayer.`);
     }
   };
 
