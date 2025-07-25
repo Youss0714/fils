@@ -12,6 +12,7 @@ import Clients from "@/pages/clients";
 import Products from "@/pages/products";
 import Categories from "@/pages/categories";
 import Invoices from "@/pages/invoices";
+import InvoiceDetail from "@/pages/invoice-detail";
 import Sales from "@/pages/sales";
 import Settings from "@/pages/settings";
 import Export from "@/pages/export";
@@ -38,6 +39,7 @@ function Router() {
             <Route path="/products" component={Products} />
             <Route path="/categories" component={Categories} />
             <Route path="/invoices" component={Invoices} />
+            <Route path="/invoices/:id" component={InvoiceDetail} />
             <Route path="/sales" component={Sales} />
             <Route path="/settings" component={Settings} />
             <Route path="/export" component={Export} />

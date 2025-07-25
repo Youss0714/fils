@@ -254,6 +254,21 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  app.get("/api/invoices/:id/details", isAuthenticated, async (req: any, res) => {
+    try {
+      const userId = req.user.id;
+      const id = parseInt(req.params.id);
+      const invoice = await storage.getInvoiceWithItems(id, userId);
+      if (!invoice) {
+        return res.status(404).json({ message: "Invoice not found" });
+      }
+      res.json(invoice);
+    } catch (error) {
+      console.error("Error fetching invoice details:", error);
+      res.status(500).json({ message: "Failed to fetch invoice details" });
+    }
+  });
+
   const createInvoiceSchema = z.object({
     invoice: insertInvoiceSchema.omit({ userId: true }).extend({
       dueDate: z.string().optional().transform(val => val ? new Date(val) : undefined),
