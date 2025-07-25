@@ -5,9 +5,10 @@ import { Download, Printer } from "lucide-react";
 
 interface InvoicePDFProps {
   invoice: any; // Full invoice with items and client
+  user?: any; // User information for company details
 }
 
-export default function InvoicePDF({ invoice }: InvoicePDFProps) {
+export default function InvoicePDF({ invoice, user }: InvoicePDFProps) {
   const formatCurrency = (amount: string | number) => {
     const userSettings = JSON.parse(localStorage.getItem('userSettings') || '{"currency":"XOF"}');
     const currency = userSettings.currency || 'XOF';
@@ -150,12 +151,16 @@ export default function InvoicePDF({ invoice }: InvoicePDFProps) {
               <p className="text-lg text-gray-600">{invoice.number}</p>
             </div>
             <div className="text-right">
-              <div className="text-2xl font-bold text-primary mb-2">GestionPro</div>
+              <div className="text-2xl font-bold text-primary mb-2">
+                {user?.company || `${user?.firstName || ''} ${user?.lastName || ''}`.trim() || 'Mon Entreprise'}
+              </div>
               <div className="text-sm text-gray-600">
-                <p>123 Rue de la Technologie</p>
-                <p>75001 Paris, France</p>
-                <p>SIRET: 12345678901234</p>
-                <p>TVA: FR12345678901</p>
+                {user?.address && (
+                  <p className="whitespace-pre-line">{user.address}</p>
+                )}
+                {user?.email && <p>Email: {user.email}</p>}
+                {user?.phone && <p>Tél: {user.phone}</p>}
+                {user?.businessType && <p>Activité: {user.businessType}</p>}
               </div>
             </div>
           </div>

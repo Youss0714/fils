@@ -82,6 +82,12 @@ export default function Invoices() {
     retry: false,
   });
 
+  // Get user data for invoice header
+  const { data: user } = useQuery({
+    queryKey: ["/api/user"],
+    retry: false,
+  });
+
   const form = useForm<CreateInvoiceForm>({
     resolver: zodResolver(createInvoiceFormSchema),
     defaultValues: {
@@ -725,7 +731,7 @@ export default function Invoices() {
               <DialogHeader>
                 <DialogTitle>Facture {viewingInvoice.number}</DialogTitle>
               </DialogHeader>
-              <InvoicePDF invoice={viewingInvoice} />
+              <InvoicePDF invoice={viewingInvoice} user={user} />
             </DialogContent>
           </Dialog>
         )}
