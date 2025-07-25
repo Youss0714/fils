@@ -34,10 +34,70 @@ export default function InvoicePDF({ invoice }: InvoicePDFProps) {
     window.print();
   };
 
-  const handleDownloadPDF = () => {
-    // This would typically use a library like jsPDF
-    // For now, we'll just show a toast
-    alert("Fonctionnalité de téléchargement PDF en développement");
+  const handleDownloadPDF = async () => {
+    try {
+      // Dynamically import jsPDF and html2canvas to avoid SSR issues
+      const { default: jsPDF } = await import('jspdf');
+      const { default: html2canvas } = await import('html2canvas');
+      
+      // Get the invoice content element
+      const element = document.querySelector('.invoice-content') as HTMLElement;
+      if (!element) {
+        alert("Erreur: Contenu de la facture non trouvé");
+        return;
+      }
+
+      // Hide print buttons temporarily
+      const printButtons = document.querySelectorAll('.print\\:hidden');
+      printButtons.forEach(btn => (btn as HTMLElement).style.display = 'none');
+      
+      // Generate canvas from HTML
+      const canvas = await html2canvas(element, {
+        scale: 2,
+        useCORS: true,
+        allowTaint: true,
+        backgroundColor: '#ffffff',
+        width: element.scrollWidth,
+        height: element.scrollHeight,
+      });
+      
+      // Show print buttons again
+      printButtons.forEach(btn => (btn as HTMLElement).style.display = '');
+      
+      // Create PDF
+      const imgData = canvas.toDataURL('image/png');
+      const pdf = new jsPDF({
+        orientation: 'portrait',
+        unit: 'mm',
+        format: 'a4',
+      });
+      
+      const imgWidth = 210; // A4 width in mm
+      const pageHeight = 295; // A4 height in mm
+      const imgHeight = (canvas.height * imgWidth) / canvas.width;
+      let heightLeft = imgHeight;
+      
+      let position = 0;
+      
+      // Add first page
+      pdf.addImage(imgData, 'PNG', 0, position, imgWidth, imgHeight);
+      heightLeft -= pageHeight;
+      
+      // Add additional pages if needed
+      while (heightLeft >= 0) {
+        position = heightLeft - imgHeight;
+        pdf.addPage();
+        pdf.addImage(imgData, 'PNG', 0, position, imgWidth, imgHeight);
+        heightLeft -= pageHeight;
+      }
+      
+      // Download the PDF
+      pdf.save(`Facture_${invoice.number}_${new Date().toLocaleDateString('fr-FR').replace(/\//g, '-')}.pdf`);
+      
+    } catch (error) {
+      console.error('Erreur lors de la génération du PDF:', error);
+      alert("Erreur lors de la génération du PDF. Veuillez réessayer.");
+    }
   };
 
   return (
@@ -55,7 +115,7 @@ export default function InvoicePDF({ invoice }: InvoicePDFProps) {
       </div>
 
       {/* Invoice Content */}
-      <Card className="print:shadow-none print:border-none">
+      <Card className="print:shadow-none print:border-none invoice-content">
         <CardContent className="p-8">
           {/* Header */}
           <div className="flex justify-between items-start mb-8">

@@ -108,8 +108,13 @@ Preferred communication style: Simple, everyday language.
 - **Settings Management**: User preferences for currency and language
 - **Export/Backup**: Data export functionality for business continuity
 
-## Recent Changes (January 24, 2025)
+## Recent Changes (January 25, 2025)
 - **Migration Complete**: Successfully migrated from Replit Agent to standard Replit environment
+- **PDF Download Feature**: Implemented functional PDF generation for invoices using jsPDF and html2canvas
+- **Database Setup**: PostgreSQL database provisioned and schema deployed successfully
+- **Application Running**: Server started on port 5000 with all routes functional
+- **Authentication Working**: Local authentication with user registration and profile completion
+- **Full CRUD Operations**: All business entities (clients, products, categories, invoices) working properly
 - **New Tax Logic Implementation**: TVA now calculated exclusively at invoice level instead of product level
 - **Database Schema Restructuring**: Products store only `priceHT` (price excluding tax), removed tax fields from products
 - **Dynamic Invoice VAT**: Invoices now support 6 configurable tax rates (3%, 5%, 10%, 15%, 18%, 21%) with proper calculation
