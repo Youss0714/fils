@@ -252,6 +252,9 @@ export class DatabaseStorage implements IStorage {
         invoiceId: newInvoice.id,
       }));
       await db.insert(invoiceItems).values(itemsWithInvoiceId);
+
+      // Update stock immediately after creating invoice
+      await this.updateStockAfterInvoiceCreation(itemsWithInvoiceId, invoice.userId);
     }
 
     return newInvoice;
@@ -274,6 +277,22 @@ export class DatabaseStorage implements IStorage {
     }
 
     return updatedInvoice;
+  }
+
+  // Helper function to update stock after invoice creation
+  private async updateStockAfterInvoiceCreation(items: InsertInvoiceItem[], userId: string): Promise<void> {
+    // Update stock for each product (prevent negative stock)
+    for (const item of items.filter(item => item.productId)) {
+      await db
+        .update(products)
+        .set({
+          stock: sql`GREATEST(0, ${products.stock} - ${item.quantity})`
+        })
+        .where(and(
+          eq(products.id, item.productId!),
+          eq(products.userId, userId)
+        ));
+    }
   }
 
   // Helper function to create sales from invoice items
