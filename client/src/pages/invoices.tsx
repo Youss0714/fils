@@ -24,6 +24,8 @@ import {
 } from "lucide-react";
 import { insertInvoiceSchema, insertInvoiceItemSchema, TAX_RATES, INVOICE_STATUS, type Invoice, type InsertInvoice, type Client, type Product } from "@shared/schema";
 import { SimpleProductSelect } from "@/components/simple-product-select";
+import { ClientSearch } from "@/components/client-search";
+import { ProductSearch } from "@/components/product-search";
 import { useForm, useFieldArray } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
@@ -493,23 +495,20 @@ export default function Invoices() {
                     render={({ field }) => (
                       <FormItem>
                         <FormLabel>Client *</FormLabel>
-                        <Select 
-                          onValueChange={(value) => field.onChange(parseInt(value))}
-                          value={field.value ? field.value.toString() : ""}
-                        >
-                          <FormControl>
-                            <SelectTrigger>
-                              <SelectValue placeholder="Sélectionner un client" />
-                            </SelectTrigger>
-                          </FormControl>
-                          <SelectContent>
-                            {clients.map((client: Client) => (
-                              <SelectItem key={client.id} value={client.id.toString()}>
-                                {client.name}
-                              </SelectItem>
-                            ))}
-                          </SelectContent>
-                        </Select>
+                        <FormControl>
+                          <ClientSearch
+                            value={field.value}
+                            onChange={field.onChange}
+                            placeholder="Rechercher ou créer un client..."
+                            onCreateNew={(name) => {
+                              // TODO: Implement quick client creation
+                              toast({
+                                title: "Fonction à venir",
+                                description: `Création rapide de "${name}" sera bientôt disponible.`,
+                              });
+                            }}
+                          />
+                        </FormControl>
                         <FormMessage />
                       </FormItem>
                     )}
@@ -606,26 +605,21 @@ export default function Invoices() {
                             <tr key={field.id}>
                               <td className="px-4 py-2">
                                 <div className="space-y-2">
-                                  <SimpleProductSelect
-                                    products={products}
+                                  <ProductSearch
                                     value={form.watch(`items.${index}.productId`)}
                                     onChange={(productId) => {
-                                      if (productId) {
-                                        const product = products.find(p => p.id === productId);
-                                        if (product) {
-                                          form.setValue(`items.${index}.productId`, productId);
-                                          form.setValue(`items.${index}.productName`, product.name);
-                                          form.setValue(`items.${index}.priceHT`, product.priceHT);
-                                          // Trigger form validation and updates
-                                          form.trigger([`items.${index}.productName`, `items.${index}.priceHT`]);
-                                        }
-                                      } else {
-                                        form.setValue(`items.${index}.productId`, undefined);
-                                        form.setValue(`items.${index}.productName`, "");
-                                        form.setValue(`items.${index}.priceHT`, "");
-                                      }
+                                      form.setValue(`items.${index}.productId`, productId);
+                                    }}
+                                    onProductSelect={(product) => {
+                                      form.setValue(`items.${index}.productName`, product.name);
+                                      form.setValue(`items.${index}.priceHT`, product.priceHT);
+                                      form.trigger([`items.${index}.productName`, `items.${index}.priceHT`]);
                                     }}
                                     placeholder="Rechercher un produit..."
+                                    onCreateNew={(name) => {
+                                      form.setValue(`items.${index}.productName`, name);
+                                      form.setValue(`items.${index}.productId`, undefined);
+                                    }}
                                   />
                                   <FormField
                                     control={form.control}
@@ -633,7 +627,7 @@ export default function Invoices() {
                                     render={({ field }) => (
                                       <FormItem>
                                         <FormControl>
-                                          <Input placeholder="Produit personnalisé" {...field} />
+                                          <Input placeholder="Nom du produit/service" {...field} />
                                         </FormControl>
                                         <FormMessage />
                                       </FormItem>

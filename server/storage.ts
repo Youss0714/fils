@@ -22,7 +22,7 @@ import {
   type InsertSale,
 } from "@shared/schema";
 import { db } from "./db";
-import { eq, desc, and, sum, count, sql } from "drizzle-orm";
+import { eq, desc, and, sum, count, sql, like, or } from "drizzle-orm";
 
 export interface IStorage {
   // User operations
@@ -39,6 +39,7 @@ export interface IStorage {
   createClient(client: InsertClient): Promise<Client>;
   updateClient(id: number, client: Partial<InsertClient>, userId: string): Promise<Client>;
   deleteClient(id: number, userId: string): Promise<void>;
+  searchClients(userId: string, query: string): Promise<Client[]>;
   
   // Product operations
   getProducts(userId: string): Promise<Product[]>;
@@ -46,6 +47,7 @@ export interface IStorage {
   createProduct(product: InsertProduct): Promise<Product>;
   updateProduct(id: number, product: Partial<InsertProduct>, userId: string): Promise<Product>;
   deleteProduct(id: number, userId: string): Promise<void>;
+  searchProducts(userId: string, query: string): Promise<Product[]>;
   
   // Category operations
   getCategories(userId: string): Promise<Category[]>;
@@ -159,6 +161,21 @@ export class DatabaseStorage implements IStorage {
     await db.delete(clients).where(and(eq(clients.id, id), eq(clients.userId, userId)));
   }
 
+  async searchClients(userId: string, query: string): Promise<Client[]> {
+    const searchTerm = `%${query.toLowerCase()}%`;
+    return db.select().from(clients)
+      .where(and(
+        eq(clients.userId, userId),
+        or(
+          like(sql`LOWER(${clients.name})`, searchTerm),
+          like(sql`LOWER(${clients.email})`, searchTerm),
+          like(sql`LOWER(${clients.company})`, searchTerm)
+        )
+      ))
+      .orderBy(desc(clients.createdAt))
+      .limit(10);
+  }
+
   // Product operations
   async getProducts(userId: string): Promise<Product[]> {
     return db.select().from(products).where(eq(products.userId, userId)).orderBy(desc(products.createdAt));
@@ -185,6 +202,20 @@ export class DatabaseStorage implements IStorage {
 
   async deleteProduct(id: number, userId: string): Promise<void> {
     await db.delete(products).where(and(eq(products.id, id), eq(products.userId, userId)));
+  }
+
+  async searchProducts(userId: string, query: string): Promise<Product[]> {
+    const searchTerm = `%${query.toLowerCase()}%`;
+    return db.select().from(products)
+      .where(and(
+        eq(products.userId, userId),
+        or(
+          like(sql`LOWER(${products.name})`, searchTerm),
+          like(sql`LOWER(${products.description})`, searchTerm)
+        )
+      ))
+      .orderBy(desc(products.createdAt))
+      .limit(10);
   }
 
   // Category operations
