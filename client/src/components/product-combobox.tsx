@@ -38,7 +38,8 @@ export function ProductCombobox({
   const selectedProduct = products.find((product) => product.id === value);
 
   const filteredProducts = products.filter((product) =>
-    product.name.toLowerCase().includes(searchValue.toLowerCase())
+    product.name.toLowerCase().includes(searchValue.toLowerCase()) ||
+    product.id.toString().includes(searchValue)
   );
 
   return (
@@ -68,9 +69,10 @@ export function ProductCombobox({
               {filteredProducts.map((product) => (
                 <CommandItem
                   key={product.id}
-                  value={product.name}
-                  onSelect={() => {
-                    onChange(product.id === value ? undefined : product.id);
+                  value={product.id.toString()}
+                  onSelect={(currentValue) => {
+                    const productId = parseInt(currentValue);
+                    onChange(productId === value ? undefined : productId);
                     setOpen(false);
                     setSearchValue("");
                   }}
