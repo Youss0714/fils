@@ -196,13 +196,17 @@ export default function InvoicePDF({ invoice, user }: InvoicePDFProps) {
                 <div className="flex justify-between">
                   <span>Statut :</span>
                   <span className={`font-medium ${
-                    invoice.status === 'paid' ? 'text-green-600' :
-                    invoice.status === 'pending' ? 'text-yellow-600' :
+                    invoice.status === 'payee' ? 'text-green-600' :
+                    invoice.status === 'en_attente' ? 'text-yellow-600' :
                     'text-red-600'
                   }`}>
-                    {invoice.status === 'paid' ? 'Payée' :
-                     invoice.status === 'pending' ? 'En attente' :
-                     'En retard'}
+                    {invoice.status === 'payee' ? 'Payée' :
+                     invoice.status === 'en_attente' ? 'En attente' :
+                     invoice.status === 'en_retard' ? 'En retard' :
+                     invoice.status === 'annulee' ? 'Annulée' :
+                     invoice.status === 'brouillon' ? 'Brouillon' :
+                     invoice.status === 'envoyee' ? 'Envoyée' :
+                     'Statut inconnu'}
                   </span>
                 </div>
               </div>

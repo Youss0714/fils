@@ -19,7 +19,7 @@ import {
   AlertCircle
 } from "lucide-react";
 import { Link } from "wouter";
-import { type Invoice, type Client, type InvoiceItem } from "@shared/schema";
+import { type Invoice, type Client, type InvoiceItem, INVOICE_STATUS } from "@shared/schema";
 
 export default function InvoiceDetail() {
   const { toast } = useToast();
@@ -126,6 +126,15 @@ export default function InvoiceDetail() {
   };
 
   const getStatusBadge = (status: string) => {
+    const statusInfo = INVOICE_STATUS.find(s => s.value === status);
+    if (statusInfo) {
+      return (
+        <Badge className={statusInfo.color}>
+          {statusInfo.icon} {statusInfo.label}
+        </Badge>
+      );
+    }
+    // Fallback for old statuses
     switch (status) {
       case 'paid':
         return <Badge className="bg-green-100 text-green-800"><CheckCircle className="w-3 h-3 mr-1" />Payée</Badge>;
@@ -210,9 +219,9 @@ export default function InvoiceDetail() {
           </div>
 
           <div className="flex items-center space-x-2">
-            {invoice.status !== 'paid' && (
+            {invoice.status !== 'payee' && (
               <Button
-                onClick={() => updateStatusMutation.mutate({ id: invoice.id, status: 'paid' })}
+                onClick={() => updateStatusMutation.mutate({ id: invoice.id, status: 'payee' })}
                 disabled={updateStatusMutation.isPending}
                 className="bg-green-600 hover:bg-green-700"
               >
