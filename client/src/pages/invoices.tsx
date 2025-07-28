@@ -93,12 +93,12 @@ export default function Invoices() {
   const form = useForm<CreateInvoiceForm>({
     resolver: zodResolver(createInvoiceFormSchema),
     defaultValues: {
-      clientId: 0,
+      clientId: undefined as any,
       status: "en_attente",
       tvaRate: "18.00",
       dueDate: "",
       notes: "",
-      items: [{ productId: 0, productName: "", quantity: 1, priceHT: "" }],
+      items: [{ productId: undefined, productName: "", quantity: 1, priceHT: "" }],
     },
   });
 
@@ -495,7 +495,7 @@ export default function Invoices() {
                         <FormLabel>Client *</FormLabel>
                         <Select 
                           onValueChange={(value) => field.onChange(parseInt(value))}
-                          value={field.value?.toString() || ""}
+                          value={field.value ? field.value.toString() : ""}
                         >
                           <FormControl>
                             <SelectTrigger>
@@ -696,7 +696,7 @@ export default function Invoices() {
                       <Button
                         type="button"
                         variant="ghost"
-                        onClick={() => append({ productId: 0, productName: "", quantity: 1, priceHT: "" })}
+                        onClick={() => append({ productId: undefined, productName: "", quantity: 1, priceHT: "" })}
                       >
                         <Plus className="mr-1 w-4 h-4" />
                         Ajouter une ligne
