@@ -21,22 +21,19 @@ export function SimpleProductSelect({
   return (
     <Select 
       onValueChange={(selectedValue) => {
-        if (selectedValue === "none") {
+        if (selectedValue === "") {
           onChange(undefined);
         } else {
           onChange(parseInt(selectedValue));
         }
       }}
-      value={value ? value.toString() : "none"}
+      value={value ? value.toString() : ""}
       disabled={disabled}
     >
       <SelectTrigger className="w-full">
         <SelectValue placeholder={placeholder} />
       </SelectTrigger>
       <SelectContent>
-        <SelectItem value="none">
-          <span className="text-gray-500">{placeholder}</span>
-        </SelectItem>
         {products.map((product) => (
           <SelectItem key={product.id} value={product.id.toString()}>
             <div className="flex flex-col">

@@ -23,7 +23,7 @@ import {
   Minus
 } from "lucide-react";
 import { insertInvoiceSchema, insertInvoiceItemSchema, TAX_RATES, INVOICE_STATUS, type Invoice, type InsertInvoice, type Client, type Product } from "@shared/schema";
-import { ProductCombobox } from "@/components/product-combobox";
+import { SimpleProductSelect } from "@/components/simple-product-select";
 import { useForm, useFieldArray } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
@@ -606,14 +606,23 @@ export default function Invoices() {
                             <tr key={field.id}>
                               <td className="px-4 py-2">
                                 <div className="space-y-2">
-                                  <ProductCombobox
+                                  <SimpleProductSelect
                                     products={products}
                                     value={form.watch(`items.${index}.productId`)}
                                     onChange={(productId) => {
                                       if (productId) {
-                                        form.setValue(`items.${index}.productId`, productId);
-                                        form.setValue(`items.${index}.productName`, getProductName(productId));
-                                        form.setValue(`items.${index}.priceHT`, getProductPrice(productId));
+                                        const product = products.find(p => p.id === productId);
+                                        if (product) {
+                                          form.setValue(`items.${index}.productId`, productId);
+                                          form.setValue(`items.${index}.productName`, product.name);
+                                          form.setValue(`items.${index}.priceHT`, product.priceHT);
+                                          // Trigger form validation and updates
+                                          form.trigger([`items.${index}.productName`, `items.${index}.priceHT`]);
+                                        }
+                                      } else {
+                                        form.setValue(`items.${index}.productId`, undefined);
+                                        form.setValue(`items.${index}.productName`, "");
+                                        form.setValue(`items.${index}.priceHT`, "");
                                       }
                                     }}
                                     placeholder="Rechercher un produit..."
