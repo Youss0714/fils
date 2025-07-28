@@ -72,7 +72,19 @@ export function ClientSearch({
     retry: false,
   });
 
-  const selectedClient = clients.find((client) => client.id === value);
+  // Fetch selected client separately to ensure it's always available for display
+  const { data: selectedClient } = useQuery<Client>({
+    queryKey: ["/api/clients", value],
+    queryFn: async () => {
+      const response = await fetch(`/api/clients/${value}`, {
+        credentials: 'include'
+      });
+      if (!response.ok) throw new Error('Failed to fetch client');
+      return response.json();
+    },
+    enabled: !!value,
+    retry: false,
+  });
 
   const handleSelect = (clientId: string) => {
     if (clientId === "create-new" && onCreateNew && searchQuery) {
@@ -82,7 +94,7 @@ export function ClientSearch({
       return;
     }
 
-    const id = clientId ? parseInt(clientId) : undefined;
+    const id = clientId && clientId !== "" ? parseInt(clientId) : undefined;
     onChange(id);
     setOpen(false);
     setSearchQuery("");
@@ -151,7 +163,9 @@ export function ClientSearch({
                   <CommandItem
                     key={client.id}
                     value={client.id.toString()}
-                    onSelect={handleSelect}
+                    onSelect={(currentValue) => {
+                      handleSelect(currentValue);
+                    }}
                   >
                     <Check
                       className={cn(

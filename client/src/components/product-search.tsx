@@ -74,7 +74,19 @@ export function ProductSearch({
     retry: false,
   });
 
-  const selectedProduct = products.find((product) => product.id === value);
+  // Fetch selected product separately to ensure it's always available for display
+  const { data: selectedProduct } = useQuery<Product>({
+    queryKey: ["/api/products", value],
+    queryFn: async () => {
+      const response = await fetch(`/api/products/${value}`, {
+        credentials: 'include'
+      });
+      if (!response.ok) throw new Error('Failed to fetch product');
+      return response.json();
+    },
+    enabled: !!value,
+    retry: false,
+  });
 
   const formatCurrency = (amount: string | number) => {
     const numAmount = typeof amount === 'string' ? parseFloat(amount) : amount;
@@ -89,7 +101,7 @@ export function ProductSearch({
       return;
     }
 
-    const id = productId ? parseInt(productId) : undefined;
+    const id = productId && productId !== "" ? parseInt(productId) : undefined;
     const product = products.find(p => p.id === id);
     
     onChange(id);
@@ -165,7 +177,9 @@ export function ProductSearch({
                   <CommandItem
                     key={product.id}
                     value={product.id.toString()}
-                    onSelect={handleSelect}
+                    onSelect={(currentValue) => {
+                      handleSelect(currentValue);
+                    }}
                   >
                     <Check
                       className={cn(
