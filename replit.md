@@ -108,7 +108,7 @@ Preferred communication style: Simple, everyday language.
 - **Settings Management**: User preferences for currency and language
 - **Export/Backup**: Data export functionality for business continuity
 
-## Recent Changes (January 25, 2025)
+## Recent Changes (January 28, 2025)
 - **Migration Complete**: Successfully migrated from Replit Agent to standard Replit environment
 - **PDF Download Feature**: Implemented functional PDF generation for invoices using jsPDF and html2canvas
 - **Database Setup**: PostgreSQL database provisioned and schema deployed successfully
@@ -127,5 +127,9 @@ Preferred communication style: Simple, everyday language.
 - **Currency Display Fix**: Corrected dashboard invoice amounts to show proper currency formatting (XOF/GHS/EUR)
 - **Data Integrity**: Fixed deletion cascade for invoices with associated sales records
 - **Stock Management Verification**: Confirmed automatic stock deduction is working correctly across multiple test scenarios
+- **Migration to Replit Completed**: Successfully migrated from Replit Agent to standard Replit environment (January 28, 2025)
+- **Database Provisioning**: PostgreSQL database created and schema deployed automatically
+- **Product Selection Fix**: Resolved invoice form product selection issue by replacing ProductCombobox with SimpleProductSelect component
+- **Form Validation Enhancement**: Improved form field updates and validation triggers for invoice creation
 
 The application follows modern web development best practices with a focus on type safety, user experience, and maintainable code architecture adapted for African markets.
