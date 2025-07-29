@@ -14,7 +14,7 @@ export default function Landing() {
             </div>
           </div>
           <h1 className="text-5xl font-bold text-gray-900 mb-6">
-            GestionPro
+            YGestion
           </h1>
           <p className="text-xl text-gray-600 mb-8 max-w-2xl mx-auto">
             Application complète de gestion commerciale pour optimiser vos ventes, 
@@ -38,7 +38,7 @@ export default function Landing() {
             </Button>
           </div>
           <p className="text-sm text-gray-500 mt-4">
-            Nouveau sur GestionPro ? Créez votre compte et complétez votre profil pour commencer.
+            Nouveau sur YGestion ? Créez votre compte et complétez votre profil pour commencer.
           </p>
         </div>
 
@@ -96,7 +96,7 @@ export default function Landing() {
         {/* Benefits Section */}
         <div className="bg-white rounded-2xl shadow-lg p-8">
           <h2 className="text-3xl font-bold text-center text-gray-900 mb-8">
-            Pourquoi choisir GestionPro ?
+            Pourquoi choisir YGestion ?
           </h2>
           <div className="grid md:grid-cols-3 gap-8">
             <div className="text-center">
@@ -129,7 +129,7 @@ export default function Landing() {
             Prêt à optimiser votre gestion commerciale ?
           </h2>
           <p className="text-gray-600 mb-8">
-            Rejoignez les entreprises qui font confiance à GestionPro pour leur croissance.
+            Rejoignez les entreprises qui font confiance à YGestion pour leur croissance.
           </p>
           <Button 
             size="lg"

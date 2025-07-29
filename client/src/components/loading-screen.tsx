@@ -63,7 +63,7 @@ export default function LoadingScreen({ onComplete }: LoadingScreenProps) {
 
         {/* App Title */}
         <h1 className="text-4xl font-bold text-gray-800 mb-2 animate-fade-in">
-          GestionPro
+          YGestion
         </h1>
         <p className="text-lg text-gray-600 mb-8 animate-fade-in-delay">
           {settings?.language === 'en' ? 'Simplified business management' : 'Gestion d\'entreprise simplifiée'}

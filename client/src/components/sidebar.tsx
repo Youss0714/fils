@@ -47,7 +47,7 @@ export default function Sidebar() {
             <BarChart3 className="text-white text-lg" />
           </div>
           <div>
-            <h1 className="text-xl font-bold text-gray-900">GestionPro</h1>
+            <h1 className="text-xl font-bold text-gray-900">YGestion</h1>
             <p className="text-sm text-gray-500">v1.0.0</p>
           </div>
         </div>

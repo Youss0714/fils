@@ -1,8 +1,8 @@
-# GestionPro - Business Management Application
+# YGestion - Business Management Application
 
 ## Overview
 
-GestionPro is a comprehensive business management application built with React, Express, and PostgreSQL. It provides a complete solution for managing clients, products, categories, invoices, and sales with a modern, responsive interface using shadcn/ui components.
+YGestion is a comprehensive business management application built with React, Express, and PostgreSQL. It provides a complete solution for managing clients, products, categories, invoices, and sales with a modern, responsive interface using shadcn/ui components.
 
 ## User Preferences
 
@@ -154,12 +154,17 @@ Preferred communication style: Simple, everyday language.
   - Applied translations to table headers, status badges, and common UI elements
   - English and French languages now properly applied throughout the application interface
 - **Startup Loading Animation**: Added animated splash screen with logo (January 29, 2025)
-  - Created LoadingScreen component with animated GestionPro logo and progress bar
+  - Created LoadingScreen component with animated YGestion logo and progress bar
   - Added smooth fade-in animations and rotating logo elements with CSS keyframes
   - Integrated multi-language support for loading text (English/French)
   - Implemented session-based loading screen display (shows once per session)
   - Enhanced user experience with professional startup animation and branding
   - Fixed animation display logic and set duration to 10 seconds as requested
   - Added proper fade-out transition and improved visibility management
+- **Application Rebranding**: Changed application name from GestionPro to YGestion (January 29, 2025)
+  - Updated all references in loading screen, sidebar, landing page, auth pages
+  - Changed application title throughout the user interface
+  - Updated authentication session secret and documentation
+  - Maintained all functionality while applying new branding consistently
 
 The application follows modern web development best practices with a focus on type safety, user experience, and maintainable code architecture adapted for African markets.

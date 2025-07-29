@@ -31,7 +31,7 @@ async function comparePasswords(supplied: string, stored: string) {
 export function setupAuth(app: Express) {
   // Simple session configuration using memory store
   const sessionSettings: session.SessionOptions = {
-    secret: process.env.SESSION_SECRET || "gestionpro-local-auth-secret",
+    secret: process.env.SESSION_SECRET || "ygestion-local-auth-secret",
     resave: false,
     saveUninitialized: false,
     cookie: {
