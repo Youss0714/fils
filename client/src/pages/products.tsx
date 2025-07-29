@@ -68,6 +68,7 @@ export default function Products() {
       description: "",
       priceHT: "",
       stock: 0,
+      alertStock: 10,
       categoryId: undefined,
     },
   });
@@ -179,6 +180,7 @@ export default function Products() {
         description: product.description || "",
         priceHT: product.priceHT,
         stock: product.stock || 0,
+        alertStock: product.alertStock || 10,
         categoryId: product.categoryId || undefined,
       });
     } else {
@@ -188,6 +190,7 @@ export default function Products() {
         description: "",
         priceHT: "",
         stock: 0,
+        alertStock: 10,
         categoryId: undefined,
       });
     }
@@ -218,11 +221,12 @@ export default function Products() {
     return formatPrice(parseFloat(price), currency);
   };
 
-  const getStockStatus = (stock: number | null) => {
+  const getStockStatus = (stock: number | null, alertStock: number | null = 10) => {
     const stockValue = stock || 0;
+    const alertValue = alertStock || 10;
     if (stockValue === 0) {
       return { label: "Rupture", variant: "destructive" as const, icon: AlertTriangle };
-    } else if (stockValue < 10) {
+    } else if (stockValue <= alertValue) {
       return { label: "Stock faible", variant: "secondary" as const, icon: AlertTriangle };
     }
     return { label: "En stock", variant: "secondary" as const, icon: null };
@@ -296,7 +300,7 @@ export default function Products() {
         ) : (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
             {filteredProducts.map((product: Product) => {
-              const stockStatus = getStockStatus(product.stock);
+              const stockStatus = getStockStatus(product.stock, product.alertStock);
               const StockIcon = stockStatus.icon;
               
               return (
@@ -345,9 +349,10 @@ export default function Products() {
                         <p className="text-lg font-semibold text-gray-900">
                           {formatProductPrice(product.priceHT)} HT
                         </p>
-                        <p className="text-sm text-gray-500">
-                          Stock: {product.stock || 0} unités
-                        </p>
+                        <div className="text-sm text-gray-500 space-y-1">
+                          <p>Stock: {product.stock || 0} unités</p>
+                          <p>Seuil d'alerte: {product.alertStock || 10} unités</p>
+                        </div>
                       </div>
                     </div>
                     <div className="pt-2 text-xs text-gray-500">
@@ -425,10 +430,41 @@ export default function Products() {
 
                   <FormField
                     control={form.control}
+                    name="categoryId"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Catégorie</FormLabel>
+                        <Select 
+                          onValueChange={(value) => field.onChange(value === "none" ? undefined : value ? parseInt(value) : undefined)}
+                          value={field.value?.toString() || "none"}
+                        >
+                          <FormControl>
+                            <SelectTrigger>
+                              <SelectValue placeholder="Sélectionner une catégorie" />
+                            </SelectTrigger>
+                          </FormControl>
+                          <SelectContent>
+                            <SelectItem value="none">Aucune catégorie</SelectItem>
+                            {categories.map((category: Category) => (
+                              <SelectItem key={category.id} value={category.id.toString()}>
+                                {category.name}
+                              </SelectItem>
+                            ))}
+                          </SelectContent>
+                        </Select>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                </div>
+
+                <div className="grid grid-cols-2 gap-4">
+                  <FormField
+                    control={form.control}
                     name="stock"
                     render={({ field }) => (
                       <FormItem>
-                        <FormLabel>Stock</FormLabel>
+                        <FormLabel>Stock actuel</FormLabel>
                         <FormControl>
                           <Input 
                             type="number" 
@@ -442,36 +478,29 @@ export default function Products() {
                       </FormItem>
                     )}
                   />
+
+                  <FormField
+                    control={form.control}
+                    name="alertStock"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Seuil d'alerte stock</FormLabel>
+                        <FormControl>
+                          <Input 
+                            type="number" 
+                            placeholder="10" 
+                            {...field}
+                            value={field.value || 10}
+                            onChange={(e) => field.onChange(parseInt(e.target.value) || 10)}
+                          />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
                 </div>
 
-                <FormField
-                  control={form.control}
-                  name="categoryId"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Catégorie</FormLabel>
-                      <Select 
-                        onValueChange={(value) => field.onChange(value === "none" ? undefined : value ? parseInt(value) : undefined)}
-                        value={field.value?.toString() || "none"}
-                      >
-                        <FormControl>
-                          <SelectTrigger>
-                            <SelectValue placeholder="Sélectionner une catégorie" />
-                          </SelectTrigger>
-                        </FormControl>
-                        <SelectContent>
-                          <SelectItem value="none">Aucune catégorie</SelectItem>
-                          {categories.map((category: Category) => (
-                            <SelectItem key={category.id} value={category.id.toString()}>
-                              {category.name}
-                            </SelectItem>
-                          ))}
-                        </SelectContent>
-                      </Select>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
+
 
 
 

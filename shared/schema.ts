@@ -69,6 +69,7 @@ export const products = pgTable("products", {
   description: text("description"),
   priceHT: decimal("price_ht", { precision: 10, scale: 2 }).notNull(), // Prix HT uniquement
   stock: integer("stock").default(0),
+  alertStock: integer("alert_stock").default(10), // Seuil d'alerte pour le stock
   categoryId: integer("category_id").references(() => categories.id),
   userId: varchar("user_id").notNull().references(() => users.id),
   createdAt: timestamp("created_at").defaultNow(),

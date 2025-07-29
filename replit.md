@@ -108,7 +108,7 @@ Preferred communication style: Simple, everyday language.
 - **Settings Management**: User preferences for currency and language
 - **Export/Backup**: Data export functionality for business continuity
 
-## Recent Changes (January 28, 2025)
+## Recent Changes (January 29, 2025)
 - **Migration Complete**: Successfully migrated from Replit Agent to standard Replit environment
 - **PDF Download Feature**: Implemented functional PDF generation for invoices using jsPDF and html2canvas
 - **Database Setup**: PostgreSQL database provisioned and schema deployed successfully
@@ -131,5 +131,11 @@ Preferred communication style: Simple, everyday language.
 - **Database Provisioning**: PostgreSQL database created and schema deployed automatically
 - **Product Selection Fix**: Resolved invoice form product selection issue by replacing ProductCombobox with SimpleProductSelect component
 - **Form Validation Enhancement**: Improved form field updates and validation triggers for invoice creation
+- **Alert Stock Feature Added**: Implemented customizable stock alert thresholds for products (January 29, 2025)
+  - Added `alertStock` field to products database schema with default value of 10
+  - Updated product forms to include alert stock configuration
+  - Enhanced stock status logic to use custom alert thresholds instead of fixed values
+  - Product cards now display both current stock and alert threshold information
+  - Stock status badges now accurately reflect custom alert levels per product
 
 The application follows modern web development best practices with a focus on type safety, user experience, and maintainable code architecture adapted for African markets.
