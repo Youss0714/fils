@@ -3,6 +3,8 @@ import { useEffect } from "react";
 import { useAuth } from "@/hooks/useAuth";
 import { useToast } from "@/hooks/use-toast";
 import { isUnauthorizedError } from "@/lib/authUtils";
+import { useTranslation } from "@/lib/i18n";
+import { useSettings } from "@/hooks/useSettings";
 import Header from "@/components/header";
 import StatsCard from "@/components/stats-card";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -29,6 +31,8 @@ export default function Dashboard() {
   const { toast } = useToast();
   const { isAuthenticated, isLoading } = useAuth();
   const [location, setLocation] = useLocation();
+  const { settings } = useSettings();
+  const { t } = useTranslation(settings?.language);
 
   // Redirect to home if not authenticated
   useEffect(() => {
@@ -123,11 +127,11 @@ export default function Dashboard() {
   const getStatusBadge = (status: string) => {
     switch (status) {
       case 'paid':
-        return <Badge variant="secondary" className="bg-green-100 text-green-800">Payée</Badge>;
+        return <Badge variant="secondary" className="bg-green-100 text-green-800">{t('paid')}</Badge>;
       case 'pending':
-        return <Badge variant="secondary" className="bg-yellow-100 text-yellow-800">En attente</Badge>;
+        return <Badge variant="secondary" className="bg-yellow-100 text-yellow-800">{t('pending')}</Badge>;
       case 'overdue':
-        return <Badge variant="secondary" className="bg-red-100 text-red-800">En retard</Badge>;
+        return <Badge variant="secondary" className="bg-red-100 text-red-800">{t('overdue')}</Badge>;
       default:
         return <Badge variant="secondary">{status}</Badge>;
     }
@@ -140,10 +144,10 @@ export default function Dashboard() {
   return (
     <div className="flex-1 flex flex-col overflow-hidden">
       <Header 
-        title="Tableau de Bord" 
-        subtitle="Vue d'ensemble de votre activité commerciale"
+        title={t('dashboard')}
+        subtitle={settings?.language === 'en' ? "Overview of your business activity" : "Vue d'ensemble de votre activité commerciale"}
         action={{
-          label: "Nouvelle Facture",
+          label: t('newInvoice'),
           onClick: () => setLocation("/invoices")
         }}
       />
@@ -152,33 +156,35 @@ export default function Dashboard() {
         {/* Stats Cards */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
           <StatsCard
-            title="Chiffre d'Affaires"
+            title={t('revenue')}
             value={formatCurrency((stats as any)?.revenue || 0)}
-            change="+12% ce mois"
+            change={settings?.language === 'en' ? "+12% this month" : "+12% ce mois"}
             changeType="positive"
             icon={TrendingUp}
             iconColor="bg-green-50 text-green-500"
           />
           <StatsCard
-            title="Factures"
+            title={t('invoiceCount')}
             value={(stats as any)?.invoiceCount || 0}
-            change="+8 cette semaine"
+            change={settings?.language === 'en' ? "+8 this week" : "+8 cette semaine"}
             changeType="positive"
             icon={FileText}
             iconColor="bg-blue-50 text-blue-500"
           />
           <StatsCard
-            title="Clients Actifs"
+            title={settings?.language === 'en' ? "Active Clients" : "Clients Actifs"}
             value={(stats as any)?.clientCount || 0}
-            change="+5 nouveaux"
+            change={settings?.language === 'en' ? "+5 new" : "+5 nouveaux"}
             changeType="positive"
             icon={Users}
             iconColor="bg-purple-50 text-purple-500"
           />
           <StatsCard
-            title="Produits"
+            title={t('productCount')}
             value={(stats as any)?.productCount || 0}
-            change={`${((stats as any)?.lowStockProducts || []).length} ruptures de stock`}
+            change={settings?.language === 'en' ? 
+              `${((stats as any)?.lowStockProducts || []).length} stock alerts` : 
+              `${((stats as any)?.lowStockProducts || []).length} ruptures de stock`}
             changeType={((stats as any)?.lowStockProducts || []).length > 0 ? "negative" : "neutral"}
             icon={Package}
             iconColor="bg-orange-50 text-orange-500"
@@ -192,10 +198,10 @@ export default function Dashboard() {
             <Card>
               <CardHeader>
                 <div className="flex items-center justify-between">
-                  <CardTitle>Factures Récentes</CardTitle>
+                  <CardTitle>{t('recentInvoices')}</CardTitle>
                   <Link href="/invoices">
                     <Button variant="ghost" size="sm">
-                      Voir toutes
+                      {settings?.language === 'en' ? "View All" : "Voir toutes"}
                     </Button>
                   </Link>
                 </div>
@@ -206,22 +212,22 @@ export default function Dashboard() {
                     <thead className="bg-gray-50">
                       <tr>
                         <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                          N° Facture
+                          {t('invoiceNumber')}
                         </th>
                         <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                          Client
+                          {t('client')}
                         </th>
                         <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                          Montant
+                          {settings?.language === 'en' ? "Amount" : "Montant"}
                         </th>
                         <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                          Statut
+                          {t('status')}
                         </th>
                         <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                          Date
+                          {settings?.language === 'en' ? "Date" : "Date"}
                         </th>
                         <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                          Actions
+                          {settings?.language === 'en' ? "Actions" : "Actions"}
                         </th>
                       </tr>
                     </thead>
@@ -229,7 +235,7 @@ export default function Dashboard() {
                       {((stats as any)?.recentInvoices || []).length === 0 ? (
                         <tr>
                           <td colSpan={6} className="px-6 py-4 text-center text-gray-500">
-                            Aucune facture trouvée
+                            {t('noData')}
                           </td>
                         </tr>
                       ) : (
@@ -239,7 +245,7 @@ export default function Dashboard() {
                               {invoice.number}
                             </td>
                             <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                              {invoice.client?.name || 'Client inconnu'}
+                              {invoice.client?.name || (settings?.language === 'en' ? 'Unknown client' : 'Client inconnu')}
                             </td>
                             <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
                               {formatCurrency(parseFloat(invoice.totalTTC || invoice.total || "0"))}

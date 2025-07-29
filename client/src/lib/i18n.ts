@@ -238,10 +238,10 @@ export const languages = [
   { value: "en", label: "English" },
 ];
 
-// Hook pour utiliser les traductions
+// Hook pour utiliser les traductions avec support des paramètres utilisateur
 export function useTranslation(language: Language = 'fr') {
   return {
-    t: (key: keyof Translations) => translations[language][key],
+    t: (key: keyof Translations) => translations[language][key] || translations['fr'][key] || key,
     language,
   };
 }

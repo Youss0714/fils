@@ -13,24 +13,30 @@ import {
 } from "lucide-react";
 import { Link, useLocation } from "wouter";
 import { useAuth } from "@/hooks/useAuth";
+import { useSettings } from "@/hooks/useSettings";
+import { useTranslation } from "@/lib/i18n";
 
-const navigation = [
-  { name: "Tableau de Bord", href: "/", icon: BarChart3 },
-  { name: "Clients", href: "/clients", icon: Users },
-  { name: "Produits", href: "/products", icon: Package },
-  { name: "Catégories", href: "/categories", icon: Tags },
-  { name: "Factures", href: "/invoices", icon: FileText },
-  { name: "Historique des Ventes", href: "/sales", icon: TrendingUp },
-];
 
-const secondaryNavigation = [
-  { name: "Paramètres", href: "/settings", icon: Settings },
-  { name: "Export/Sauvegarde", href: "/export", icon: Download },
-];
 
 export default function Sidebar() {
   const [location] = useLocation();
   const { user } = useAuth();
+  const { settings } = useSettings();
+  const { t } = useTranslation(settings?.language);
+
+  const navigation = [
+    { name: t('dashboard'), href: "/", icon: BarChart3 },
+    { name: t('clients'), href: "/clients", icon: Users },
+    { name: t('products'), href: "/products", icon: Package },
+    { name: t('categories'), href: "/categories", icon: Tags },
+    { name: t('invoices'), href: "/invoices", icon: FileText },
+    { name: t('sales'), href: "/sales", icon: TrendingUp },
+  ];
+
+  const secondaryNavigation = [
+    { name: t('settings'), href: "/settings", icon: Settings },
+    { name: t('export'), href: "/export", icon: Download },
+  ];
 
   return (
     <div className="w-64 bg-white shadow-lg border-r border-gray-200 flex flex-col">
