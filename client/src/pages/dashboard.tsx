@@ -9,7 +9,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { 
-  Euro, 
+  TrendingUp,
   FileText, 
   Users, 
   Package, 
@@ -156,7 +156,7 @@ export default function Dashboard() {
             value={formatCurrency((stats as any)?.revenue || 0)}
             change="+12% ce mois"
             changeType="positive"
-            icon={Euro}
+            icon={TrendingUp}
             iconColor="bg-green-50 text-green-500"
           />
           <StatsCard
