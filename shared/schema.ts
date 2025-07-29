@@ -219,6 +219,16 @@ export const insertClientSchema = createInsertSchema(clients).omit({
 export const insertProductSchema = createInsertSchema(products).omit({
   id: true,
   createdAt: true,
+}).extend({
+  priceHT: z.string().refine(
+    (val) => {
+      const price = parseFloat(val);
+      return !isNaN(price) && price > 0;
+    },
+    { message: "Le prix doit être supérieur à 0" }
+  ),
+  stock: z.number().min(0, "Le stock ne peut pas être négatif"),
+  alertStock: z.number().min(1, "Le seuil d'alerte doit être au moins de 1"),
 });
 
 export const insertInvoiceSchema = createInsertSchema(invoices).omit({
