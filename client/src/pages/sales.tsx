@@ -9,7 +9,7 @@ import {
   TrendingUp, 
   Calendar,
   Package,
-  Euro,
+
   Users,
   BarChart3
 } from "lucide-react";
@@ -53,10 +53,13 @@ export default function Sales() {
   });
 
   const formatCurrency = (amount: string | number) => {
+    const numAmount = typeof amount === 'string' ? parseFloat(amount) : amount;
+    // Utilise XOF par défaut pour les ventes
     return new Intl.NumberFormat('fr-FR', {
-      style: 'currency',
-      currency: 'EUR'
-    }).format(typeof amount === 'string' ? parseFloat(amount) : amount);
+      style: 'decimal',
+      minimumFractionDigits: 0,
+      maximumFractionDigits: 0,
+    }).format(numAmount) + ' F CFA';
   };
 
   const formatDate = (date: string | Date) => {
@@ -118,7 +121,7 @@ export default function Sales() {
                   </p>
                 </div>
                 <div className="w-12 h-12 bg-green-50 rounded-lg flex items-center justify-center">
-                  <Euro className="text-green-500 text-xl" />
+                  <TrendingUp className="text-green-500 text-xl" />
                 </div>
               </div>
             </CardContent>

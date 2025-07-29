@@ -142,5 +142,10 @@ Preferred communication style: Simple, everyday language.
   - Added HTML5 min attribute to price input field (min="0.01")
   - Added proper validation messages for negative prices
   - Stock and alert stock fields also validated for non-negative values
+- **Euro Currency Removal**: Completely removed Euro currency symbols from application (January 29, 2025)
+  - Removed EUR formatting from dashboard, invoices, sales, and PDF components
+  - Updated all formatCurrency functions to use only XOF (F CFA) and GHS (GH₵) currencies
+  - Replaced Euro icon with TrendingUp icon in sales statistics
+  - Application now exclusively supports African currencies (XOF and GHS) as intended
 
 The application follows modern web development best practices with a focus on type safety, user experience, and maintainable code architecture adapted for African markets.

@@ -105,15 +105,18 @@ export default function Dashboard() {
         maximumFractionDigits: 0,
       }).format(amount) + ' F CFA';
     } else if (currency === 'GHS') {
-      return new Intl.NumberFormat('en-GH', {
-        style: 'currency',
-        currency: 'GHS'
+      return 'GH₵ ' + new Intl.NumberFormat('en-US', {
+        style: 'decimal',
+        minimumFractionDigits: 2,
+        maximumFractionDigits: 2,
       }).format(amount);
     } else {
+      // Fallback pour XOF par défaut
       return new Intl.NumberFormat('fr-FR', {
-        style: 'currency',
-        currency: 'EUR'
-      }).format(amount);
+        style: 'decimal',
+        minimumFractionDigits: 0,
+        maximumFractionDigits: 0,
+      }).format(amount) + ' F CFA';
     }
   };
 

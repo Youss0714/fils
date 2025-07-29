@@ -252,10 +252,11 @@ export function formatPrice(amount: number | string, currency: string = 'XOF'): 
   
   switch (currency) {
     case 'XOF':
-      return `${numAmount.toLocaleString('fr-FR')} XOF`;
+      return `${numAmount.toLocaleString('fr-FR')} F CFA`;
     case 'GHS':
       return `GH₵ ${numAmount.toLocaleString('en-US', { minimumFractionDigits: 2 })}`;
     default:
-      return `${numAmount.toLocaleString()} ${currency}`;
+      // Fallback pour XOF par défaut
+      return `${numAmount.toLocaleString('fr-FR')} F CFA`;
   }
 }

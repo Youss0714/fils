@@ -249,10 +249,12 @@ export default function Invoices() {
   };
 
   const formatCurrency = (amount: string | number) => {
+    const numAmount = typeof amount === 'string' ? parseFloat(amount) : amount;
     return new Intl.NumberFormat('fr-FR', {
-      style: 'currency',
-      currency: 'EUR'
-    }).format(typeof amount === 'string' ? parseFloat(amount) : amount);
+      style: 'decimal',
+      minimumFractionDigits: 0,
+      maximumFractionDigits: 0,
+    }).format(numAmount) + ' F CFA';
   };
 
   const formatDate = (date: string | Date) => {

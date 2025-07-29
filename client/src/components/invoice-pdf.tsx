@@ -18,13 +18,11 @@ export default function InvoicePDF({ invoice, user }: InvoicePDFProps) {
     if (currency === 'XOF') {
       return `${numAmount.toLocaleString('fr-FR')} F CFA`;
     } else if (currency === 'GHS') {
-      return `GHS ${numAmount.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
+      return `GH₵ ${numAmount.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
     }
     
-    return new Intl.NumberFormat('fr-FR', {
-      style: 'currency',
-      currency: currency
-    }).format(numAmount);
+    // Fallback pour XOF par défaut
+    return `${numAmount.toLocaleString('fr-FR')} F CFA`;
   };
 
   const formatDate = (date: string | Date) => {
