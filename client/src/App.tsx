@@ -23,33 +23,29 @@ import Sidebar from "@/components/sidebar";
 
 function Router() {
   const { isAuthenticated, isLoading } = useAuth();
-  const [showLoadingScreen, setShowLoadingScreen] = useState(true);
-  const [hasShownLoading, setHasShownLoading] = useState(false);
+  const [showLoadingScreen, setShowLoadingScreen] = useState(() => {
+    // Check if we should show loading screen
+    return !sessionStorage.getItem('hasSeenLoading');
+  });
 
-  useEffect(() => {
-    // Only show loading screen once per session
-    const hasSeenLoading = sessionStorage.getItem('hasSeenLoading');
-    if (hasSeenLoading) {
-      setShowLoadingScreen(false);
-      setHasShownLoading(true);
-    }
-  }, []);
-
-  useEffect(() => {
-    // Mark loading as seen after auth check completes
-    if (!isLoading && showLoadingScreen && !hasShownLoading) {
-      setTimeout(() => {
-        sessionStorage.setItem('hasSeenLoading', 'true');
-        setHasShownLoading(true);
-      }, 100);
-    }
-  }, [isLoading, showLoadingScreen, hasShownLoading]);
-
-  if (showLoadingScreen && !hasShownLoading && !isLoading) {
+  // Show loading screen if not seen before
+  if (showLoadingScreen) {
     return (
       <LoadingScreen 
-        onComplete={() => setShowLoadingScreen(false)} 
+        onComplete={() => {
+          setShowLoadingScreen(false);
+          sessionStorage.setItem('hasSeenLoading', 'true');
+        }} 
       />
+    );
+  }
+
+  // Wait for auth to complete before showing main app
+  if (isLoading) {
+    return (
+      <div className="flex items-center justify-center min-h-screen">
+        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
+      </div>
     );
   }
 

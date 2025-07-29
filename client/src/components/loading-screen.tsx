@@ -8,8 +8,8 @@ interface LoadingScreenProps {
 }
 
 export default function LoadingScreen({ onComplete }: LoadingScreenProps) {
-  const [isVisible, setIsVisible] = useState(true);
   const [progress, setProgress] = useState(0);
+  const [isComplete, setIsComplete] = useState(false);
   const { settings } = useSettings();
   const { t } = useTranslation(settings?.language);
 
@@ -32,22 +32,19 @@ export default function LoadingScreen({ onComplete }: LoadingScreenProps) {
       if (currentStep >= totalSteps) {
         clearInterval(progressInterval);
         setProgress(100);
-        // Wait a bit before starting fade out
+        // Complete after showing 100% for a moment
         setTimeout(() => {
-          setIsVisible(false);
-          // Complete the loading after fade out animation
+          setIsComplete(true);
           setTimeout(onComplete, 500);
-        }, 300);
+        }, 500);
       }
     }, intervalTime);
 
     return () => clearInterval(progressInterval);
   }, [onComplete]);
 
-  if (!isVisible) return null;
-
   return (
-    <div className={`fixed inset-0 bg-gradient-to-br from-blue-50 to-indigo-100 flex items-center justify-center z-50 transition-opacity duration-500 ${!isVisible ? 'opacity-0' : 'opacity-100'}`}>
+    <div className={`fixed inset-0 bg-gradient-to-br from-blue-50 to-indigo-100 flex items-center justify-center z-50 transition-opacity duration-500 ${isComplete ? 'opacity-0' : 'opacity-100'}`}>
       <div className="text-center">
         {/* Logo Animation */}
         <div className="mb-8 relative">
