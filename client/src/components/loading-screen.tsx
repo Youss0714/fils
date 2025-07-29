@@ -14,22 +14,32 @@ export default function LoadingScreen({ onComplete }: LoadingScreenProps) {
   const { t } = useTranslation(settings?.language);
 
   useEffect(() => {
-    // Simulate loading progress
+    // Simulate loading progress over 10 seconds
+    const totalDuration = 10000; // 10 seconds
+    const intervalTime = 100; // Update every 100ms
+    const totalSteps = totalDuration / intervalTime;
+    let currentStep = 0;
+
     const progressInterval = setInterval(() => {
-      setProgress(prev => {
-        if (prev >= 100) {
-          clearInterval(progressInterval);
-          // Wait a bit before starting fade out
-          setTimeout(() => {
-            setIsVisible(false);
-            // Complete the loading after fade out animation
-            setTimeout(onComplete, 500);
-          }, 300);
-          return 100;
-        }
-        return prev + Math.random() * 15 + 5; // Random increment between 5-20
-      });
-    }, 150);
+      currentStep++;
+      const baseProgress = (currentStep / totalSteps) * 100;
+      // Add some randomness for more natural feel
+      const randomOffset = Math.random() * 3 - 1.5; // Random between -1.5 and 1.5
+      const newProgress = Math.min(100, Math.max(0, baseProgress + randomOffset));
+      
+      setProgress(newProgress);
+
+      if (currentStep >= totalSteps) {
+        clearInterval(progressInterval);
+        setProgress(100);
+        // Wait a bit before starting fade out
+        setTimeout(() => {
+          setIsVisible(false);
+          // Complete the loading after fade out animation
+          setTimeout(onComplete, 500);
+        }, 300);
+      }
+    }, intervalTime);
 
     return () => clearInterval(progressInterval);
   }, [onComplete]);
