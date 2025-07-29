@@ -23,11 +23,12 @@ import {
   AlertTriangle,
   CircleAlert
 } from "lucide-react";
-import { Link } from "wouter";
+import { Link, useLocation } from "wouter";
 
 export default function Dashboard() {
   const { toast } = useToast();
   const { isAuthenticated, isLoading } = useAuth();
+  const [location, setLocation] = useLocation();
 
   // Redirect to home if not authenticated
   useEffect(() => {
@@ -140,7 +141,7 @@ export default function Dashboard() {
         subtitle="Vue d'ensemble de votre activité commerciale"
         action={{
           label: "Nouvelle Facture",
-          onClick: () => window.location.href = "/invoices"
+          onClick: () => setLocation("/invoices")
         }}
       />
 
