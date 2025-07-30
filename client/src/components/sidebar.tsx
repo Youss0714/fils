@@ -9,7 +9,8 @@ import {
   TrendingUp, 
   Settings, 
   Download,
-  LogOut 
+  LogOut,
+  X
 } from "lucide-react";
 import { Link, useLocation } from "wouter";
 import { useAuth } from "@/hooks/useAuth";
@@ -125,21 +126,40 @@ export default function Sidebar() {
             </p>
             <p className="text-xs text-gray-500">Administrateur</p>
           </div>
-          <Button
-            variant="ghost"
-            size="sm"
-            className="text-gray-400 hover:text-gray-600"
-            onClick={async () => {
-              try {
-                await fetch('/api/logout', { method: 'POST' });
-                window.location.href = '/';
-              } catch (error) {
-                console.error('Erreur lors de la déconnexion:', error);
-              }
-            }}
-          >
-            <LogOut className="w-4 h-4" />
-          </Button>
+          <div className="flex space-x-1">
+            <Button
+              variant="ghost"
+              size="sm"
+              className="text-gray-400 hover:text-red-600"
+              onClick={() => {
+                if (confirm(settings?.language === 'en' 
+                  ? 'Are you sure you want to close the application?' 
+                  : 'Êtes-vous sûr de vouloir fermer l\'application ?'
+                )) {
+                  window.close();
+                }
+              }}
+              title={settings?.language === 'en' ? 'Close Application' : 'Fermer l\'application'}
+            >
+              <X className="w-4 h-4" />
+            </Button>
+            <Button
+              variant="ghost"
+              size="sm"
+              className="text-gray-400 hover:text-gray-600"
+              onClick={async () => {
+                try {
+                  await fetch('/api/logout', { method: 'POST' });
+                  window.location.href = '/';
+                } catch (error) {
+                  console.error('Erreur lors de la déconnexion:', error);
+                }
+              }}
+              title={settings?.language === 'en' ? 'Logout' : 'Se déconnecter'}
+            >
+              <LogOut className="w-4 h-4" />
+            </Button>
+          </div>
         </div>
       </div>
     </div>

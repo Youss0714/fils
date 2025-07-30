@@ -196,5 +196,10 @@ Preferred communication style: Simple, everyday language.
   - Added missing sales records for existing paid invoices
   - Added JavaScript sorting to ensure proper display order of top products
   - Dashboard now accurately reflects total quantities sold with correct ranking
+- **Application Close Button**: Added close application functionality in sidebar (January 30, 2025)
+  - Added close button (X icon) next to logout button in user profile section
+  - Includes confirmation dialog in both French and English
+  - Button changes color to red on hover to indicate close action
+  - Tooltip displays appropriate language text for close function
 
 The application follows modern web development best practices with a focus on type safety, user experience, and maintainable code architecture adapted for African markets.
