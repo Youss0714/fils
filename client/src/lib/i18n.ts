@@ -65,6 +65,10 @@ export interface Translations {
   currency: string;
   profile: string;
   preferences: string;
+  companyLogo: string;
+  uploadLogo: string;
+  removeLogo: string;
+  logoPreview: string;
   
   // Messages
   success: string;
@@ -163,6 +167,10 @@ export const translations: Record<Language, Translations> = {
     currency: "Devise",
     profile: "Profil",
     preferences: "Préférences",
+    companyLogo: "Logo de l'entreprise",
+    uploadLogo: "Télécharger un logo",
+    removeLogo: "Supprimer le logo",
+    logoPreview: "Aperçu du logo",
     
     // Messages
     success: "Succès",
@@ -260,6 +268,10 @@ export const translations: Record<Language, Translations> = {
     currency: "Currency",
     profile: "Profile",
     preferences: "Preferences",
+    companyLogo: "Company Logo",
+    uploadLogo: "Upload Logo",
+    removeLogo: "Remove Logo",
+    logoPreview: "Logo Preview",
     
     // Messages
     success: "Success",

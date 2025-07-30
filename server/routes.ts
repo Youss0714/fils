@@ -431,6 +431,42 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Logo management routes
+  app.post("/api/user/logo", isAuthenticated, async (req: any, res) => {
+    try {
+      const { logo } = req.body;
+      
+      // Validate base64 image
+      if (!logo || !logo.startsWith('data:image/')) {
+        return res.status(400).json({ message: "Invalid image format" });
+      }
+      
+      // Check file size (limit to 2MB)
+      const imageSizeInBytes = (logo.length * 3) / 4;
+      const maxSizeInBytes = 2 * 1024 * 1024; // 2MB
+      
+      if (imageSizeInBytes > maxSizeInBytes) {
+        return res.status(400).json({ message: "Image trop volumineuse (max 2MB)" });
+      }
+      
+      const updatedUser = await storage.updateUserLogo(req.user.id, logo);
+      res.json({ companyLogo: updatedUser.companyLogo });
+    } catch (error) {
+      console.error("Error uploading logo:", error);
+      res.status(500).json({ message: "Erreur lors du téléchargement du logo" });
+    }
+  });
+
+  app.delete("/api/user/logo", isAuthenticated, async (req: any, res) => {
+    try {
+      const updatedUser = await storage.updateUserLogo(req.user.id, null);
+      res.json({ companyLogo: null });
+    } catch (error) {
+      console.error("Error removing logo:", error);
+      res.status(500).json({ message: "Erreur lors de la suppression du logo" });
+    }
+  });
+
   const httpServer = createServer(app);
   return httpServer;
 }

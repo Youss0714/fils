@@ -16,9 +16,11 @@ import {
   Mail,
   HelpCircle,
   ExternalLink,
-  Book
+  Book,
+  Image as ImageIcon
 } from "lucide-react";
 import { currencies, languages, useTranslation } from "@/lib/i18n";
+import LogoUpload from "@/components/logo-upload";
 
 export default function Settings() {
   const { toast } = useToast();
@@ -139,6 +141,25 @@ export default function Settings() {
                   La langue sélectionnée sera appliquée à toute l'interface.
                 </p>
               </div>
+            </CardContent>
+          </Card>
+
+          {/* Company Logo Settings */}
+          <Card>
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <ImageIcon className="w-5 h-5" />
+                {t('companyLogo')}
+              </CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <LogoUpload />
+              <p className="text-sm text-gray-500">
+                {settings?.language === 'en' 
+                  ? 'Upload your company logo to appear on invoices and documents.'
+                  : 'Téléchargez le logo de votre entreprise pour qu\'il apparaisse sur les factures et documents.'
+                }
+              </p>
             </CardContent>
           </Card>
 

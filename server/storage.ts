@@ -32,6 +32,7 @@ export interface IStorage {
   upsertUser(user: UpsertUser): Promise<User>;
   updateUserProfile(id: string, profileData: Partial<User>): Promise<User>;
   updateUserSettings(id: string, settings: { currency?: string; language?: string }): Promise<User>;
+  updateUserLogo(id: string, logo: string | null): Promise<User>;
   
   // Client operations
   getClients(userId: string): Promise<Client[]>;
@@ -128,6 +129,15 @@ export class DatabaseStorage implements IStorage {
     const [user] = await db
       .update(users)
       .set({ ...settings, updatedAt: new Date() })
+      .where(eq(users.id, id))
+      .returning();
+    return user;
+  }
+
+  async updateUserLogo(id: string, logo: string | null): Promise<User> {
+    const [user] = await db
+      .update(users)
+      .set({ companyLogo: logo, updatedAt: new Date() })
       .where(eq(users.id, id))
       .returning();
     return user;
