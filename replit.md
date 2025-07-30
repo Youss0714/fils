@@ -181,5 +181,10 @@ Preferred communication style: Simple, everyday language.
   - Both print and PDF download now work seamlessly from both invoice list and detail pages
   - Print functionality removes all UI elements except invoice content for clean printing
   - Fixed print button navigation issue that was causing full page refresh by replacing window.location.href with wouter navigation
+- **Print Dialog Fix**: Fixed print functionality from invoice preview dialog (January 30, 2025)
+  - Added CSS print styles to make dialog content visible during printing
+  - Fixed issue where printing from "voir" button showed blank page
+  - Print functionality now works correctly from both detail page and list view dialog
+  - Added print-specific classes to hide dialog headers and show content properly
 
 The application follows modern web development best practices with a focus on type safety, user experience, and maintainable code architecture adapted for African markets.

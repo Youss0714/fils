@@ -291,6 +291,35 @@
   @page {
     margin: 1cm;
   }
+
+  /* Show dialog content when printing */
+  [role="dialog"] {
+    position: static !important;
+    transform: none !important;
+    max-width: none !important;
+    max-height: none !important;
+    overflow: visible !important;
+    background: white !important;
+    box-shadow: none !important;
+    border: none !important;
+    margin: 0 !important;
+    padding: 0 !important;
+  }
+
+  /* Hide dialog overlay and non-essential elements when printing */
+  [data-radix-popper-content-wrapper],
+  [data-overlay-container],
+  .fixed.inset-0,
+  [role="dialog"] > div:first-child {
+    position: static !important;
+    background: transparent !important;
+    backdrop-filter: none !important;
+  }
+
+  /* Ensure dialog header is hidden during print */
+  [role="dialog"] h2[id*="dialog-title"] {
+    display: none !important;
+  }
 }
 
 /* Loading screen animations */

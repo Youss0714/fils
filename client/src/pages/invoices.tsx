@@ -951,8 +951,8 @@ export default function Invoices() {
         {/* View Invoice Dialog */}
         {viewingInvoice && (
           <Dialog open={!!viewingInvoice} onOpenChange={() => setViewingInvoice(null)}>
-            <DialogContent className="sm:max-w-4xl max-h-[90vh] overflow-y-auto">
-              <DialogHeader>
+            <DialogContent className="sm:max-w-4xl max-h-[90vh] overflow-y-auto print:max-w-none print:max-h-none print:overflow-visible">
+              <DialogHeader className="print:hidden">
                 <DialogTitle>Facture {viewingInvoice.number}</DialogTitle>
               </DialogHeader>
               <InvoicePDF invoice={viewingInvoice} user={user} />
