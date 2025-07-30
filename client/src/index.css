@@ -80,7 +80,8 @@
   }
   
   .invoice-content, .invoice-content * {
-    visibility: visible;
+    visibility: visible !important;
+    display: block !important;
   }
   
   .invoice-content {
@@ -88,8 +89,12 @@
     left: 0;
     top: 0;
     width: 100%;
-    padding: 0;
+    padding: 20px !important;
     margin: 0;
+    background: white !important;
+    color: black !important;
+    font-family: Arial, sans-serif !important;
+    line-height: 1.6 !important;
   }
   
   /* Hide all elements that should not appear in print */
@@ -110,11 +115,108 @@
   .invoice-content .card {
     box-shadow: none !important;
     border: none !important;
+    background: white !important;
   }
+  
+  /* Force display of grid elements */
+  .invoice-content .grid {
+    display: grid !important;
+    grid-template-columns: 1fr 1fr !important;
+    gap: 40px !important;
+    margin-bottom: 40px !important;
+  }
+  
+  /* Force display of flex elements */
+  .invoice-content .flex {
+    display: flex !important;
+  }
+  
+  .invoice-content .justify-between {
+    justify-content: space-between !important;
+  }
+  
+  .invoice-content .justify-end {
+    justify-content: flex-end !important;
+  }
+  
+  .invoice-content .items-start {
+    align-items: flex-start !important;
+  }
+  
+  /* Force display of table elements */
+  .invoice-content table {
+    width: 100% !important;
+    border-collapse: collapse !important;
+    margin-bottom: 32px !important;
+    display: table !important;
+  }
+  
+  .invoice-content thead, .invoice-content tbody {
+    display: table-header-group !important;
+  }
+  
+  .invoice-content tbody {
+    display: table-row-group !important;
+  }
+  
+  .invoice-content tr {
+    display: table-row !important;
+  }
+  
+  .invoice-content th, .invoice-content td {
+    display: table-cell !important;
+    padding: 12px !important;
+    border-bottom: 1px solid #e5e7eb !important;
+  }
+  
+  .invoice-content th {
+    background-color: #f9fafb !important;
+    font-weight: bold !important;
+    text-align: left !important;
+  }
+  
+  .invoice-content .text-right {
+    text-align: right !important;
+  }
+  
+  /* Typography styles */
+  .invoice-content h1 {
+    font-size: 36px !important;
+    font-weight: bold !important;
+    margin: 0 0 8px 0 !important;
+  }
+  
+  .invoice-content h3 {
+    font-weight: bold !important;
+    margin-bottom: 12px !important;
+  }
+  
+  .invoice-content p {
+    margin: 4px 0 !important;
+  }
+  
+  /* Spacing utilities */
+  .invoice-content .mb-2 { margin-bottom: 8px !important; }
+  .invoice-content .mb-3 { margin-bottom: 12px !important; }
+  .invoice-content .mb-6 { margin-bottom: 24px !important; }
+  .invoice-content .mb-8 { margin-bottom: 32px !important; }
+  .invoice-content .space-y-2 > * + * { margin-top: 8px !important; }
   
   /* Make text darker for better print quality */
   .invoice-content {
     color: #000 !important;
+  }
+  
+  .invoice-content .text-gray-600 {
+    color: #666 !important;
+  }
+  
+  .invoice-content .text-gray-700 {
+    color: #333 !important;
+  }
+  
+  .invoice-content .text-primary {
+    color: #3b82f6 !important;
   }
   
   /* Ensure proper page margins for printing */
