@@ -53,6 +53,9 @@ export default function Clients() {
   const { data: clients = [], isLoading: clientsLoading } = useQuery<Client[]>({
     queryKey: ["/api/clients"],
     retry: false,
+    refetchInterval: 60000, // Rafraîchit toutes les 60 secondes
+    refetchIntervalInBackground: true,
+    staleTime: 30000,
   });
 
   const form = useForm<InsertClient>({

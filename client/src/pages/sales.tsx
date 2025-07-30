@@ -37,6 +37,9 @@ export default function Sales() {
   const { data: sales = [], isLoading: salesLoading } = useQuery<Sale[]>({
     queryKey: ["/api/sales"],
     retry: false,
+    refetchInterval: 45000, // Rafraîchit toutes les 45 secondes
+    refetchIntervalInBackground: true,
+    staleTime: 0,
   });
 
   const { data: stats } = useQuery<{
@@ -50,6 +53,9 @@ export default function Sales() {
   }>({
     queryKey: ["/api/dashboard/stats"],
     retry: false,
+    refetchInterval: 30000, // Rafraîchit toutes les 30 secondes
+    refetchIntervalInBackground: true,
+    staleTime: 0,
   });
 
   const formatCurrency = (amount: string | number) => {

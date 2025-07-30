@@ -54,11 +54,16 @@ export default function Products() {
   const { data: products = [], isLoading: productsLoading } = useQuery<Product[]>({
     queryKey: ["/api/products"],
     retry: false,
+    refetchInterval: 60000, // Rafraîchit toutes les 60 secondes
+    refetchIntervalInBackground: true,
+    staleTime: 30000,
   });
 
   const { data: categories = [] } = useQuery<Category[]>({
     queryKey: ["/api/categories"],
     retry: false,
+    refetchInterval: 120000, // Rafraîchit toutes les 2 minutes
+    staleTime: 60000,
   });
 
   const form = useForm<InsertProduct>({

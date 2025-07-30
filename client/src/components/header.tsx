@@ -1,8 +1,9 @@
 import { Button } from "@/components/ui/button";
 import { Plus } from "lucide-react";
+import { ReactNode } from "react";
 
 interface HeaderProps {
-  title: string;
+  title: string | ReactNode;
   subtitle?: string;
   action?: {
     label: string;

@@ -77,22 +77,31 @@ export default function Invoices() {
   const { data: invoices = [], isLoading: invoicesLoading } = useQuery<Invoice[]>({
     queryKey: ["/api/invoices"],
     retry: false,
+    refetchInterval: 45000, // Rafraîchit toutes les 45 secondes
+    refetchIntervalInBackground: true,
+    staleTime: 0,
   });
 
   const { data: clients = [] } = useQuery<Client[]>({
     queryKey: ["/api/clients"],
     retry: false,
+    refetchInterval: 60000, // Rafraîchit toutes les 60 secondes
+    staleTime: 30000,
   });
 
   const { data: products = [] } = useQuery<Product[]>({
     queryKey: ["/api/products"],
     retry: false,
+    refetchInterval: 60000, // Rafraîchit toutes les 60 secondes
+    staleTime: 30000,
   });
 
   // Get user data for invoice header
   const { data: user } = useQuery<User>({
     queryKey: ["/api/user"],
     retry: false,
+    refetchInterval: 120000, // Rafraîchit toutes les 2 minutes
+    staleTime: 60000,
   });
 
   const form = useForm<CreateInvoiceForm>({

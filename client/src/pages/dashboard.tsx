@@ -23,9 +23,11 @@ import {
   BarChart3,
   FolderOutput,
   AlertTriangle,
-  CircleAlert
+  CircleAlert,
+  RefreshCw
 } from "lucide-react";
 import { Link, useLocation } from "wouter";
+import SyncStatus from "@/components/sync-status";
 
 export default function Dashboard() {
   const { toast } = useToast();
@@ -49,14 +51,19 @@ export default function Dashboard() {
     }
   }, [isAuthenticated, isLoading, toast]);
 
-  const { data: stats = {}, isLoading: statsLoading } = useQuery({
+  const { data: stats = {}, isLoading: statsLoading, isFetching: statsFetching } = useQuery({
     queryKey: ["/api/dashboard/stats"],
     retry: false,
+    refetchInterval: 30000, // Rafraîchit toutes les 30 secondes
+    refetchIntervalInBackground: true, // Continue même quand l'onglet n'est pas visible
+    staleTime: 0, // Les données sont considérées comme obsolètes immédiatement
   });
 
   const { data: userSettings } = useQuery({
     queryKey: ["/api/user/settings"],
     retry: false,
+    refetchInterval: 60000, // Rafraîchit toutes les 60 secondes pour les paramètres
+    staleTime: 30000, // Les paramètres restent valides 30 secondes
   });
 
   if (isLoading || statsLoading) {
@@ -390,6 +397,13 @@ export default function Dashboard() {
           </div>
         </div>
       </main>
+      
+      {/* Sync Status Indicator */}
+      <SyncStatus 
+        isOnline={true}
+        isSyncing={statsFetching}
+        lastSync={statsFetching ? undefined : new Date()}
+      />
     </div>
   );
 }
