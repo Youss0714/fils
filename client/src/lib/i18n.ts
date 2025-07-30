@@ -71,6 +71,31 @@ export interface Translations {
   error: string;
   confirmDelete: string;
   noData: string;
+  
+  // Landing page
+  appTitle: string;
+  appDescription: string;
+  loginButton: string;
+  createAccountButton: string;
+  newUserText: string;
+  clientManagement: string;
+  clientManagementDesc: string;
+  productCatalog: string;
+  productCatalogDesc: string;
+  invoicing: string;
+  invoicingDesc: string;
+  reporting: string;
+  reportingDesc: string;
+  whyChoose: string;
+  modernInterface: string;
+  modernInterfaceDesc: string;
+  secure: string;
+  secureDesc: string;
+  dashboardTitle: string;
+  dashboardDesc: string;
+  readyToOptimize: string;
+  joinCompanies: string;
+  startNow: string;
 }
 
 export const translations: Record<Language, Translations> = {
@@ -144,6 +169,31 @@ export const translations: Record<Language, Translations> = {
     error: "Erreur",
     confirmDelete: "Êtes-vous sûr de vouloir supprimer cet élément ?",
     noData: "Aucune donnée disponible",
+    
+    // Landing page
+    appTitle: "YGestion",
+    appDescription: "Application complète de gestion commerciale pour optimiser vos ventes, gérer vos clients et suivre votre activité en temps réel.",
+    loginButton: "Se connecter",
+    createAccountButton: "Créer un compte",
+    newUserText: "Nouveau sur YGestion ? Créez votre compte et complétez votre profil pour commencer.",
+    clientManagement: "Gestion des Clients",
+    clientManagementDesc: "Centralisez toutes les informations de vos clients et leur historique d'achat.",
+    productCatalog: "Catalogue Produits",
+    productCatalogDesc: "Organisez vos produits par catégories et suivez vos stocks en temps réel.",
+    invoicing: "Facturation",
+    invoicingDesc: "Créez et gérez vos factures facilement avec génération PDF automatique.",
+    reporting: "Reporting",
+    reportingDesc: "Analysez vos performances avec des rapports détaillés et des exports CSV.",
+    whyChoose: "Pourquoi choisir YGestion ?",
+    modernInterface: "Interface Moderne",
+    modernInterfaceDesc: "Interface intuitive et responsive, accessible depuis n'importe quel appareil.",
+    secure: "Sécurisé",
+    secureDesc: "Authentification sécurisée et données protégées avec chiffrement.",
+    dashboardTitle: "Tableau de Bord",
+    dashboardDesc: "Visualisez vos KPIs et suivez l'évolution de votre activité en temps réel.",
+    readyToOptimize: "Prêt à optimiser votre gestion commerciale ?",
+    joinCompanies: "Rejoignez les entreprises qui font confiance à YGestion pour leur croissance.",
+    startNow: "Démarrer maintenant",
   },
   
   en: {
@@ -216,6 +266,31 @@ export const translations: Record<Language, Translations> = {
     error: "Error",
     confirmDelete: "Are you sure you want to delete this item?",
     noData: "No data available",
+    
+    // Landing page
+    appTitle: "YGestion",
+    appDescription: "Complete business management application to optimize your sales, manage your clients and track your activity in real time.",
+    loginButton: "Sign In",
+    createAccountButton: "Create Account",
+    newUserText: "New to YGestion? Create your account and complete your profile to get started.",
+    clientManagement: "Client Management",
+    clientManagementDesc: "Centralize all your client information and their purchase history.",
+    productCatalog: "Product Catalog",
+    productCatalogDesc: "Organize your products by categories and track your inventory in real time.",
+    invoicing: "Invoicing",
+    invoicingDesc: "Create and manage your invoices easily with automatic PDF generation.",
+    reporting: "Reporting",
+    reportingDesc: "Analyze your performance with detailed reports and CSV exports.",
+    whyChoose: "Why choose YGestion?",
+    modernInterface: "Modern Interface",
+    modernInterfaceDesc: "Intuitive and responsive interface, accessible from any device.",
+    secure: "Secure",
+    secureDesc: "Secure authentication and protected data with encryption.",
+    dashboardTitle: "Dashboard",
+    dashboardDesc: "Visualize your KPIs and track your business activity evolution in real time.",
+    readyToOptimize: "Ready to optimize your business management?",
+    joinCompanies: "Join the companies that trust YGestion for their growth.",
+    startNow: "Start Now",
   }
 };
 
