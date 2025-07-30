@@ -12,7 +12,11 @@ import {
   Settings as SettingsIcon, 
   Globe, 
   DollarSign,
-  Save
+  Save,
+  Mail,
+  HelpCircle,
+  ExternalLink,
+  Book
 } from "lucide-react";
 import { currencies, languages, useTranslation } from "@/lib/i18n";
 
@@ -167,6 +171,149 @@ export default function Settings() {
                 <p className="text-sm text-gray-500">
                   Cette devise sera utilisée pour afficher tous les prix.
                 </p>
+              </div>
+            </CardContent>
+          </Card>
+
+          {/* Developer Contact */}
+          <Card>
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <Mail className="w-5 h-5" />
+                {settings?.language === 'en' ? 'Contact Developer' : 'Contacter le Développeur'}
+              </CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <div className="flex items-center justify-between p-4 bg-blue-50 rounded-lg border border-blue-200">
+                <div>
+                  <h3 className="font-medium text-blue-900">
+                    {settings?.language === 'en' ? 'Need help or have suggestions?' : 'Besoin d\'aide ou des suggestions ?'}
+                  </h3>
+                  <p className="text-sm text-blue-700 mt-1">
+                    {settings?.language === 'en' 
+                      ? 'Contact the developer for support, feature requests, or bug reports.'
+                      : 'Contactez le développeur pour du support, demandes de fonctionnalités ou signaler des bugs.'
+                    }
+                  </p>
+                </div>
+                <Button 
+                  onClick={() => window.open('mailto:youssouphafils@gmail.com?subject=YGestion - Support', '_blank')}
+                  variant="outline"
+                  className="flex items-center gap-2 border-blue-300 text-blue-700 hover:bg-blue-100"
+                >
+                  <Mail className="w-4 h-4" />
+                  {settings?.language === 'en' ? 'Send Email' : 'Envoyer Email'}
+                  <ExternalLink className="w-3 h-3" />
+                </Button>
+              </div>
+              <p className="text-xs text-gray-500">
+                youssouphafils@gmail.com
+              </p>
+            </CardContent>
+          </Card>
+
+          {/* User Guide */}
+          <Card>
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <Book className="w-5 h-5" />
+                {settings?.language === 'en' ? 'User Guide' : 'Guide d\'Utilisation'}
+              </CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <div className="space-y-4">
+                <div className="border rounded-lg p-4">
+                  <h3 className="font-medium flex items-center gap-2 mb-2">
+                    <HelpCircle className="w-4 h-4 text-blue-500" />
+                    {settings?.language === 'en' ? 'Getting Started' : 'Premiers Pas'}
+                  </h3>
+                  <ul className="text-sm text-gray-600 space-y-1 list-disc list-inside">
+                    <li>
+                      {settings?.language === 'en' 
+                        ? 'Start by adding your first clients in the Clients section'
+                        : 'Commencez par ajouter vos premiers clients dans la section Clients'
+                      }
+                    </li>
+                    <li>
+                      {settings?.language === 'en' 
+                        ? 'Create product categories and add your products with prices'
+                        : 'Créez des catégories de produits et ajoutez vos produits avec leurs prix'
+                      }
+                    </li>
+                    <li>
+                      {settings?.language === 'en' 
+                        ? 'Generate professional invoices and track your sales'
+                        : 'Générez des factures professionnelles et suivez vos ventes'
+                      }
+                    </li>
+                  </ul>
+                </div>
+
+                <div className="border rounded-lg p-4">
+                  <h3 className="font-medium flex items-center gap-2 mb-2">
+                    <HelpCircle className="w-4 h-4 text-green-500" />
+                    {settings?.language === 'en' ? 'Key Features' : 'Fonctionnalités Principales'}
+                  </h3>
+                  <ul className="text-sm text-gray-600 space-y-1 list-disc list-inside">
+                    <li>
+                      {settings?.language === 'en' 
+                        ? 'Real-time dashboard with business analytics'
+                        : 'Tableau de bord en temps réel avec analyses commerciales'
+                      }
+                    </li>
+                    <li>
+                      {settings?.language === 'en' 
+                        ? 'PDF invoice generation and printing'
+                        : 'Génération et impression de factures PDF'
+                      }
+                    </li>
+                    <li>
+                      {settings?.language === 'en' 
+                        ? 'Automatic stock management and alerts'
+                        : 'Gestion automatique des stocks et alertes'
+                      }
+                    </li>
+                    <li>
+                      {settings?.language === 'en' 
+                        ? 'Multi-currency support (XOF, GHS)'
+                        : 'Support multi-devises (XOF, GHS)'
+                      }
+                    </li>
+                  </ul>
+                </div>
+
+                <div className="border rounded-lg p-4">
+                  <h3 className="font-medium flex items-center gap-2 mb-2">
+                    <HelpCircle className="w-4 h-4 text-orange-500" />
+                    {settings?.language === 'en' ? 'Tips & Tricks' : 'Conseils & Astuces'}
+                  </h3>
+                  <ul className="text-sm text-gray-600 space-y-1 list-disc list-inside">
+                    <li>
+                      {settings?.language === 'en' 
+                        ? 'Set custom stock alert levels for each product'
+                        : 'Définissez des seuils d\'alerte stock personnalisés pour chaque produit'
+                      }
+                    </li>
+                    <li>
+                      {settings?.language === 'en' 
+                        ? 'Use the export feature to backup your business data'
+                        : 'Utilisez la fonction export pour sauvegarder vos données commerciales'
+                      }
+                    </li>
+                    <li>
+                      {settings?.language === 'en' 
+                        ? 'Print directly from invoice preview or download as PDF'
+                        : 'Imprimez directement depuis l\'aperçu facture ou téléchargez en PDF'
+                      }
+                    </li>
+                    <li>
+                      {settings?.language === 'en' 
+                        ? 'Monitor your top-selling products in the dashboard'
+                        : 'Surveillez vos produits les plus vendus dans le tableau de bord'
+                      }
+                    </li>
+                  </ul>
+                </div>
               </div>
             </CardContent>
           </Card>

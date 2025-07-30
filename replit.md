@@ -207,5 +207,11 @@ Preferred communication style: Simple, everyday language.
   - Added monthly client count with actual new client numbers  
   - Performance indicators now reflect true business metrics instead of placeholder values
   - Dashboard shows actual growth percentages or "no previous data" when appropriate
+- **Enhanced Settings Page**: Added developer contact and comprehensive user guide (January 30, 2025)
+  - Added developer contact section with direct email link (youssouphafils@gmail.com)
+  - Created comprehensive user guide with getting started steps
+  - Added key features documentation and tips & tricks section
+  - Full bilingual support (French/English) for all new content
+  - Professional styling with organized sections and visual hierarchy
 
 The application follows modern web development best practices with a focus on type safety, user experience, and maintainable code architecture adapted for African markets.
