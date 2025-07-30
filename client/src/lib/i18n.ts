@@ -69,6 +69,15 @@ export interface Translations {
   uploadLogo: string;
   removeLogo: string;
   logoPreview: string;
+  personalInfo: string;
+  updateProfile: string;
+  profileFirstName: string;
+  profileLastName: string;
+  profilePhone: string;
+  profileCompany: string;
+  profilePosition: string;
+  profileAddress: string;
+  profileBusinessType: string;
   
   // Messages
   success: string;
@@ -171,6 +180,15 @@ export const translations: Record<Language, Translations> = {
     uploadLogo: "Télécharger un logo",
     removeLogo: "Supprimer le logo",
     logoPreview: "Aperçu du logo",
+    personalInfo: "Informations personnelles",
+    updateProfile: "Mettre à jour le profil",
+    profileFirstName: "Prénom",
+    profileLastName: "Nom",
+    profilePhone: "Téléphone",
+    profileCompany: "Entreprise",
+    profilePosition: "Poste",
+    profileAddress: "Adresse",
+    profileBusinessType: "Type d'activité",
     
     // Messages
     success: "Succès",
@@ -272,6 +290,15 @@ export const translations: Record<Language, Translations> = {
     uploadLogo: "Upload Logo",
     removeLogo: "Remove Logo",
     logoPreview: "Logo Preview",
+    personalInfo: "Personal Information",
+    updateProfile: "Update Profile",
+    profileFirstName: "First Name",
+    profileLastName: "Last Name",
+    profilePhone: "Phone",
+    profileCompany: "Company",
+    profilePosition: "Position",
+    profileAddress: "Address",
+    profileBusinessType: "Business Type",
     
     // Messages
     success: "Success",

@@ -17,10 +17,12 @@ import {
   HelpCircle,
   ExternalLink,
   Book,
-  Image as ImageIcon
+  Image as ImageIcon,
+  User
 } from "lucide-react";
 import { currencies, languages, useTranslation } from "@/lib/i18n";
 import LogoUpload from "@/components/logo-upload";
+import ProfileEditor from "@/components/profile-editor";
 
 export default function Settings() {
   const { toast } = useToast();
@@ -141,6 +143,25 @@ export default function Settings() {
                   La langue sélectionnée sera appliquée à toute l'interface.
                 </p>
               </div>
+            </CardContent>
+          </Card>
+
+          {/* Personal Information */}
+          <Card>
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <User className="w-5 h-5" />
+                {t('personalInfo')}
+              </CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <ProfileEditor />
+              <p className="text-sm text-gray-500">
+                {settings?.language === 'en' 
+                  ? 'Update your personal and business information. This information will appear on your invoices.'
+                  : 'Mettez à jour vos informations personnelles et d\'entreprise. Ces informations apparaîtront sur vos factures.'
+                }
+              </p>
             </CardContent>
           </Card>
 
