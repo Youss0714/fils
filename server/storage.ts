@@ -437,22 +437,22 @@ export class DatabaseStorage implements IStorage {
       client: row.clients!,
     }));
 
-    // Top products by sales count
+    // Top products by sales quantity
     const topProductsResult = await db
       .select({
         product: products,
-        salesCount: count(sales.id),
+        salesCount: sum(sales.quantity),
       })
       .from(products)
       .leftJoin(sales, eq(products.id, sales.productId))
       .where(eq(products.userId, userId))
       .groupBy(products.id)
-      .orderBy(desc(count(sales.id)))
+      .orderBy(desc(sum(sales.quantity)))
       .limit(5);
 
     const topProducts = topProductsResult.map(row => ({
       ...row.product,
-      salesCount: row.salesCount,
+      salesCount: parseInt(row.salesCount || "0"),
     }));
 
     // Low stock products (stock < 10)
