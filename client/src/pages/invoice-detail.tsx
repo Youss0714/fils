@@ -48,20 +48,7 @@ export default function InvoiceDetail() {
     }
   }, [isAuthenticated, isLoading, toast]);
 
-  // Auto-print when invoice is loaded and print parameter is present
-  useEffect(() => {
-    if (shouldPrint && invoice && !invoiceLoading) {
-      // Clean URL by removing print parameter
-      const url = new URL(window.location.href);
-      url.searchParams.delete('print');
-      window.history.replaceState({}, '', url.toString());
-      
-      // Trigger print after a short delay to allow rendering
-      setTimeout(() => {
-        window.print();
-      }, 1000);
-    }
-  }, [shouldPrint, invoice, invoiceLoading]);
+
 
   const { data: invoice, isLoading: invoiceLoading } = useQuery<Invoice & { items: InvoiceItem[]; client: Client }>({
     queryKey: ["/api/invoices", invoiceId, "details"],
@@ -78,6 +65,21 @@ export default function InvoiceDetail() {
     queryKey: ["/api/user/settings"],
     retry: false,
   });
+
+  // Auto-print when invoice is loaded and print parameter is present
+  useEffect(() => {
+    if (shouldPrint && invoice && !invoiceLoading) {
+      // Clean URL by removing print parameter
+      const url = new URL(window.location.href);
+      url.searchParams.delete('print');
+      window.history.replaceState({}, '', url.toString());
+      
+      // Trigger print after a short delay to allow rendering
+      setTimeout(() => {
+        window.print();
+      }, 1000);
+    }
+  }, [shouldPrint, invoice, invoiceLoading]);
 
   const updateStatusMutation = useMutation({
     mutationFn: async ({ id, status }: { id: number; status: string }) => {
