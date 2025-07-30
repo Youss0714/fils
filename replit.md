@@ -213,5 +213,12 @@ Preferred communication style: Simple, everyday language.
   - Added key features documentation and tips & tricks section
   - Full bilingual support (French/English) for all new content
   - Professional styling with organized sections and visual hierarchy
+- **Initial Language Selection**: Added language selector at app startup (January 30, 2025)
+  - Created LanguageSelector component with elegant design and flag icons
+  - Integrated language selection flow after loading screen and before authentication
+  - Added localStorage persistence for language preference across sessions
+  - Automatic synchronization between initial language choice and user settings
+  - Added reset option in settings to show language selector again
+  - Seamless integration with existing internationalization system
 
 The application follows modern web development best practices with a focus on type safety, user experience, and maintainable code architecture adapted for African markets.

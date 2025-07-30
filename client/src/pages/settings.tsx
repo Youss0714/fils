@@ -318,6 +318,44 @@ export default function Settings() {
             </CardContent>
           </Card>
 
+          {/* Reset Language Selector */}
+          <Card>
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <Globe className="w-5 h-5" />
+                {settings?.language === 'en' ? 'Language Setup' : 'Configuration de Langue'}
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="flex items-center justify-between p-4 bg-gray-50 rounded-lg border">
+                <div>
+                  <h3 className="font-medium text-gray-900">
+                    {settings?.language === 'en' ? 'Reset Language Selector' : 'Réinitialiser le Sélecteur de Langue'}
+                  </h3>
+                  <p className="text-sm text-gray-600 mt-1">
+                    {settings?.language === 'en' 
+                      ? 'Show the language selection screen again on next app startup.'
+                      : 'Afficher à nouveau l\'écran de sélection de langue au prochain démarrage.'
+                    }
+                  </p>
+                </div>
+                <Button 
+                  onClick={() => {
+                    localStorage.removeItem('initialLanguageSelected');
+                    localStorage.removeItem('preferredLanguage');
+                    localStorage.removeItem('languageSynced');
+                    window.location.reload();
+                  }}
+                  variant="outline"
+                  className="flex items-center gap-2"
+                >
+                  <Globe className="w-4 h-4" />
+                  {settings?.language === 'en' ? 'Reset' : 'Réinitialiser'}
+                </Button>
+              </div>
+            </CardContent>
+          </Card>
+
           {/* Save Button */}
           <div className="flex justify-end">
             <Button 

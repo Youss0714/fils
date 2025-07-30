@@ -6,6 +6,7 @@ import { TooltipProvider } from "@/components/ui/tooltip";
 import { useAuth } from "@/hooks/useAuth";
 import { useState, useEffect } from "react";
 import LoadingScreen from "@/components/loading-screen";
+import LanguageSelector from "@/components/language-selector";
 import NotFound from "@/pages/not-found";
 import Landing from "@/pages/landing";
 import AuthPage from "@/pages/auth";
@@ -27,6 +28,10 @@ function Router() {
     // Check if we should show loading screen
     return !sessionStorage.getItem('hasSeenLoading');
   });
+  const [showLanguageSelector, setShowLanguageSelector] = useState(() => {
+    // Check if language has been selected before
+    return !localStorage.getItem('initialLanguageSelected');
+  });
 
   // Show loading screen if not seen before
   if (showLoadingScreen) {
@@ -35,6 +40,20 @@ function Router() {
         onComplete={() => {
           setShowLoadingScreen(false);
           sessionStorage.setItem('hasSeenLoading', 'true');
+        }} 
+      />
+    );
+  }
+
+  // Show language selector if not selected before
+  if (showLanguageSelector) {
+    return (
+      <LanguageSelector 
+        onLanguageSelect={(language) => {
+          // Save the language preference
+          localStorage.setItem('initialLanguageSelected', 'true');
+          localStorage.setItem('preferredLanguage', language);
+          setShowLanguageSelector(false);
         }} 
       />
     );
