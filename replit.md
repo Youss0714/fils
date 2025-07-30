@@ -186,5 +186,9 @@ Preferred communication style: Simple, everyday language.
   - Fixed issue where printing from "voir" button showed blank page
   - Print functionality now works correctly from both detail page and list view dialog
   - Added print-specific classes to hide dialog headers and show content properly
+- **Invoice Contact Information Fix**: Updated invoice footer to use user's email and phone (January 30, 2025)
+  - Replaced generic contact email with authenticated user's email and phone number
+  - Applied changes to both InvoicePDF component and PDF generation in invoice list
+  - Footer now displays personalized contact information for each user
 
 The application follows modern web development best practices with a focus on type safety, user experience, and maintainable code architecture adapted for African markets.

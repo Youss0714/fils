@@ -585,6 +585,18 @@ export default function Invoices() {
                                         <p style="color: #666; white-space: pre-line;">${fullInvoice.notes}</p>
                                       </div>
                                     ` : ''}
+                                    
+                                    <!-- Footer -->
+                                    <div style="margin-top: 32px; padding-top: 24px; border-top: 1px solid #e5e7eb; text-align: center; color: #666; font-size: 14px;">
+                                      <p style="margin-bottom: 8px;">Merci pour votre confiance !</p>
+                                      ${(user?.email || user?.phone) ? `
+                                        <p style="margin: 0;">
+                                          Pour toute question concernant cette facture, contactez-nous :
+                                          ${user?.email ? `<br>Email : ${user.email}` : ''}
+                                          ${user?.phone ? `<br>Téléphone : ${user.phone}` : ''}
+                                        </p>
+                                      ` : ''}
+                                    </div>
                                   </div>
                                 `;
                                 

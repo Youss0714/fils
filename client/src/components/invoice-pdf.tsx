@@ -299,9 +299,17 @@ export default function InvoicePDF({ invoice, user }: InvoicePDFProps) {
           <Separator className="mb-6" />
           <div className="text-center text-sm text-gray-500">
             <p>Merci pour votre confiance !</p>
-            <p className="mt-2">
-              Pour toute question concernant cette facture, contactez-nous à contact@gestionpro.fr
-            </p>
+            {(user?.email || user?.phone) && (
+              <p className="mt-2">
+                Pour toute question concernant cette facture, contactez-nous :
+                {user?.email && (
+                  <span className="block mt-1">Email : {user.email}</span>
+                )}
+                {user?.phone && (
+                  <span className="block mt-1">Téléphone : {user.phone}</span>
+                )}
+              </p>
+            )}
           </div>
         </CardContent>
       </Card>
