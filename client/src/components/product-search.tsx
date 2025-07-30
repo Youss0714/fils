@@ -133,19 +133,19 @@ export function ProductSearch({
               </span>
             </div>
           ) : (
-            placeholder
+            <span className="text-muted-foreground">{placeholder}</span>
           )}
           <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
         </Button>
       </PopoverTrigger>
       <PopoverContent className="w-[400px] p-0" align="start">
-        <Command shouldFilter={false}>
+        <Command shouldFilter={false} value="" onValueChange={() => {}}>
           <CommandInput 
             placeholder="Tapez pour rechercher..." 
             value={searchQuery}
             onValueChange={setSearchQuery}
           />
-          <CommandList>
+          <CommandList className="max-h-[200px] overflow-y-auto">
             {isLoading ? (
               <CommandEmpty>Recherche en cours...</CommandEmpty>
             ) : products.length === 0 ? (
@@ -177,9 +177,8 @@ export function ProductSearch({
                   <CommandItem
                     key={product.id}
                     value={product.id.toString()}
-                    onSelect={(currentValue) => {
-                      handleSelect(currentValue);
-                    }}
+                    onSelect={() => handleSelect(product.id.toString())}
+                    className="cursor-pointer"
                   >
                     <Check
                       className={cn(
@@ -209,8 +208,8 @@ export function ProductSearch({
                 ) && (
                   <CommandItem
                     value="create-new"
-                    onSelect={handleSelect}
-                    className="text-primary"
+                    onSelect={() => handleSelect("create-new")}
+                    className="text-primary cursor-pointer"
                   >
                     <Plus className="mr-2 h-4 w-4" />
                     Créer "{searchQuery}"
