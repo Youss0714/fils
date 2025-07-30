@@ -16,7 +16,8 @@ import {
   Trash2,
   CheckCircle,
   Clock,
-  AlertCircle
+  AlertCircle,
+  Printer
 } from "lucide-react";
 import { Link } from "wouter";
 import { type Invoice, type Client, type InvoiceItem, INVOICE_STATUS } from "@shared/schema";
@@ -237,14 +238,14 @@ export default function InvoiceDetail() {
       const now = new Date();
       const dateStr = now.toLocaleDateString('fr-FR').replace(/\//g, '-');
       const timeStr = now.toLocaleTimeString('fr-FR').replace(/:/g, '-');
-      const filename = `Facture_${invoice.number}_${dateStr}_${timeStr}.pdf`;
+      const filename = `Facture_${invoice?.number || 'UNKNOWN'}_${dateStr}_${timeStr}.pdf`;
       
       // Save the PDF
       pdf.save(filename);
       
       toast({
         title: "PDF téléchargé",
-        description: `Facture ${invoice.number} téléchargée avec succès`,
+        description: `Facture ${invoice?.number || 'UNKNOWN'} téléchargée avec succès`,
       });
       
     } catch (error) {
@@ -255,6 +256,22 @@ export default function InvoiceDetail() {
         variant: "destructive",
       });
     }
+  };
+
+  const handlePrint = () => {
+    // Store original styles
+    const originalTitle = document.title;
+    
+    // Change page title for print
+    document.title = `Facture ${invoice?.number || 'UNKNOWN'}`;
+    
+    // Open print dialog
+    window.print();
+    
+    // Restore original title after a short delay
+    setTimeout(() => {
+      document.title = originalTitle;
+    }, 100);
   };
 
   if (isLoading || invoiceLoading) {
@@ -335,6 +352,11 @@ export default function InvoiceDetail() {
                 Marquer comme Payée
               </Button>
             )}
+            
+            <Button variant="outline" onClick={handlePrint}>
+              <Printer className="mr-2 h-4 w-4" />
+              Imprimer
+            </Button>
             
             <Button variant="outline" onClick={handleDownloadPDF}>
               <Download className="mr-2 h-4 w-4" />

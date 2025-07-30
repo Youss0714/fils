@@ -30,7 +30,19 @@ export default function InvoicePDF({ invoice, user }: InvoicePDFProps) {
   };
 
   const handlePrint = () => {
+    // Store original title
+    const originalTitle = document.title;
+    
+    // Change page title for print
+    document.title = `Facture ${invoice?.number || 'UNKNOWN'}`;
+    
+    // Open print dialog
     window.print();
+    
+    // Restore original title after a short delay
+    setTimeout(() => {
+      document.title = originalTitle;
+    }, 100);
   };
 
   const handleDownloadPDF = async () => {
