@@ -286,6 +286,11 @@ export class DatabaseStorage implements IStorage {
 
       // Update stock immediately after creating invoice
       await this.updateStockAfterInvoiceCreation(itemsWithInvoiceId, invoice.userId);
+      
+      // If the invoice is created with 'payee' status, create sales records immediately
+      if (invoice.status === 'payee' || invoice.status === 'paid') {
+        await this.createSalesFromInvoice(newInvoice.id, invoice.userId);
+      }
     }
 
     return newInvoice;

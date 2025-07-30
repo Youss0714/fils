@@ -190,5 +190,10 @@ Preferred communication style: Simple, everyday language.
   - Replaced generic contact email with authenticated user's email and phone number
   - Applied changes to both InvoicePDF component and PDF generation in invoice list
   - Footer now displays personalized contact information for each user
+- **Dashboard Top Products Statistics Fix**: Resolved issue where sales statistics weren't updating (January 30, 2025)
+  - Fixed automatic sales creation when invoices are created with "payee" status
+  - Corrected query to sum quantities sold instead of counting sale records
+  - Added missing sales records for existing paid invoices
+  - Dashboard now accurately reflects total quantities sold for each product
 
 The application follows modern web development best practices with a focus on type safety, user experience, and maintainable code architecture adapted for African markets.
