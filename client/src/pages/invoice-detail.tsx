@@ -154,6 +154,109 @@ export default function InvoiceDetail() {
     return new Date(date).toLocaleDateString('fr-FR');
   };
 
+  const handleDownloadPDF = async () => {
+    try {
+      // Dynamically import jsPDF and html2canvas to avoid SSR issues
+      const { default: jsPDF } = await import('jspdf');
+      const { default: html2canvas } = await import('html2canvas');
+      
+      // Get the invoice content element
+      const element = document.querySelector('.invoice-content') as HTMLElement;
+      if (!element) {
+        console.error("Invoice content element not found");
+        toast({
+          title: "Erreur",
+          description: "Contenu de la facture non trouvé",
+          variant: "destructive",
+        });
+        return;
+      }
+
+      // Hide action buttons temporarily for cleaner PDF
+      const actionButtons = document.querySelectorAll('.print\\:hidden');
+      const originalDisplays: string[] = [];
+      actionButtons.forEach((button, index) => {
+        const el = button as HTMLElement;
+        originalDisplays[index] = el.style.display;
+        el.style.display = 'none';
+      });
+      
+      // Wait a moment for styles to apply
+      await new Promise(resolve => setTimeout(resolve, 100));
+      
+      // Generate canvas from HTML with better options
+      const canvas = await html2canvas(element, {
+        scale: 1.5,
+        useCORS: true,
+        allowTaint: true,
+        backgroundColor: '#ffffff',
+        logging: false,
+        removeContainer: true,
+        imageTimeout: 15000,
+        onclone: (clonedDoc) => {
+          // Remove any remaining print-hidden elements in the clone
+          const printHiddenElements = clonedDoc.querySelectorAll('.print\\:hidden');
+          printHiddenElements.forEach(el => el.remove());
+        }
+      });
+      
+      // Restore action buttons
+      actionButtons.forEach((button, index) => {
+        const el = button as HTMLElement;
+        el.style.display = originalDisplays[index] || '';
+      });
+      
+      // Create PDF with proper dimensions
+      const pdf = new jsPDF({
+        orientation: 'portrait',
+        unit: 'mm',
+        format: 'a4',
+      });
+      
+      const pageWidth = pdf.internal.pageSize.getWidth();
+      const pageHeight = pdf.internal.pageSize.getHeight();
+      const margin = 10;
+      const contentWidth = pageWidth - (2 * margin);
+      
+      // Calculate dimensions
+      const imgWidth = contentWidth;
+      const imgHeight = (canvas.height * imgWidth) / canvas.width;
+      
+      // Add the image to PDF
+      const imgData = canvas.toDataURL('image/png', 0.95);
+      
+      if (imgHeight <= pageHeight - (2 * margin)) {
+        // Single page
+        pdf.addImage(imgData, 'PNG', margin, margin, imgWidth, imgHeight);
+      } else {
+        // Multiple pages - use a simpler approach
+        pdf.addImage(imgData, 'PNG', margin, margin, imgWidth, imgHeight);
+      }
+      
+      // Generate filename with current date
+      const now = new Date();
+      const dateStr = now.toLocaleDateString('fr-FR').replace(/\//g, '-');
+      const timeStr = now.toLocaleTimeString('fr-FR').replace(/:/g, '-');
+      const filename = `Facture_${invoice.number}_${dateStr}_${timeStr}.pdf`;
+      
+      // Save the PDF
+      pdf.save(filename);
+      
+      toast({
+        title: "PDF téléchargé",
+        description: `Facture ${invoice.number} téléchargée avec succès`,
+      });
+      
+    } catch (error) {
+      console.error('Erreur lors de la génération du PDF:', error);
+      toast({
+        title: "Erreur",
+        description: `Erreur lors de la génération du PDF: ${error instanceof Error ? error.message : 'Erreur inconnue'}`,
+        variant: "destructive",
+      });
+    }
+  };
+
   if (isLoading || invoiceLoading) {
     return (
       <div className="flex-1 flex flex-col overflow-hidden">
@@ -233,7 +336,7 @@ export default function InvoiceDetail() {
               </Button>
             )}
             
-            <Button variant="outline">
+            <Button variant="outline" onClick={handleDownloadPDF}>
               <Download className="mr-2 h-4 w-4" />
               Télécharger PDF
             </Button>
