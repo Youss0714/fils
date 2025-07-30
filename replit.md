@@ -201,5 +201,11 @@ Preferred communication style: Simple, everyday language.
   - Includes confirmation dialog in both French and English
   - Button changes color to red on hover to indicate close action
   - Tooltip displays appropriate language text for close function
+- **Dynamic Performance Indicators**: Replaced static percentages with real calculated data (January 30, 2025)
+  - Added revenue growth calculation comparing current vs previous month
+  - Added weekly invoice count with actual recent invoice numbers
+  - Added monthly client count with actual new client numbers  
+  - Performance indicators now reflect true business metrics instead of placeholder values
+  - Dashboard shows actual growth percentages or "no previous data" when appropriate
 
 The application follows modern web development best practices with a focus on type safety, user experience, and maintainable code architecture adapted for African markets.

@@ -158,15 +158,23 @@ export default function Dashboard() {
           <StatsCard
             title={t('revenue')}
             value={formatCurrency((stats as any)?.revenue || 0)}
-            change={settings?.language === 'en' ? "+12% this month" : "+12% ce mois"}
-            changeType="positive"
+            change={
+              (stats as any)?.revenueGrowth !== undefined && (stats as any)?.revenueGrowth !== 0
+                ? `${(stats as any).revenueGrowth >= 0 ? '+' : ''}${(stats as any).revenueGrowth}% ${settings?.language === 'en' ? 'vs last month' : 'vs mois dernier'}`
+                : settings?.language === 'en' ? "No previous data" : "Aucune donnée précédente"
+            }
+            changeType={(stats as any)?.revenueGrowth >= 0 ? "positive" : "negative"}
             icon={TrendingUp}
             iconColor="bg-green-50 text-green-500"
           />
           <StatsCard
             title={t('invoiceCount')}
             value={(stats as any)?.invoiceCount || 0}
-            change={settings?.language === 'en' ? "+8 this week" : "+8 cette semaine"}
+            change={
+              (stats as any)?.recentInvoiceCount !== undefined
+                ? `+${(stats as any).recentInvoiceCount} ${settings?.language === 'en' ? 'this week' : 'cette semaine'}`
+                : settings?.language === 'en' ? "No recent invoices" : "Aucune facture récente"
+            }
             changeType="positive"
             icon={FileText}
             iconColor="bg-blue-50 text-blue-500"
@@ -174,7 +182,11 @@ export default function Dashboard() {
           <StatsCard
             title={settings?.language === 'en' ? "Active Clients" : "Clients Actifs"}
             value={(stats as any)?.clientCount || 0}
-            change={settings?.language === 'en' ? "+5 new" : "+5 nouveaux"}
+            change={
+              (stats as any)?.recentClientCount !== undefined
+                ? `+${(stats as any).recentClientCount} ${settings?.language === 'en' ? 'new this month' : 'nouveaux ce mois'}`
+                : settings?.language === 'en' ? "No new clients" : "Aucun nouveau client"
+            }
             changeType="positive"
             icon={Users}
             iconColor="bg-purple-50 text-purple-500"

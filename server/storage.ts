@@ -395,8 +395,18 @@ export class DatabaseStorage implements IStorage {
     recentInvoices: (Invoice & { client: Client })[];
     topProducts: (Product & { salesCount: number })[];
     lowStockProducts: Product[];
+    revenueGrowth: number;
+    invoiceGrowth: number;
+    clientGrowth: number;
+    recentInvoiceCount: number;
+    recentClientCount: number;
   }> {
-    // Revenue (sum of all paid invoices)
+    const now = new Date();
+    const thisMonth = new Date(now.getFullYear(), now.getMonth(), 1);
+    const lastMonth = new Date(now.getFullYear(), now.getMonth() - 1, 1);
+    const thisWeek = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000);
+    const lastWeek = new Date(now.getTime() - 14 * 24 * 60 * 60 * 1000);
+    // Current revenue (sum of all paid invoices)
     const revenueResult = await db
       .select({ total: sum(invoices.totalTTC) })
       .from(invoices)
@@ -404,7 +414,21 @@ export class DatabaseStorage implements IStorage {
     
     const revenue = parseFloat(revenueResult[0]?.total || "0");
 
-    // Invoice count
+    // Previous month revenue for comparison
+    const lastMonthRevenueResult = await db
+      .select({ total: sum(invoices.totalTTC) })
+      .from(invoices)
+      .where(and(
+        eq(invoices.userId, userId), 
+        eq(invoices.status, "payee"),
+        sql`${invoices.createdAt} >= ${lastMonth.toISOString()}`,
+        sql`${invoices.createdAt} < ${thisMonth.toISOString()}`
+      ));
+    
+    const lastMonthRevenue = parseFloat(lastMonthRevenueResult[0]?.total || "0");
+    const revenueGrowth = lastMonthRevenue > 0 ? ((revenue - lastMonthRevenue) / lastMonthRevenue) * 100 : 0;
+
+    // Total invoice count
     const invoiceCountResult = await db
       .select({ count: count() })
       .from(invoices)
@@ -412,13 +436,61 @@ export class DatabaseStorage implements IStorage {
     
     const invoiceCount = invoiceCountResult[0]?.count || 0;
 
-    // Client count
+    // Recent invoices (this week)
+    const recentInvoiceCountResult = await db
+      .select({ count: count() })
+      .from(invoices)
+      .where(and(
+        eq(invoices.userId, userId),
+        sql`${invoices.createdAt} >= ${thisWeek.toISOString()}`
+      ));
+    
+    const recentInvoiceCount = recentInvoiceCountResult[0]?.count || 0;
+
+    // Previous week invoice count for comparison
+    const lastWeekInvoiceCountResult = await db
+      .select({ count: count() })
+      .from(invoices)
+      .where(and(
+        eq(invoices.userId, userId),
+        sql`${invoices.createdAt} >= ${lastWeek.toISOString()}`,
+        sql`${invoices.createdAt} < ${thisWeek.toISOString()}`
+      ));
+    
+    const lastWeekInvoiceCount = lastWeekInvoiceCountResult[0]?.count || 0;
+    const invoiceGrowth = lastWeekInvoiceCount > 0 ? ((recentInvoiceCount - lastWeekInvoiceCount) / lastWeekInvoiceCount) * 100 : 0;
+
+    // Total client count
     const clientCountResult = await db
       .select({ count: count() })
       .from(clients)
       .where(eq(clients.userId, userId));
     
     const clientCount = clientCountResult[0]?.count || 0;
+
+    // Recent clients (this month)
+    const recentClientCountResult = await db
+      .select({ count: count() })
+      .from(clients)
+      .where(and(
+        eq(clients.userId, userId),
+        sql`${clients.createdAt} >= ${thisMonth.toISOString()}`
+      ));
+    
+    const recentClientCount = recentClientCountResult[0]?.count || 0;
+
+    // Previous month client count for comparison
+    const lastMonthClientCountResult = await db
+      .select({ count: count() })
+      .from(clients)
+      .where(and(
+        eq(clients.userId, userId),
+        sql`${clients.createdAt} >= ${lastMonth.toISOString()}`,
+        sql`${clients.createdAt} < ${thisMonth.toISOString()}`
+      ));
+    
+    const lastMonthClientCount = lastMonthClientCountResult[0]?.count || 0;
+    const clientGrowth = lastMonthClientCount > 0 ? ((recentClientCount - lastMonthClientCount) / lastMonthClientCount) * 100 : 0;
 
     // Product count
     const productCountResult = await db
@@ -477,6 +549,11 @@ export class DatabaseStorage implements IStorage {
       recentInvoices: recentInvoicesFormatted,
       topProducts,
       lowStockProducts,
+      revenueGrowth: Math.round(revenueGrowth * 100) / 100,
+      invoiceGrowth: Math.round(invoiceGrowth * 100) / 100,
+      clientGrowth: Math.round(clientGrowth * 100) / 100,
+      recentInvoiceCount,
+      recentClientCount,
     };
   }
 }
