@@ -20,7 +20,8 @@ import {
   Search,
   Eye,
   Download,
-  Minus
+  Minus,
+  Printer
 } from "lucide-react";
 import { insertInvoiceSchema, insertInvoiceItemSchema, TAX_RATES, INVOICE_STATUS, type Invoice, type InsertInvoice, type Client, type Product } from "@shared/schema";
 import { SimpleProductSelect } from "@/components/simple-product-select";
@@ -461,8 +462,334 @@ export default function Invoices() {
                           >
                             <Eye className="w-4 h-4" />
                           </Button>
-                          <Button variant="ghost" size="sm">
+                          <Button 
+                            variant="ghost" 
+                            size="sm"
+                            onClick={async () => {
+                              try {
+                                // Fetch full invoice with items for PDF generation
+                                const response = await fetch(`/api/invoices/${invoice.id}`, {
+                                  credentials: 'include'
+                                });
+                                const fullInvoice = await response.json();
+                                
+                                // Generate PDF using the same logic as invoice-detail page
+                                const { default: jsPDF } = await import('jspdf');
+                                const { default: html2canvas } = await import('html2canvas');
+                                
+                                // Create a temporary hidden div with the invoice content
+                                const tempDiv = document.createElement('div');
+                                tempDiv.style.position = 'absolute';
+                                tempDiv.style.left = '-9999px';
+                                tempDiv.style.top = '0';
+                                tempDiv.style.width = '210mm';
+                                tempDiv.style.background = 'white';
+                                tempDiv.style.padding = '20px';
+                                
+                                // Add invoice HTML content to temp div
+                                tempDiv.innerHTML = `
+                                  <div style="font-family: Arial, sans-serif; color: black; line-height: 1.6;">
+                                    <div style="display: flex; justify-content: space-between; margin-bottom: 40px;">
+                                      <div>
+                                        <h1 style="font-size: 36px; font-weight: bold; margin: 0;">FACTURE</h1>
+                                        <p style="font-size: 18px; color: #666; margin: 8px 0;">${fullInvoice.number}</p>
+                                      </div>
+                                      <div style="text-align: right;">
+                                        <div style="font-size: 24px; font-weight: bold; color: #3b82f6; margin-bottom: 8px;">
+                                          ${user?.company || `${user?.firstName || ''} ${user?.lastName || ''}`.trim() || 'Mon Entreprise'}
+                                        </div>
+                                        <div style="font-size: 14px; color: #666;">
+                                          ${user?.address ? `<p>${user.address}</p>` : ''}
+                                          ${user?.email ? `<p>Email: ${user.email}</p>` : ''}
+                                          ${user?.phone ? `<p>Tél: ${user.phone}</p>` : ''}
+                                          ${user?.businessType ? `<p>Activité: ${user.businessType}</p>` : ''}
+                                        </div>
+                                      </div>
+                                    </div>
+                                    
+                                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 40px; margin-bottom: 40px;">
+                                      <div>
+                                        <h3 style="font-weight: bold; margin-bottom: 12px;">Facturé à :</h3>
+                                        <div style="color: #333;">
+                                          <p style="font-weight: 500; margin: 4px 0;">${fullInvoice.client?.name || 'Client inconnu'}</p>
+                                          ${fullInvoice.client?.company ? `<p style="margin: 4px 0;">${fullInvoice.client.company}</p>` : ''}
+                                          ${fullInvoice.client?.email ? `<p style="margin: 4px 0;">${fullInvoice.client.email}</p>` : ''}
+                                          ${fullInvoice.client?.phone ? `<p style="margin: 4px 0;">${fullInvoice.client.phone}</p>` : ''}
+                                          ${fullInvoice.client?.address ? `<p style="margin: 4px 0; white-space: pre-line;">${fullInvoice.client.address}</p>` : ''}
+                                        </div>
+                                      </div>
+                                      
+                                      <div>
+                                        <h3 style="font-weight: bold; margin-bottom: 12px;">Détails de la facture :</h3>
+                                        <div style="color: #333;">
+                                          <div style="display: flex; justify-content: space-between; margin: 8px 0;">
+                                            <span>Date d'émission :</span>
+                                            <span>${new Date(fullInvoice.issueDate).toLocaleDateString('fr-FR')}</span>
+                                          </div>
+                                          <div style="display: flex; justify-content: space-between; margin: 8px 0;">
+                                            <span>Date d'échéance :</span>
+                                            <span>${fullInvoice.dueDate ? new Date(fullInvoice.dueDate).toLocaleDateString('fr-FR') : 'Non définie'}</span>
+                                          </div>
+                                          <div style="display: flex; justify-content: space-between; margin: 8px 0;">
+                                            <span>Statut :</span>
+                                            <span style="color: #f59e0b; font-weight: 500;">En attente</span>
+                                          </div>
+                                        </div>
+                                      </div>
+                                    </div>
+                                    
+                                    <h3 style="font-weight: bold; margin-bottom: 16px;">Articles</h3>
+                                    <table style="width: 100%; border-collapse: collapse; margin-bottom: 32px;">
+                                      <thead>
+                                        <tr style="background-color: #f9fafb;">
+                                          <th style="padding: 12px; text-align: left; border-bottom: 1px solid #e5e7eb;">Description</th>
+                                          <th style="padding: 12px; text-align: right; border-bottom: 1px solid #e5e7eb;">Qté</th>
+                                          <th style="padding: 12px; text-align: right; border-bottom: 1px solid #e5e7eb;">Prix HT</th>
+                                          <th style="padding: 12px; text-align: right; border-bottom: 1px solid #e5e7eb;">Total HT</th>
+                                        </tr>
+                                      </thead>
+                                      <tbody>
+                                        ${fullInvoice.items?.map(item => `
+                                          <tr>
+                                            <td style="padding: 12px; border-bottom: 1px solid #e5e7eb;">${item.productName}</td>
+                                            <td style="padding: 12px; text-align: right; border-bottom: 1px solid #e5e7eb;">${item.quantity}</td>
+                                            <td style="padding: 12px; text-align: right; border-bottom: 1px solid #e5e7eb;">${formatCurrency(item.priceHT)}</td>
+                                            <td style="padding: 12px; text-align: right; border-bottom: 1px solid #e5e7eb;">${formatCurrency(item.quantity * parseFloat(item.priceHT))}</td>
+                                          </tr>
+                                        `).join('') || ''}
+                                      </tbody>
+                                    </table>
+                                    
+                                    <div style="display: flex; justify-content: flex-end;">
+                                      <div style="width: 300px;">
+                                        <div style="display: flex; justify-content: space-between; padding: 8px 0; border-bottom: 1px solid #e5e7eb;">
+                                          <span>Total HT:</span>
+                                          <span style="font-weight: 500;">${formatCurrency(fullInvoice.totalHT)}</span>
+                                        </div>
+                                        <div style="display: flex; justify-content: space-between; padding: 8px 0; border-bottom: 1px solid #e5e7eb;">
+                                          <span>TVA (${fullInvoice.tvaRate}%):</span>
+                                          <span style="font-weight: 500;">${formatCurrency(fullInvoice.totalTTC - fullInvoice.totalHT)}</span>
+                                        </div>
+                                        <div style="display: flex; justify-content: space-between; padding: 12px 0; border-top: 2px solid #374151; font-weight: bold; font-size: 18px;">
+                                          <span>Total TTC:</span>
+                                          <span>${formatCurrency(fullInvoice.totalTTC)}</span>
+                                        </div>
+                                      </div>
+                                    </div>
+                                    
+                                    ${fullInvoice.notes ? `
+                                      <div style="margin-top: 32px;">
+                                        <h3 style="font-weight: bold; margin-bottom: 8px;">Notes</h3>
+                                        <p style="color: #666; white-space: pre-line;">${fullInvoice.notes}</p>
+                                      </div>
+                                    ` : ''}
+                                  </div>
+                                `;
+                                
+                                document.body.appendChild(tempDiv);
+                                
+                                // Generate canvas from the temp div
+                                const canvas = await html2canvas(tempDiv, {
+                                  scale: 1.5,
+                                  useCORS: true,
+                                  allowTaint: true,
+                                  backgroundColor: '#ffffff',
+                                  logging: false,
+                                  width: tempDiv.scrollWidth,
+                                  height: tempDiv.scrollHeight
+                                });
+                                
+                                // Remove temp div
+                                document.body.removeChild(tempDiv);
+                                
+                                // Create and save PDF
+                                const pdf = new jsPDF({
+                                  orientation: 'portrait',
+                                  unit: 'mm',
+                                  format: 'a4',
+                                });
+                                
+                                const pageWidth = pdf.internal.pageSize.getWidth();
+                                const pageHeight = pdf.internal.pageSize.getHeight();
+                                const margin = 10;
+                                const contentWidth = pageWidth - (2 * margin);
+                                
+                                const imgWidth = contentWidth;
+                                const imgHeight = (canvas.height * imgWidth) / canvas.width;
+                                
+                                const imgData = canvas.toDataURL('image/png', 0.95);
+                                pdf.addImage(imgData, 'PNG', margin, margin, imgWidth, imgHeight);
+                                
+                                const now = new Date();
+                                const dateStr = now.toLocaleDateString('fr-FR').replace(/\//g, '-');
+                                const timeStr = now.toLocaleTimeString('fr-FR').replace(/:/g, '-');
+                                const filename = `Facture_${fullInvoice.number}_${dateStr}_${timeStr}.pdf`;
+                                
+                                pdf.save(filename);
+                                
+                                toast({
+                                  title: "PDF téléchargé",
+                                  description: `Facture ${fullInvoice.number} téléchargée avec succès`,
+                                });
+                                
+                              } catch (error) {
+                                console.error('Erreur lors de la génération du PDF:', error);
+                                toast({
+                                  title: "Erreur",
+                                  description: "Impossible de générer le PDF",
+                                  variant: "destructive",
+                                });
+                              }
+                            }}
+                          >
                             <Download className="w-4 h-4" />
+                          </Button>
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            onClick={async () => {
+                              try {
+                                // Fetch full invoice for printing
+                                const response = await fetch(`/api/invoices/${invoice.id}`, {
+                                  credentials: 'include'
+                                });
+                                const fullInvoice = await response.json();
+                                
+                                // Store original title
+                                const originalTitle = document.title;
+                                
+                                // Change page title for print
+                                document.title = `Facture ${fullInvoice.number}`;
+                                
+                                // Create a temporary hidden div with the invoice content for printing
+                                const tempDiv = document.createElement('div');
+                                tempDiv.className = 'invoice-content';
+                                tempDiv.style.position = 'absolute';
+                                tempDiv.style.left = '-9999px';
+                                tempDiv.style.top = '0';
+                                tempDiv.style.background = 'white';
+                                tempDiv.style.padding = '20px';
+                                tempDiv.style.fontFamily = 'Arial, sans-serif';
+                                tempDiv.style.color = 'black';
+                                tempDiv.style.lineHeight = '1.6';
+                                
+                                // Add the same HTML content as PDF generation
+                                tempDiv.innerHTML = `
+                                  <div>
+                                    <div style="display: flex; justify-content: space-between; margin-bottom: 40px;">
+                                      <div>
+                                        <h1 style="font-size: 36px; font-weight: bold; margin: 0;">FACTURE</h1>
+                                        <p style="font-size: 18px; color: #666; margin: 8px 0;">${fullInvoice.number}</p>
+                                      </div>
+                                      <div style="text-align: right;">
+                                        <div style="font-size: 24px; font-weight: bold; color: #3b82f6; margin-bottom: 8px;">
+                                          ${user?.company || `${user?.firstName || ''} ${user?.lastName || ''}`.trim() || 'Mon Entreprise'}
+                                        </div>
+                                        <div style="font-size: 14px; color: #666;">
+                                          ${user?.address ? `<p>${user.address}</p>` : ''}
+                                          ${user?.email ? `<p>Email: ${user.email}</p>` : ''}
+                                          ${user?.phone ? `<p>Tél: ${user.phone}</p>` : ''}
+                                          ${user?.businessType ? `<p>Activité: ${user.businessType}</p>` : ''}
+                                        </div>
+                                      </div>
+                                    </div>
+                                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 40px; margin-bottom: 40px;">
+                                      <div>
+                                        <h3 style="font-weight: bold; margin-bottom: 12px;">Facturé à :</h3>
+                                        <div style="color: #333;">
+                                          <p style="font-weight: 500; margin: 4px 0;">${fullInvoice.client?.name || 'Client inconnu'}</p>
+                                          ${fullInvoice.client?.company ? `<p style="margin: 4px 0;">${fullInvoice.client.company}</p>` : ''}
+                                          ${fullInvoice.client?.email ? `<p style="margin: 4px 0;">${fullInvoice.client.email}</p>` : ''}
+                                          ${fullInvoice.client?.phone ? `<p style="margin: 4px 0;">${fullInvoice.client.phone}</p>` : ''}
+                                          ${fullInvoice.client?.address ? `<p style="margin: 4px 0; white-space: pre-line;">${fullInvoice.client.address}</p>` : ''}
+                                        </div>
+                                      </div>
+                                      <div>
+                                        <h3 style="font-weight: bold; margin-bottom: 12px;">Détails de la facture :</h3>
+                                        <div style="color: #333;">
+                                          <div style="display: flex; justify-content: space-between; margin: 8px 0;">
+                                            <span>Date d'émission :</span>
+                                            <span>${new Date(fullInvoice.issueDate).toLocaleDateString('fr-FR')}</span>
+                                          </div>
+                                          <div style="display: flex; justify-content: space-between; margin: 8px 0;">
+                                            <span>Date d'échéance :</span>
+                                            <span>${fullInvoice.dueDate ? new Date(fullInvoice.dueDate).toLocaleDateString('fr-FR') : 'Non définie'}</span>
+                                          </div>
+                                          <div style="display: flex; justify-content: space-between; margin: 8px 0;">
+                                            <span>Statut :</span>
+                                            <span style="color: #f59e0b; font-weight: 500;">En attente</span>
+                                          </div>
+                                        </div>
+                                      </div>
+                                    </div>
+                                    <h3 style="font-weight: bold; margin-bottom: 16px;">Articles</h3>
+                                    <table style="width: 100%; border-collapse: collapse; margin-bottom: 32px;">
+                                      <thead>
+                                        <tr style="background-color: #f9fafb;">
+                                          <th style="padding: 12px; text-align: left; border-bottom: 1px solid #e5e7eb;">Description</th>
+                                          <th style="padding: 12px; text-align: right; border-bottom: 1px solid #e5e7eb;">Qté</th>
+                                          <th style="padding: 12px; text-align: right; border-bottom: 1px solid #e5e7eb;">Prix HT</th>
+                                          <th style="padding: 12px; text-align: right; border-bottom: 1px solid #e5e7eb;">Total HT</th>
+                                        </tr>
+                                      </thead>
+                                      <tbody>
+                                        ${fullInvoice.items?.map(item => `
+                                          <tr>
+                                            <td style="padding: 12px; border-bottom: 1px solid #e5e7eb;">${item.productName}</td>
+                                            <td style="padding: 12px; text-align: right; border-bottom: 1px solid #e5e7eb;">${item.quantity}</td>
+                                            <td style="padding: 12px; text-align: right; border-bottom: 1px solid #e5e7eb;">${formatCurrency(item.priceHT)}</td>
+                                            <td style="padding: 12px; text-align: right; border-bottom: 1px solid #e5e7eb;">${formatCurrency(item.quantity * parseFloat(item.priceHT))}</td>
+                                          </tr>
+                                        `).join('') || ''}
+                                      </tbody>
+                                    </table>
+                                    <div style="display: flex; justify-content: flex-end;">
+                                      <div style="width: 300px;">
+                                        <div style="display: flex; justify-content: space-between; padding: 8px 0; border-bottom: 1px solid #e5e7eb;">
+                                          <span>Total HT:</span>
+                                          <span style="font-weight: 500;">${formatCurrency(fullInvoice.totalHT)}</span>
+                                        </div>
+                                        <div style="display: flex; justify-content: space-between; padding: 8px 0; border-bottom: 1px solid #e5e7eb;">
+                                          <span>TVA (${fullInvoice.tvaRate}%):</span>
+                                          <span style="font-weight: 500;">${formatCurrency(fullInvoice.totalTTC - fullInvoice.totalHT)}</span>
+                                        </div>
+                                        <div style="display: flex; justify-content: space-between; padding: 12px 0; border-top: 2px solid #374151; font-weight: bold; font-size: 18px;">
+                                          <span>Total TTC:</span>
+                                          <span>${formatCurrency(fullInvoice.totalTTC)}</span>
+                                        </div>
+                                      </div>
+                                    </div>
+                                    ${fullInvoice.notes ? `
+                                      <div style="margin-top: 32px;">
+                                        <h3 style="font-weight: bold; margin-bottom: 8px;">Notes</h3>
+                                        <p style="color: #666; white-space: pre-line;">${fullInvoice.notes}</p>
+                                      </div>
+                                    ` : ''}
+                                  </div>
+                                `;
+                                
+                                document.body.appendChild(tempDiv);
+                                
+                                // Trigger print
+                                window.print();
+                                
+                                // Clean up after print
+                                setTimeout(() => {
+                                  document.body.removeChild(tempDiv);
+                                  document.title = originalTitle;
+                                }, 100);
+                                
+                              } catch (error) {
+                                console.error('Erreur lors de l\'impression:', error);
+                                toast({
+                                  title: "Erreur",
+                                  description: "Impossible d'imprimer la facture",
+                                  variant: "destructive",
+                                });
+                              }
+                            }}
+                          >
+                            <Printer className="w-4 h-4" />
                           </Button>
                           <Button
                             variant="ghost"
