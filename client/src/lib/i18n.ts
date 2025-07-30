@@ -239,10 +239,15 @@ export const languages = [
 ];
 
 // Hook pour utiliser les traductions avec support des paramètres utilisateur
-export function useTranslation(language: Language = 'fr') {
+export function useTranslation(language?: Language) {
+  // Si aucune langue n'est fournie, essayer de récupérer depuis le localStorage
+  const currentLanguage = language || 
+    (typeof window !== 'undefined' ? localStorage.getItem('preferredLanguage') as Language : null) || 
+    'fr';
+    
   return {
-    t: (key: keyof Translations) => translations[language][key] || translations['fr'][key] || key,
-    language,
+    t: (key: keyof Translations) => translations[currentLanguage][key] || translations['fr'][key] || key,
+    language: currentLanguage,
   };
 }
 
