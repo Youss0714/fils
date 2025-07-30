@@ -180,5 +180,6 @@ Preferred communication style: Simple, everyday language.
   - Added print functionality to invoice list page with proper invoice-only output
   - Both print and PDF download now work seamlessly from both invoice list and detail pages
   - Print functionality removes all UI elements except invoice content for clean printing
+  - Fixed print button navigation issue that was causing full page refresh by replacing window.location.href with wouter navigation
 
 The application follows modern web development best practices with a focus on type safety, user experience, and maintainable code architecture adapted for African markets.

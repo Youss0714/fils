@@ -4,6 +4,7 @@ import { useAuth } from "@/hooks/useAuth";
 import { useToast } from "@/hooks/use-toast";
 import { isUnauthorizedError } from "@/lib/authUtils";
 import { apiRequest, queryClient } from "@/lib/queryClient";
+import { useLocation } from "wouter";
 import Header from "@/components/header";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -23,7 +24,7 @@ import {
   Minus,
   Printer
 } from "lucide-react";
-import { insertInvoiceSchema, insertInvoiceItemSchema, TAX_RATES, INVOICE_STATUS, type Invoice, type InsertInvoice, type Client, type Product } from "@shared/schema";
+import { insertInvoiceSchema, insertInvoiceItemSchema, TAX_RATES, INVOICE_STATUS, type Invoice, type InsertInvoice, type Client, type Product, type User } from "@shared/schema";
 import { SimpleProductSelect } from "@/components/simple-product-select";
 import { SimpleClientSelect } from "@/components/simple-client-select";
 import { SimpleProductSelectV2 } from "@/components/simple-product-select-v2";
@@ -52,6 +53,7 @@ type CreateInvoiceForm = z.infer<typeof createInvoiceFormSchema>;
 export default function Invoices() {
   const { toast } = useToast();
   const { isAuthenticated, isLoading } = useAuth();
+  const [, setLocation] = useLocation();
   const [searchTerm, setSearchTerm] = useState("");
   const [statusFilter, setStatusFilter] = useState("all");
   const [isDialogOpen, setIsDialogOpen] = useState(false);
@@ -88,7 +90,7 @@ export default function Invoices() {
   });
 
   // Get user data for invoice header
-  const { data: user } = useQuery({
+  const { data: user } = useQuery<User>({
     queryKey: ["/api/user"],
     retry: false,
   });
@@ -549,7 +551,7 @@ export default function Invoices() {
                                         </tr>
                                       </thead>
                                       <tbody>
-                                        ${fullInvoice.items?.map(item => `
+                                        ${fullInvoice.items?.map((item: any) => `
                                           <tr>
                                             <td style="padding: 12px; border-bottom: 1px solid #e5e7eb;">${item.productName}</td>
                                             <td style="padding: 12px; text-align: right; border-bottom: 1px solid #e5e7eb;">${item.quantity}</td>
@@ -649,7 +651,7 @@ export default function Invoices() {
                             size="sm"
                             onClick={() => {
                               // Navigate to invoice detail page and trigger print
-                              window.location.href = `/invoices/${invoice.id}?print=true`;
+                              setLocation(`/invoices/${invoice.id}?print=true`);
                             }}
                           >
                             <Printer className="w-4 h-4" />
