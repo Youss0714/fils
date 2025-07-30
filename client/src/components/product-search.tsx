@@ -94,6 +94,8 @@ export function ProductSearch({
   };
 
   const handleSelect = (productId: string) => {
+    console.log("Product selection attempt:", productId);
+    
     if (productId === "create-new" && onCreateNew && searchQuery) {
       onCreateNew(searchQuery);
       setOpen(false);
@@ -101,16 +103,20 @@ export function ProductSearch({
       return;
     }
 
-    const id = productId && productId !== "" ? parseInt(productId) : undefined;
-    const product = products.find(p => p.id === id);
+    const id = parseInt(productId);
+    console.log("Parsed product ID:", id);
     
-    onChange(id);
-    if (product && onProductSelect) {
-      onProductSelect(product);
+    if (!isNaN(id)) {
+      const product = products.find(p => p.id === id);
+      
+      onChange(id);
+      if (product && onProductSelect) {
+        onProductSelect(product);
+      }
+      
+      setOpen(false);
+      setSearchQuery("");
     }
-    
-    setOpen(false);
-    setSearchQuery("");
   };
 
   return (
@@ -178,7 +184,8 @@ export function ProductSearch({
                     key={product.id}
                     value={product.id.toString()}
                     onSelect={() => handleSelect(product.id.toString())}
-                    className="cursor-pointer"
+                    onClick={() => handleSelect(product.id.toString())}
+                    className="cursor-pointer hover:bg-gray-100"
                   >
                     <Check
                       className={cn(

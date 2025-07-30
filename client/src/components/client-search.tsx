@@ -87,6 +87,8 @@ export function ClientSearch({
   });
 
   const handleSelect = (clientId: string) => {
+    console.log("Client selection attempt:", clientId);
+    
     if (clientId === "create-new" && onCreateNew && searchQuery) {
       onCreateNew(searchQuery);
       setOpen(false);
@@ -94,10 +96,14 @@ export function ClientSearch({
       return;
     }
 
-    const id = clientId && clientId !== "" ? parseInt(clientId) : undefined;
-    onChange(id);
-    setOpen(false);
-    setSearchQuery("");
+    const id = parseInt(clientId);
+    console.log("Parsed client ID:", id);
+    
+    if (!isNaN(id)) {
+      onChange(id);
+      setOpen(false);
+      setSearchQuery("");
+    }
   };
 
   return (
@@ -164,7 +170,8 @@ export function ClientSearch({
                     key={client.id}
                     value={client.id.toString()}
                     onSelect={() => handleSelect(client.id.toString())}
-                    className="cursor-pointer"
+                    onClick={() => handleSelect(client.id.toString())}
+                    className="cursor-pointer hover:bg-gray-100"
                   >
                     <Check
                       className={cn(
