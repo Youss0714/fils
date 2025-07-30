@@ -455,10 +455,12 @@ export class DatabaseStorage implements IStorage {
       .orderBy(desc(sum(sales.quantity)))
       .limit(5);
 
-    const topProducts = topProductsResult.map(row => ({
-      ...row.product,
-      salesCount: parseInt(row.salesCount || "0"),
-    }));
+    const topProducts = topProductsResult
+      .map(row => ({
+        ...row.product,
+        salesCount: parseInt(row.salesCount || "0"),
+      }))
+      .sort((a, b) => b.salesCount - a.salesCount); // Ensure proper sorting by sales count
 
     // Low stock products (stock < 10)
     const lowStockProducts = await db
