@@ -648,23 +648,8 @@ export default function Invoices() {
                             variant="ghost"
                             size="sm"
                             onClick={() => {
-                              // Fetch full invoice with items for printing
-                              fetch(`/api/invoices/${invoice.id}`, {
-                                credentials: 'include'
-                              })
-                              .then(res => res.json())
-                              .then(data => {
-                                setViewingInvoice(data);
-                                // Wait for the dialog to render, then print
-                                setTimeout(() => {
-                                  window.print();
-                                }, 500);
-                              })
-                              .catch(() => toast({
-                                title: "Erreur",
-                                description: "Impossible de charger la facture pour impression.",
-                                variant: "destructive",
-                              }));
+                              // Navigate to invoice detail page and trigger print
+                              window.location.href = `/invoices/${invoice.id}?print=true`;
                             }}
                           >
                             <Printer className="w-4 h-4" />

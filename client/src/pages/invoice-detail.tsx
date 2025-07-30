@@ -28,6 +28,10 @@ export default function InvoiceDetail() {
   const params = useParams();
   const [, setLocation] = useLocation();
   const invoiceId = params.id;
+  
+  // Check if print parameter is in URL
+  const urlParams = new URLSearchParams(window.location.search);
+  const shouldPrint = urlParams.get('print') === 'true';
 
   // Redirect to home if not authenticated
   useEffect(() => {
@@ -43,6 +47,21 @@ export default function InvoiceDetail() {
       return;
     }
   }, [isAuthenticated, isLoading, toast]);
+
+  // Auto-print when invoice is loaded and print parameter is present
+  useEffect(() => {
+    if (shouldPrint && invoice && !invoiceLoading) {
+      // Clean URL by removing print parameter
+      const url = new URL(window.location.href);
+      url.searchParams.delete('print');
+      window.history.replaceState({}, '', url.toString());
+      
+      // Trigger print after a short delay to allow rendering
+      setTimeout(() => {
+        window.print();
+      }, 1000);
+    }
+  }, [shouldPrint, invoice, invoiceLoading]);
 
   const { data: invoice, isLoading: invoiceLoading } = useQuery<Invoice & { items: InvoiceItem[]; client: Client }>({
     queryKey: ["/api/invoices", invoiceId, "details"],
