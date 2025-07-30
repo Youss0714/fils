@@ -194,6 +194,7 @@ Preferred communication style: Simple, everyday language.
   - Fixed automatic sales creation when invoices are created with "payee" status
   - Corrected query to sum quantities sold instead of counting sale records
   - Added missing sales records for existing paid invoices
-  - Dashboard now accurately reflects total quantities sold for each product
+  - Added JavaScript sorting to ensure proper display order of top products
+  - Dashboard now accurately reflects total quantities sold with correct ranking
 
 The application follows modern web development best practices with a focus on type safety, user experience, and maintainable code architecture adapted for African markets.
