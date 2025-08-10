@@ -32,18 +32,47 @@ function AppContent() {
   
   // Start trial timer when user first accesses the dashboard
   useEffect(() => {
-    if (user && !user.licenseActivated && !trialStartTime) {
-      const startTime = Date.now();
-      setTrialStartTime(startTime);
+    if (user && !user.licenseActivated) {
+      // Check if trial was already started in localStorage
+      const storedStartTime = localStorage.getItem(`trial_start_${user.id}`);
+      let startTime = storedStartTime ? parseInt(storedStartTime) : null;
       
-      // Set timer for 1 minute (60000ms)
-      const timer = setTimeout(() => {
+      if (!startTime) {
+        // Start new trial
+        startTime = Date.now();
+        localStorage.setItem(`trial_start_${user.id}`, startTime.toString());
+        setTrialStartTime(startTime);
+      } else {
+        setTrialStartTime(startTime);
+        
+        // Check if trial should already be expired
+        const elapsed = Date.now() - startTime;
+        if (elapsed >= 60000) { // 1 minute = 60000ms
+          setTrialExpired(true);
+          return;
+        }
+      }
+      
+      // Set timer for remaining time
+      const remainingTime = 60000 - (Date.now() - startTime);
+      if (remainingTime > 0) {
+        const timer = setTimeout(() => {
+          setTrialExpired(true);
+        }, remainingTime);
+        
+        return () => clearTimeout(timer);
+      } else {
         setTrialExpired(true);
-      }, 60000);
-      
-      return () => clearTimeout(timer);
+      }
     }
-  }, [user, trialStartTime]);
+  }, [user]);
+
+  // Clean up trial data when user activates license
+  useEffect(() => {
+    if (user?.licenseActivated) {
+      localStorage.removeItem(`trial_start_${user.id}`);
+    }
+  }, [user?.licenseActivated, user?.id]);
   
   // Show license activation after trial expires
   if (user && !user.licenseActivated && trialExpired) {
