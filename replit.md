@@ -80,5 +80,6 @@ Preferred communication style: Simple, everyday language.
   - Sidebar menu appears for users named "Youssouphafils"
   - All license creation attributed to "Youssouphafils"
   - Admin user "Youssouphafils" bypasses license activation requirements
+  - Admin email: youssouphafils@gmail.com
 ✓ **Security Features**: Token-based admin authentication, unique license keys, revocation capability
 ✓ **User Experience**: Simple activation flow, comprehensive admin dashboard, real-time status tracking

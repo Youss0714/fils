@@ -34,7 +34,7 @@ function AppContent() {
   useEffect(() => {
     if (user && !user.licenseActivated) {
       // Skip license activation for admin user "Youssouphafils"
-      if (user.firstName === "Youssouphafils" || user.email === "youssouphafils@admin.com") {
+      if (user.firstName === "Youssouphafils" || user.email === "youssouphafils@gmail.com") {
         return; // Admin never needs license activation
       }
       
@@ -83,7 +83,7 @@ function AppContent() {
   }, [user?.licenseActivated, user?.id]);
   
   // Show license activation after trial expires (except for admin)
-  if (user && !user.licenseActivated && trialExpired && user.firstName !== "Youssouphafils" && user.email !== "youssouphafils@admin.com") {
+  if (user && !user.licenseActivated && trialExpired && user.firstName !== "Youssouphafils" && user.email !== "youssouphafils@gmail.com") {
     return <LicenseActivation />;
   }
 
@@ -95,7 +95,7 @@ function AppContent() {
     <div className="flex h-screen bg-gray-50">
       <Sidebar />
       <div className="flex-1 overflow-hidden">
-        {user && !user.licenseActivated && trialStartTime && !trialExpired && user.firstName !== "Youssouphafils" && user.email !== "youssouphafils@admin.com" && (
+        {user && !user.licenseActivated && trialStartTime && !trialExpired && user.firstName !== "Youssouphafils" && user.email !== "youssouphafils@gmail.com" && (
           <div className="p-4">
             <TrialBanner 
               trialStartTime={trialStartTime} 
