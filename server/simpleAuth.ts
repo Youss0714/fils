@@ -203,24 +203,37 @@ export function setupAuth(app: Express) {
   });
 
   // Get current user route
-  app.get("/api/user", (req, res) => {
+  app.get("/api/user", async (req, res) => {
     if (!req.isAuthenticated() || !req.user) {
       return res.status(401).json({ message: "Non authentifié" });
     }
     
-    const user = req.user as UserType;
-    res.json({
-      id: user.id,
-      email: user.email,
-      firstName: user.firstName,
-      lastName: user.lastName,
-      phone: user.phone,
-      company: user.company,
-      position: user.position,
-      address: user.address,
-      businessType: user.businessType,
-      profileImageUrl: user.profileImageUrl,
-    });
+    try {
+      // Always fetch fresh user data from database to get current license status
+      const user = await storage.getUser(req.user.id);
+      if (!user) {
+        return res.status(401).json({ message: "Utilisateur non trouvé" });
+      }
+      
+      res.json({
+        id: user.id,
+        email: user.email,
+        firstName: user.firstName,
+        lastName: user.lastName,
+        phone: user.phone,
+        company: user.company,
+        position: user.position,
+        address: user.address,
+        businessType: user.businessType,
+        profileImageUrl: user.profileImageUrl,
+        licenseActivated: user.licenseActivated, // Include license status
+        currency: user.currency,
+        language: user.language,
+      });
+    } catch (error) {
+      console.error("Error fetching user data:", error);
+      res.status(500).json({ message: "Erreur lors de la récupération des données utilisateur" });
+    }
   });
 }
 

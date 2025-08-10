@@ -79,6 +79,7 @@ function AppContent() {
   useEffect(() => {
     if (user?.licenseActivated) {
       localStorage.removeItem(`trial_start_${user.id}`);
+      setTrialExpired(false); // Reset trial state
     }
   }, [user?.licenseActivated, user?.id]);
   
