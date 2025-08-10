@@ -23,31 +23,65 @@ import UserRegistration from "@/pages/user-registration";
 import LicenseActivation from "@/pages/license-activation";
 import AdminLicenses from "@/pages/admin-licenses";
 import Sidebar from "@/components/sidebar";
+import TrialBanner from "@/components/trial-banner";
 
 function AppContent() {
   const { user } = useAuth();
+  const [trialExpired, setTrialExpired] = useState(false);
+  const [trialStartTime, setTrialStartTime] = useState<number | null>(null);
   
-  // Check if user needs license activation
-  if (user && !user.licenseActivated) {
+  // Start trial timer when user first accesses the dashboard
+  useEffect(() => {
+    if (user && !user.licenseActivated && !trialStartTime) {
+      const startTime = Date.now();
+      setTrialStartTime(startTime);
+      
+      // Set timer for 1 minute (60000ms)
+      const timer = setTimeout(() => {
+        setTrialExpired(true);
+      }, 60000);
+      
+      return () => clearTimeout(timer);
+    }
+  }, [user, trialStartTime]);
+  
+  // Show license activation after trial expires
+  if (user && !user.licenseActivated && trialExpired) {
     return <LicenseActivation />;
   }
+
+  const handleActivateLicense = () => {
+    setTrialExpired(true);
+  };
 
   return (
     <div className="flex h-screen bg-gray-50">
       <Sidebar />
-      <Switch>
-        <Route path="/" component={Dashboard} />
-        <Route path="/clients" component={Clients} />
-        <Route path="/products" component={Products} />
-        <Route path="/categories" component={Categories} />
-        <Route path="/invoices" component={Invoices} />
-        <Route path="/invoices/:id" component={InvoiceDetail} />
-        <Route path="/sales" component={Sales} />
-        <Route path="/settings" component={Settings} />
-        <Route path="/export" component={Export} />
-        <Route path="/complete-profile" component={UserRegistration} />
-        <Route component={NotFound} />
-      </Switch>
+      <div className="flex-1 overflow-hidden">
+        {user && !user.licenseActivated && trialStartTime && !trialExpired && (
+          <div className="p-4">
+            <TrialBanner 
+              trialStartTime={trialStartTime} 
+              onActivateLicense={handleActivateLicense}
+            />
+          </div>
+        )}
+        <div className="h-full overflow-auto">
+          <Switch>
+            <Route path="/" component={Dashboard} />
+            <Route path="/clients" component={Clients} />
+            <Route path="/products" component={Products} />
+            <Route path="/categories" component={Categories} />
+            <Route path="/invoices" component={Invoices} />
+            <Route path="/invoices/:id" component={InvoiceDetail} />
+            <Route path="/sales" component={Sales} />
+            <Route path="/settings" component={Settings} />
+            <Route path="/export" component={Export} />
+            <Route path="/complete-profile" component={UserRegistration} />
+            <Route component={NotFound} />
+          </Switch>
+        </div>
+      </div>
     </div>
   );
 }
