@@ -1,11 +1,11 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Check, Key, AlertCircle } from "lucide-react";
-import { useMutation } from "@tanstack/react-query";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
 
 interface ActivationResponse {
   message: string;
@@ -22,6 +22,24 @@ export default function LicenseActivationPage() {
     clientName: "",
     deviceId: "",
   });
+  
+  const [isRedirecting, setIsRedirecting] = useState(false);
+  const queryClient = useQueryClient();
+
+  // Vérifier automatiquement si l'utilisateur est déjà activé
+  useEffect(() => {
+    const checkUserStatus = async () => {
+      const currentUser = queryClient.getQueryData(["/api/user"]) as any;
+      if (currentUser?.licenseActivated) {
+        setIsRedirecting(true);
+        setTimeout(() => {
+          window.location.href = "/";
+        }, 1000);
+      }
+    };
+    
+    checkUserStatus();
+  }, [queryClient]);
 
   const activationMutation = useMutation({
     mutationFn: async (data: typeof formData): Promise<ActivationResponse> => {
@@ -37,6 +55,24 @@ export default function LicenseActivationPage() {
       }
       
       return response.json();
+    },
+    onSuccess: async () => {
+      // Invalider et refetch immédiatement les données utilisateur
+      await queryClient.invalidateQueries({ queryKey: ["/api/user"] });
+      await queryClient.refetchQueries({ queryKey: ["/api/user"] });
+      
+      // Attendre un peu et vérifier si on doit rediriger
+      setTimeout(() => {
+        // Vérifier si l'utilisateur est maintenant activé
+        const currentUser = queryClient.getQueryData(["/api/user"]) as any;
+        if (currentUser?.licenseActivated) {
+          // Rediriger vers le dashboard
+          window.location.href = "/";
+        } else {
+          // Fallback: recharger la page complètement
+          window.location.reload();
+        }
+      }, 1000);
     },
   });
 
@@ -56,6 +92,29 @@ export default function LicenseActivationPage() {
       [e.target.name]: e.target.value,
     }));
   };
+
+  // Afficher un message de redirection si nécessaire
+  if (isRedirecting) {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-green-50 to-emerald-100 dark:from-gray-900 dark:to-gray-800 flex items-center justify-center p-4">
+        <div className="w-full max-w-md">
+          <Card className="shadow-xl">
+            <CardContent className="text-center space-y-4 pt-6">
+              <div className="mx-auto w-16 h-16 bg-green-100 dark:bg-green-900 rounded-full flex items-center justify-center">
+                <Check className="w-8 h-8 text-green-600 dark:text-green-400" />
+              </div>
+              <h3 className="font-semibold text-lg text-green-800 dark:text-green-200">
+                Redirection en cours...
+              </h3>
+              <p className="text-sm text-muted-foreground">
+                Accès au tableau de bord en cours
+              </p>
+            </CardContent>
+          </Card>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 dark:from-gray-900 dark:to-gray-800 flex items-center justify-center p-4">
@@ -89,7 +148,15 @@ export default function LicenseActivationPage() {
                   </p>
                 </div>
                 <Button 
-                  onClick={() => window.location.reload()} 
+                  onClick={async () => {
+                    // Forcer l'actualisation et redirection
+                    await queryClient.invalidateQueries({ queryKey: ["/api/user"] });
+                    await queryClient.refetchQueries({ queryKey: ["/api/user"] });
+                    
+                    setTimeout(() => {
+                      window.location.href = "/";
+                    }, 200);
+                  }} 
                   className="w-full"
                   data-testid="button-continue"
                 >
