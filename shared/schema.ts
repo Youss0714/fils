@@ -33,7 +33,7 @@ export const users = pgTable("users", {
   firstName: varchar("first_name"),
   lastName: varchar("last_name"),
   profileImageUrl: varchar("profile_image_url"),
-  companyLogo: text("company_logo"), // Base64 encoded logo
+
   phone: varchar("phone", { length: 50 }),
   company: varchar("company", { length: 255 }),
   position: varchar("position", { length: 255 }),

@@ -17,11 +17,11 @@ import {
   HelpCircle,
   ExternalLink,
   Book,
-  Image as ImageIcon,
+
   User
 } from "lucide-react";
 import { currencies, languages, useTranslation } from "@/lib/i18n";
-import LogoUpload from "@/components/logo-upload";
+
 import ProfileEditor from "@/components/profile-editor";
 
 export default function Settings() {
@@ -165,24 +165,7 @@ export default function Settings() {
             </CardContent>
           </Card>
 
-          {/* Company Logo Settings */}
-          <Card>
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2">
-                <ImageIcon className="w-5 h-5" />
-                {t('companyLogo')}
-              </CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              <LogoUpload />
-              <p className="text-sm text-gray-500">
-                {settings?.language === 'en' 
-                  ? 'Upload your company logo to appear on invoices and documents.'
-                  : 'Téléchargez le logo de votre entreprise pour qu\'il apparaisse sur les factures et documents.'
-                }
-              </p>
-            </CardContent>
-          </Card>
+
 
           {/* Currency Settings */}
           <Card>

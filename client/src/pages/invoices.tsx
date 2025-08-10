@@ -502,7 +502,7 @@ export default function Invoices() {
                                   <div style="font-family: Arial, sans-serif; color: black; line-height: 1.6;">
                                     <div style="display: flex; justify-content: space-between; margin-bottom: 40px;">
                                       <div style="display: flex; align-items: flex-start; gap: 16px;">
-                                        ${user?.companyLogo ? `<img src="${user.companyLogo}" alt="Logo" style="width: 64px; height: 64px; object-fit: contain;" />` : ''}
+
                                         <div>
                                           <h1 style="font-size: 36px; font-weight: bold; margin: 0;">FACTURE</h1>
                                           <p style="font-size: 18px; color: #666; margin: 8px 0;">${fullInvoice.number}</p>

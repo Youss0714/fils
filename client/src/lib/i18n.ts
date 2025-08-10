@@ -65,10 +65,7 @@ export interface Translations {
   currency: string;
   profile: string;
   preferences: string;
-  companyLogo: string;
-  uploadLogo: string;
-  removeLogo: string;
-  logoPreview: string;
+
   personalInfo: string;
   updateProfile: string;
   profileFirstName: string;
@@ -176,10 +173,7 @@ export const translations: Record<Language, Translations> = {
     currency: "Devise",
     profile: "Profil",
     preferences: "Préférences",
-    companyLogo: "Logo de l'entreprise",
-    uploadLogo: "Télécharger un logo",
-    removeLogo: "Supprimer le logo",
-    logoPreview: "Aperçu du logo",
+
     personalInfo: "Informations personnelles",
     updateProfile: "Mettre à jour le profil",
     profileFirstName: "Prénom",
@@ -286,10 +280,7 @@ export const translations: Record<Language, Translations> = {
     currency: "Currency",
     profile: "Profile",
     preferences: "Preferences",
-    companyLogo: "Company Logo",
-    uploadLogo: "Upload Logo",
-    removeLogo: "Remove Logo",
-    logoPreview: "Logo Preview",
+
     personalInfo: "Personal Information",
     updateProfile: "Update Profile",
     profileFirstName: "First Name",

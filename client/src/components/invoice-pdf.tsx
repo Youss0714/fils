@@ -157,13 +157,7 @@ export default function InvoicePDF({ invoice, user }: InvoicePDFProps) {
           {/* Header */}
           <div className="flex justify-between items-start mb-8">
             <div className="flex items-start space-x-4">
-              {user?.companyLogo && (
-                <img 
-                  src={user.companyLogo} 
-                  alt="Logo de l'entreprise" 
-                  className="w-16 h-16 object-contain"
-                />
-              )}
+
               <div>
                 <h1 className="text-3xl font-bold text-gray-900 mb-2">FACTURE</h1>
                 <p className="text-lg text-gray-600">{invoice.number}</p>
