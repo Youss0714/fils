@@ -41,6 +41,7 @@ export const users = pgTable("users", {
   businessType: varchar("business_type", { length: 255 }),
   currency: varchar("currency", { length: 10 }).default("XOF"), // XOF ou GHS
   language: varchar("language", { length: 10 }).default("fr"), // fr ou en
+  licenseActivated: boolean("license_activated").default(false), // Licence activée pour cet utilisateur
   createdAt: timestamp("created_at").defaultNow(),
   updatedAt: timestamp("updated_at").defaultNow(),
 });

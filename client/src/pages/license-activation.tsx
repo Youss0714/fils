@@ -89,7 +89,7 @@ export default function LicenseActivationPage() {
                   </p>
                 </div>
                 <Button 
-                  onClick={() => window.location.href = "/"} 
+                  onClick={() => window.location.reload()} 
                   className="w-full"
                   data-testid="button-continue"
                 >

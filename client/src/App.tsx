@@ -24,6 +24,34 @@ import LicenseActivation from "@/pages/license-activation";
 import AdminLicenses from "@/pages/admin-licenses";
 import Sidebar from "@/components/sidebar";
 
+function AppContent() {
+  const { user } = useAuth();
+  
+  // Check if user needs license activation
+  if (user && !user.licenseActivated) {
+    return <LicenseActivation />;
+  }
+
+  return (
+    <div className="flex h-screen bg-gray-50">
+      <Sidebar />
+      <Switch>
+        <Route path="/" component={Dashboard} />
+        <Route path="/clients" component={Clients} />
+        <Route path="/products" component={Products} />
+        <Route path="/categories" component={Categories} />
+        <Route path="/invoices" component={Invoices} />
+        <Route path="/invoices/:id" component={InvoiceDetail} />
+        <Route path="/sales" component={Sales} />
+        <Route path="/settings" component={Settings} />
+        <Route path="/export" component={Export} />
+        <Route path="/complete-profile" component={UserRegistration} />
+        <Route component={NotFound} />
+      </Switch>
+    </div>
+  );
+}
+
 function Router() {
   const { isAuthenticated, isLoading } = useAuth();
   const [showLoadingScreen, setShowLoadingScreen] = useState(() => {
@@ -83,22 +111,7 @@ function Router() {
           <Route component={AuthPage} />
         </>
       ) : (
-        <div className="flex h-screen bg-gray-50">
-          <Sidebar />
-          <Switch>
-            <Route path="/" component={Dashboard} />
-            <Route path="/clients" component={Clients} />
-            <Route path="/products" component={Products} />
-            <Route path="/categories" component={Categories} />
-            <Route path="/invoices" component={Invoices} />
-            <Route path="/invoices/:id" component={InvoiceDetail} />
-            <Route path="/sales" component={Sales} />
-            <Route path="/settings" component={Settings} />
-            <Route path="/export" component={Export} />
-            <Route path="/complete-profile" component={UserRegistration} />
-            <Route component={NotFound} />
-          </Switch>
-        </div>
+        <AppContent />
       )}
     </Switch>
   );

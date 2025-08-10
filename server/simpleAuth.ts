@@ -10,6 +10,9 @@ import type { User as UserType } from "@shared/schema";
 declare global {
   namespace Express {
     interface User extends UserType {}
+    interface Request {
+      session: any;
+    }
   }
 }
 
@@ -118,8 +121,21 @@ export function setupAuth(app: Express) {
         lastName,
       });
 
-      req.login(newUser, (err) => {
+      req.login(newUser, async (err) => {
         if (err) return next(err);
+        
+        try {
+          // Check if there's a pending license activation in session
+          if (req.session && req.session.activatedLicenseKey) {
+            await storage.setUserLicenseActivated(newUser.id, true);
+            // Clear the license from session
+            delete req.session.activatedLicenseKey;
+          }
+        } catch (error) {
+          console.error("Error associating license with new user:", error);
+          // Continue registration even if license association fails
+        }
+        
         res.status(201).json({
           id: newUser.id,
           email: newUser.email,
@@ -145,10 +161,23 @@ export function setupAuth(app: Express) {
         });
       }
       
-      req.login(user, (err) => {
+      req.login(user, async (err) => {
         if (err) {
           return res.status(500).json({ message: "Erreur de connexion" });
         }
+        
+        try {
+          // Check if there's a pending license activation in session
+          if (req.session && req.session.activatedLicenseKey && !user.licenseActivated) {
+            await storage.setUserLicenseActivated(user.id, true);
+            // Clear the license from session
+            delete req.session.activatedLicenseKey;
+          }
+        } catch (error) {
+          console.error("Error associating license with user:", error);
+          // Continue login even if license association fails
+        }
+        
         res.json({
           id: user.id,
           email: user.email,

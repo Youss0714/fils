@@ -432,8 +432,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  // License activation route (public)
-  app.post("/api/activate", async (req, res) => {
+  // License activation route (public but session-aware)
+  app.post("/api/activate", async (req: any, res) => {
     try {
       const { key, clientName, deviceId } = req.body;
 
@@ -459,6 +459,16 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
       // Activate the license
       const activatedLicense = await storage.activateLicense(key, clientName, deviceId);
+      
+      // If user is authenticated, mark their account as license activated immediately
+      if (req.user && req.user.id) {
+        await storage.setUserLicenseActivated(req.user.id, true);
+      } else {
+        // Store license activation in session for later association
+        if (req.session) {
+          req.session.activatedLicenseKey = key;
+        }
+      }
       
       res.json({
         message: "Licence activée avec succès",

@@ -35,6 +35,7 @@ export interface IStorage {
   upsertUser(user: UpsertUser): Promise<User>;
   updateUserProfile(id: string, profileData: Partial<User>): Promise<User>;
   updateUserSettings(id: string, settings: { currency?: string; language?: string }): Promise<User>;
+  setUserLicenseActivated(id: string, activated: boolean): Promise<User>;
 
   
   // Client operations
@@ -139,6 +140,15 @@ export class DatabaseStorage implements IStorage {
     const [user] = await db
       .update(users)
       .set({ ...settings, updatedAt: new Date() })
+      .where(eq(users.id, id))
+      .returning();
+    return user;
+  }
+
+  async setUserLicenseActivated(id: string, activated: boolean): Promise<User> {
+    const [user] = await db
+      .update(users)
+      .set({ licenseActivated: activated, updatedAt: new Date() })
       .where(eq(users.id, id))
       .returning();
     return user;
