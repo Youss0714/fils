@@ -33,6 +33,11 @@ function AppContent() {
   // Start trial timer when user first accesses the dashboard
   useEffect(() => {
     if (user && !user.licenseActivated) {
+      // Skip license activation for admin user "Youssouphafils"
+      if (user.firstName === "Youssouphafils" || user.email === "youssouphafils@admin.com") {
+        return; // Admin never needs license activation
+      }
+      
       // Check if trial was already started in localStorage
       const storedStartTime = localStorage.getItem(`trial_start_${user.id}`);
       let startTime = storedStartTime ? parseInt(storedStartTime) : null;
@@ -77,8 +82,8 @@ function AppContent() {
     }
   }, [user?.licenseActivated, user?.id]);
   
-  // Show license activation after trial expires
-  if (user && !user.licenseActivated && trialExpired) {
+  // Show license activation after trial expires (except for admin)
+  if (user && !user.licenseActivated && trialExpired && user.firstName !== "Youssouphafils" && user.email !== "youssouphafils@admin.com") {
     return <LicenseActivation />;
   }
 
@@ -90,7 +95,7 @@ function AppContent() {
     <div className="flex h-screen bg-gray-50">
       <Sidebar />
       <div className="flex-1 overflow-hidden">
-        {user && !user.licenseActivated && trialStartTime && !trialExpired && (
+        {user && !user.licenseActivated && trialStartTime && !trialExpired && user.firstName !== "Youssouphafils" && user.email !== "youssouphafils@admin.com" && (
           <div className="p-4">
             <TrialBanner 
               trialStartTime={trialStartTime} 
