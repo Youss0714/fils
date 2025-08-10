@@ -90,11 +90,11 @@ export default function LogoUpload() {
     const file = acceptedFiles[0];
     if (!file) return;
 
-    // Check file size (2MB limit)
-    if (file.size > 2 * 1024 * 1024) {
+    // Check file size (5MB limit)
+    if (file.size > 5 * 1024 * 1024) {
       toast({
         title: t('error'),
-        description: settings?.language === 'en' ? 'Image too large (max 2MB)' : 'Image trop volumineuse (max 2MB)',
+        description: settings?.language === 'en' ? 'Image too large (max 5MB)' : 'Image trop volumineuse (max 5MB)',
         variant: 'destructive',
       });
       return;
