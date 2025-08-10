@@ -38,10 +38,17 @@ function AppContent() {
       let startTime = storedStartTime ? parseInt(storedStartTime) : null;
       
       if (!startTime) {
-        // Start new trial
+        // Start new trial - but don't expire immediately, let user see dashboard
         startTime = Date.now();
         localStorage.setItem(`trial_start_${user.id}`, startTime.toString());
         setTrialStartTime(startTime);
+        
+        // Set timer for 1 minute
+        const timer = setTimeout(() => {
+          setTrialExpired(true);
+        }, 60000);
+        
+        return () => clearTimeout(timer);
       } else {
         setTrialStartTime(startTime);
         
@@ -51,18 +58,14 @@ function AppContent() {
           setTrialExpired(true);
           return;
         }
-      }
-      
-      // Set timer for remaining time
-      const remainingTime = 60000 - (Date.now() - startTime);
-      if (remainingTime > 0) {
+        
+        // Set timer for remaining time
+        const remainingTime = 60000 - elapsed;
         const timer = setTimeout(() => {
           setTrialExpired(true);
         }, remainingTime);
         
         return () => clearTimeout(timer);
-      } else {
-        setTrialExpired(true);
       }
     }
   }, [user]);
