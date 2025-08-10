@@ -57,22 +57,13 @@ export default function LicenseActivationPage() {
       return response.json();
     },
     onSuccess: async () => {
-      // Invalider et refetch immédiatement les données utilisateur
-      await queryClient.invalidateQueries({ queryKey: ["/api/user"] });
-      await queryClient.refetchQueries({ queryKey: ["/api/user"] });
+      // Supprimer tous les caches pour éviter les données obsolètes
+      queryClient.clear();
       
-      // Attendre un peu et vérifier si on doit rediriger
+      // Attendre un peu et rediriger avec rechargement complet
       setTimeout(() => {
-        // Vérifier si l'utilisateur est maintenant activé
-        const currentUser = queryClient.getQueryData(["/api/user"]) as any;
-        if (currentUser?.licenseActivated) {
-          // Rediriger vers le dashboard
-          window.location.href = "/";
-        } else {
-          // Fallback: recharger la page complètement
-          window.location.reload();
-        }
-      }, 1000);
+        window.location.replace("/");
+      }, 1500);
     },
   });
 
@@ -149,13 +140,11 @@ export default function LicenseActivationPage() {
                 </div>
                 <Button 
                   onClick={async () => {
-                    // Forcer l'actualisation et redirection
-                    await queryClient.invalidateQueries({ queryKey: ["/api/user"] });
-                    await queryClient.refetchQueries({ queryKey: ["/api/user"] });
+                    // Vider tous les caches
+                    queryClient.clear();
                     
-                    setTimeout(() => {
-                      window.location.href = "/";
-                    }, 200);
+                    // Rediriger avec rechargement complet
+                    window.location.replace("/");
                   }} 
                   className="w-full"
                   data-testid="button-continue"
