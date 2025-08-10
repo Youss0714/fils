@@ -19,7 +19,7 @@ export default function AdminLicensesPage() {
   const [newLicense, setNewLicense] = useState({
     key: "",
     clientName: "",
-    createdBy: "Youssouf",
+    createdBy: "Youssouphafils",
   });
   const [createDialogOpen, setCreateDialogOpen] = useState(false);
 
@@ -69,7 +69,7 @@ export default function AdminLicensesPage() {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["admin-licenses"] });
-      setNewLicense({ key: "", clientName: "", createdBy: "Youssouf" });
+      setNewLicense({ key: "", clientName: "", createdBy: "Youssouphafils" });
       setCreateDialogOpen(false);
     },
   });

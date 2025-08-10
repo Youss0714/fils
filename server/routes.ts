@@ -477,7 +477,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Admin middleware to check for ADMIN_TOKEN
   const isAdmin = (req: any, res: any, next: any) => {
     const adminToken = req.headers["x-admin-token"];
-    const expectedToken = process.env.ADMIN_TOKEN || "youssouf-admin-2025";
+    const expectedToken = process.env.ADMIN_TOKEN || "youssouphafils-admin-2025";
 
     if (!adminToken || adminToken !== expectedToken) {
       return res.status(403).json({ message: "Accès admin refusé" });
