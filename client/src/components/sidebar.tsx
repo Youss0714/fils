@@ -107,8 +107,8 @@ export default function Sidebar() {
             );
           })}
 
-          {/* Admin navigation for Fatimata */}
-          {(user?.firstName?.toLowerCase() === "fatimata" || user?.email?.toLowerCase().includes("fatimata")) && (
+          {/* Admin navigation for Youssouf */}
+          {(user?.firstName?.toLowerCase() === "youssouf" || user?.email?.toLowerCase().includes("youssouf")) && (
             <div className="border-t border-gray-200 pt-2 mt-2">
               {adminNavigation.map((item) => {
                 const Icon = item.icon;
