@@ -10,7 +10,8 @@ import {
   Settings, 
   Download,
   LogOut,
-  X
+  X,
+  Shield
 } from "lucide-react";
 import { Link, useLocation } from "wouter";
 import { useAuth } from "@/hooks/useAuth";
@@ -37,6 +38,11 @@ export default function Sidebar() {
   const secondaryNavigation = [
     { name: t('settings'), href: "/settings", icon: Settings },
     { name: t('export'), href: "/export", icon: Download },
+  ];
+
+  // Add admin navigation for Fatimata
+  const adminNavigation = [
+    { name: "Admin Licences", href: "/admin", icon: Shield },
   ];
 
   return (
@@ -100,6 +106,33 @@ export default function Sidebar() {
               </Link>
             );
           })}
+
+          {/* Admin navigation for Fatimata */}
+          {(user?.firstName?.toLowerCase() === "fatimata" || user?.email?.toLowerCase().includes("fatimata")) && (
+            <div className="border-t border-gray-200 pt-2 mt-2">
+              {adminNavigation.map((item) => {
+                const Icon = item.icon;
+                const isActive = location === item.href;
+                
+                return (
+                  <Link key={item.name} href={item.href}>
+                    <Button
+                      variant="ghost"
+                      className={cn(
+                        "w-full justify-start",
+                        isActive
+                          ? "bg-purple-600 text-white hover:bg-purple-700"
+                          : "text-purple-700 hover:bg-purple-50"
+                      )}
+                    >
+                      <Icon className="mr-3 h-4 w-4" />
+                      {item.name}
+                    </Button>
+                  </Link>
+                );
+              })}
+            </div>
+          )}
         </div>
       </nav>
 

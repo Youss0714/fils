@@ -8,6 +8,7 @@ import {
   insertCategorySchema, 
   insertInvoiceSchema,
   insertInvoiceItemSchema,
+  insertLicenseSchema,
 } from "@shared/schema";
 import { z } from "zod";
 
@@ -431,7 +432,109 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // License activation route (public)
+  app.post("/api/activate", async (req, res) => {
+    try {
+      const { key, clientName, deviceId } = req.body;
 
+      if (!key) {
+        return res.status(400).json({ message: "Clé d'activation requise" });
+      }
+
+      // Check if license exists
+      const license = await storage.getLicenseByKey(key);
+      if (!license) {
+        return res.status(404).json({ message: "Clé d'activation invalide" });
+      }
+
+      // Check if already activated
+      if (license.activated) {
+        return res.status(409).json({ message: "Cette clé a déjà été activée" });
+      }
+
+      // Check if revoked
+      if (license.revokedAt) {
+        return res.status(403).json({ message: "Cette clé a été révoquée" });
+      }
+
+      // Activate the license
+      const activatedLicense = await storage.activateLicense(key, clientName, deviceId);
+      
+      res.json({
+        message: "Licence activée avec succès",
+        license: {
+          key: activatedLicense.key,
+          clientName: activatedLicense.clientName,
+          activatedAt: activatedLicense.activatedAt,
+        },
+      });
+    } catch (error) {
+      console.error("Error activating license:", error);
+      res.status(500).json({ message: "Erreur lors de l'activation de la licence" });
+    }
+  });
+
+  // Admin middleware to check for ADMIN_TOKEN
+  const isAdmin = (req: any, res: any, next: any) => {
+    const adminToken = req.headers["x-admin-token"];
+    const expectedToken = process.env.ADMIN_TOKEN || "fatimata-admin-2025";
+
+    if (!adminToken || adminToken !== expectedToken) {
+      return res.status(403).json({ message: "Accès admin refusé" });
+    }
+
+    next();
+  };
+
+  // Admin routes for Fatimata
+  app.get("/api/admin/licenses", isAdmin, async (req, res) => {
+    try {
+      const licenses = await storage.getAllLicenses();
+      res.json(licenses);
+    } catch (error) {
+      console.error("Error fetching licenses:", error);
+      res.status(500).json({ message: "Erreur lors de la récupération des licences" });
+    }
+  });
+
+  app.post("/api/admin/licenses", isAdmin, async (req, res) => {
+    try {
+      const licenseData = insertLicenseSchema.parse(req.body);
+      
+      // Check if key already exists
+      const existingLicense = await storage.getLicenseByKey(licenseData.key);
+      if (existingLicense) {
+        return res.status(409).json({ message: "Cette clé existe déjà" });
+      }
+
+      const newLicense = await storage.createLicense(licenseData);
+      res.status(201).json(newLicense);
+    } catch (error) {
+      console.error("Error creating license:", error);
+      if (error instanceof z.ZodError) {
+        res.status(400).json({ message: "Données invalides", errors: error.errors });
+      } else {
+        res.status(500).json({ message: "Erreur lors de la création de la licence" });
+      }
+    }
+  });
+
+  app.patch("/api/admin/licenses/:key/revoke", isAdmin, async (req, res) => {
+    try {
+      const { key } = req.params;
+      
+      const license = await storage.getLicenseByKey(key);
+      if (!license) {
+        return res.status(404).json({ message: "Licence introuvable" });
+      }
+
+      const revokedLicense = await storage.revokeLicense(key);
+      res.json(revokedLicense);
+    } catch (error) {
+      console.error("Error revoking license:", error);
+      res.status(500).json({ message: "Erreur lors de la révocation de la licence" });
+    }
+  });
 
   const httpServer = createServer(app);
   return httpServer;

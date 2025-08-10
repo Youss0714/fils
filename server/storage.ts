@@ -6,6 +6,7 @@ import {
   invoices,
   invoiceItems,
   sales,
+  licenses,
   type User,
   type UpsertUser,
   type Client,
@@ -14,12 +15,14 @@ import {
   type Invoice,
   type InvoiceItem,
   type Sale,
+  type License,
   type InsertClient,
   type InsertProduct,
   type InsertCategory,
   type InsertInvoice,
   type InsertInvoiceItem,
   type InsertSale,
+  type InsertLicense,
 } from "@shared/schema";
 import { db } from "./db";
 import { eq, desc, and, sum, count, sql, like, or } from "drizzle-orm";
@@ -79,6 +82,13 @@ export interface IStorage {
     topProducts: (Product & { salesCount: number })[];
     lowStockProducts: Product[];
   }>;
+
+  // License operations
+  getLicenseByKey(key: string): Promise<License | undefined>;
+  getAllLicenses(): Promise<License[]>;
+  createLicense(license: InsertLicense): Promise<License>;
+  activateLicense(key: string, clientName?: string, deviceId?: string): Promise<License>;
+  revokeLicense(key: string): Promise<License>;
 }
 
 export class DatabaseStorage implements IStorage {
@@ -558,6 +568,47 @@ export class DatabaseStorage implements IStorage {
       recentInvoiceCount,
       recentClientCount,
     };
+  }
+
+  // License operations
+  async getLicenseByKey(key: string): Promise<License | undefined> {
+    const [license] = await db.select().from(licenses).where(eq(licenses.key, key));
+    return license;
+  }
+
+  async getAllLicenses(): Promise<License[]> {
+    return db.select().from(licenses).orderBy(desc(licenses.createdAt));
+  }
+
+  async createLicense(licenseData: InsertLicense): Promise<License> {
+    const [license] = await db.insert(licenses).values(licenseData).returning();
+    return license;
+  }
+
+  async activateLicense(key: string, clientName?: string, deviceId?: string): Promise<License> {
+    const [license] = await db
+      .update(licenses)
+      .set({
+        activated: true,
+        clientName,
+        deviceId,
+        activatedAt: new Date(),
+      })
+      .where(eq(licenses.key, key))
+      .returning();
+    return license;
+  }
+
+  async revokeLicense(key: string): Promise<License> {
+    const [license] = await db
+      .update(licenses)
+      .set({
+        activated: false,
+        revokedAt: new Date(),
+      })
+      .where(eq(licenses.key, key))
+      .returning();
+    return license;
   }
 }
 

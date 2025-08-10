@@ -112,6 +112,19 @@ export const sales = pgTable("sales", {
   createdAt: timestamp("created_at").defaultNow(),
 });
 
+// Licenses table for activation system
+export const licenses = pgTable("licenses", {
+  id: serial("id").primaryKey(),
+  key: varchar("key", { length: 100 }).notNull().unique(),
+  activated: boolean("activated").default(false),
+  clientName: varchar("client_name", { length: 255 }),
+  deviceId: varchar("device_id", { length: 255 }),
+  createdBy: varchar("created_by", { length: 255 }).notNull(),
+  activatedAt: timestamp("activated_at"),
+  revokedAt: timestamp("revoked_at"),
+  createdAt: timestamp("created_at").defaultNow(),
+});
+
 // Relations
 export const usersRelations = relations(users, ({ many }) => ({
   clients: many(clients),
@@ -120,6 +133,8 @@ export const usersRelations = relations(users, ({ many }) => ({
   invoices: many(invoices),
   sales: many(sales),
 }));
+
+export const licensesRelations = relations(licenses, ({ }) => ({}));
 
 export const categoriesRelations = relations(categories, ({ one, many }) => ({
   user: one(users, {
@@ -246,6 +261,13 @@ export const insertSaleSchema = createInsertSchema(sales).omit({
   createdAt: true,
 });
 
+export const insertLicenseSchema = createInsertSchema(licenses).omit({
+  id: true,
+  createdAt: true,
+  activatedAt: true,
+  revokedAt: true,
+});
+
 // Types
 export type UpsertUser = typeof users.$inferInsert;
 export type User = typeof users.$inferSelect;
@@ -255,6 +277,7 @@ export type Product = typeof products.$inferSelect;
 export type Invoice = typeof invoices.$inferSelect;
 export type InvoiceItem = typeof invoiceItems.$inferSelect;
 export type Sale = typeof sales.$inferSelect;
+export type License = typeof licenses.$inferSelect;
 
 export type InsertCategory = z.infer<typeof insertCategorySchema>;
 export type InsertClient = z.infer<typeof insertClientSchema>;
@@ -262,3 +285,4 @@ export type InsertProduct = z.infer<typeof insertProductSchema>;
 export type InsertInvoice = z.infer<typeof insertInvoiceSchema>;
 export type InsertInvoiceItem = z.infer<typeof insertInvoiceItemSchema>;
 export type InsertSale = z.infer<typeof insertSaleSchema>;
+export type InsertLicense = z.infer<typeof insertLicenseSchema>;

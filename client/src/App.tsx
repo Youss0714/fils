@@ -20,6 +20,8 @@ import Sales from "@/pages/sales";
 import Settings from "@/pages/settings";
 import Export from "@/pages/export";
 import UserRegistration from "@/pages/user-registration";
+import LicenseActivation from "@/pages/license-activation";
+import AdminLicenses from "@/pages/admin-licenses";
 import Sidebar from "@/components/sidebar";
 
 function Router() {
@@ -70,6 +72,10 @@ function Router() {
 
   return (
     <Switch>
+      {/* Public routes for license management */}
+      <Route path="/activate" component={LicenseActivation} />
+      <Route path="/admin" component={AdminLicenses} />
+      
       {isLoading || !isAuthenticated ? (
         <>
           <Route path="/" component={Landing} />
