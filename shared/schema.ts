@@ -9,6 +9,7 @@ import {
   decimal,
   integer,
   boolean,
+  date,
 } from "drizzle-orm/pg-core";
 import { relations } from "drizzle-orm";
 import { createInsertSchema } from "drizzle-zod";
@@ -193,6 +194,64 @@ export const accountingReports = pgTable("accounting_reports", {
   createdAt: timestamp("created_at").defaultNow(),
 });
 
+// Main Cash Book - Transactions principales (revenus, achats, transferts)
+export const cashBookEntries = pgTable("cash_book_entries", {
+  id: serial("id").primaryKey(),
+  userId: varchar("user_id").notNull().references(() => users.id),
+  reference: varchar("reference", { length: 100 }).notNull(),
+  date: date("date").notNull(),
+  description: text("description").notNull(),
+  type: varchar("type", { length: 20 }).notNull(), // 'income', 'expense', 'transfer'
+  amount: decimal("amount", { precision: 12, scale: 2 }).notNull(),
+  account: varchar("account", { length: 100 }).notNull(), // Compte concerné
+  counterparty: varchar("counterparty", { length: 255 }), // Contrepartie
+  category: varchar("category", { length: 100 }),
+  paymentMethod: varchar("payment_method", { length: 50 }).notNull(),
+  receiptNumber: varchar("receipt_number", { length: 100 }),
+  notes: text("notes"),
+  isReconciled: boolean("is_reconciled").default(false),
+  reconciledAt: timestamp("reconciled_at"),
+  createdAt: timestamp("created_at").defaultNow(),
+  updatedAt: timestamp("updated_at").defaultNow(),
+});
+
+// Petty Cash - Petites dépenses quotidiennes avec justificatifs
+export const pettyCashEntries = pgTable("petty_cash_entries", {
+  id: serial("id").primaryKey(),
+  userId: varchar("user_id").notNull().references(() => users.id),
+  date: date("date").notNull(),
+  description: text("description").notNull(),
+  amount: decimal("amount", { precision: 8, scale: 2 }).notNull(),
+  category: varchar("category", { length: 100 }).notNull(),
+  recipient: varchar("recipient", { length: 255 }),
+  purpose: text("purpose"),
+  receiptNumber: varchar("receipt_number", { length: 50 }),
+  approvedBy: varchar("approved_by").references(() => users.id),
+  status: varchar("status", { length: 20 }).default("pending").notNull(), // 'pending', 'approved', 'rejected'
+  justification: text("justification"), // Justificatifs attachés
+  runningBalance: decimal("running_balance", { precision: 10, scale: 2 }),
+  createdAt: timestamp("created_at").defaultNow(),
+  updatedAt: timestamp("updated_at").defaultNow(),
+});
+
+// Transaction Journal - Historique complet des opérations avec filtres
+export const transactionJournal = pgTable("transaction_journal", {
+  id: serial("id").primaryKey(),
+  userId: varchar("user_id").notNull().references(() => users.id),
+  entryDate: timestamp("entry_date").defaultNow().notNull(),
+  transactionDate: timestamp("transaction_date").notNull(),
+  reference: varchar("reference", { length: 100 }).notNull(),
+  description: text("description").notNull(),
+  sourceModule: varchar("source_module", { length: 50 }).notNull(), // 'cash_book', 'petty_cash', 'expenses', 'imprest'
+  sourceId: integer("source_id").notNull(), // ID de l'enregistrement source
+  debitAccount: varchar("debit_account", { length: 100 }),
+  creditAccount: varchar("credit_account", { length: 100 }),
+  debitAmount: decimal("debit_amount", { precision: 12, scale: 2 }),
+  creditAmount: decimal("credit_amount", { precision: 12, scale: 2 }),
+  runningBalance: decimal("running_balance", { precision: 12, scale: 2 }),
+  createdBy: varchar("created_by").notNull().references(() => users.id),
+});
+
 // Relations
 export const usersRelations = relations(users, ({ many }) => ({
   clients: many(clients),
@@ -205,6 +264,9 @@ export const usersRelations = relations(users, ({ many }) => ({
   imprestFunds: many(imprestFunds),
   imprestTransactions: many(imprestTransactions),
   accountingReports: many(accountingReports),
+  cashBookEntries: many(cashBookEntries),
+  pettyCashEntries: many(pettyCashEntries),
+  transactionJournal: many(transactionJournal),
 }));
 
 export const licensesRelations = relations(licenses, ({ }) => ({}));
@@ -335,6 +397,35 @@ export const accountingReportsRelations = relations(accountingReports, ({ one })
   }),
 }));
 
+export const cashBookEntriesRelations = relations(cashBookEntries, ({ one }) => ({
+  user: one(users, {
+    fields: [cashBookEntries.userId],
+    references: [users.id],
+  }),
+}));
+
+export const pettyCashEntriesRelations = relations(pettyCashEntries, ({ one }) => ({
+  user: one(users, {
+    fields: [pettyCashEntries.userId],
+    references: [users.id],
+  }),
+  approver: one(users, {
+    fields: [pettyCashEntries.approvedBy],
+    references: [users.id],
+  }),
+}));
+
+export const transactionJournalRelations = relations(transactionJournal, ({ one }) => ({
+  user: one(users, {
+    fields: [transactionJournal.userId],
+    references: [users.id],
+  }),
+  creator: one(users, {
+    fields: [transactionJournal.createdBy],
+    references: [users.id],
+  }),
+}));
+
 // Tax rates available for invoices
 export const TAX_RATES = [
   { value: "3.00", label: "3%" },
@@ -384,6 +475,37 @@ export const REPORT_TYPES = [
   { value: "imprest_summary", label: "Résumé des avances" },
   { value: "monthly_report", label: "Rapport mensuel" },
   { value: "yearly_report", label: "Rapport annuel" },
+] as const;
+
+// Cash Book constants
+export const CASH_BOOK_TYPES = [
+  { value: "income", label: "Recette", icon: "⬇️", color: "bg-green-100 text-green-800" },
+  { value: "expense", label: "Dépense", icon: "⬆️", color: "bg-red-100 text-red-800" },
+  { value: "transfer", label: "Transfert", icon: "↔️", color: "bg-blue-100 text-blue-800" },
+] as const;
+
+export const CASH_BOOK_ACCOUNTS = [
+  { value: "bank_main", label: "Compte bancaire principal" },
+  { value: "bank_secondary", label: "Compte bancaire secondaire" },
+  { value: "cash", label: "Caisse" },
+  { value: "petty_cash", label: "Petite caisse" },
+  { value: "mobile_money", label: "Mobile Money" },
+] as const;
+
+// Petty Cash constants
+export const PETTY_CASH_STATUS = [
+  { value: "pending", label: "En attente", icon: "⏳", color: "bg-yellow-100 text-yellow-800" },
+  { value: "approved", label: "Approuvée", icon: "✅", color: "bg-green-100 text-green-800" },
+  { value: "rejected", label: "Rejetée", icon: "❌", color: "bg-red-100 text-red-800" },
+] as const;
+
+export const PETTY_CASH_CATEGORIES = [
+  { value: "transport", label: "Transport" },
+  { value: "meals", label: "Repas" },
+  { value: "office_supplies", label: "Fournitures de bureau" },
+  { value: "communication", label: "Communication" },
+  { value: "maintenance", label: "Maintenance" },
+  { value: "other", label: "Autres" },
 ] as const;
 
 // Insert schemas
@@ -489,6 +611,60 @@ export const insertAccountingReportSchema = createInsertSchema(accountingReports
   periodEnd: z.string().transform(val => new Date(val)),
 });
 
+// New modules insert schemas
+export const insertCashBookEntrySchema = createInsertSchema(cashBookEntries).omit({
+  id: true,
+  createdAt: true,
+  updatedAt: true,
+}).extend({
+  amount: z.string().refine(
+    (val) => {
+      const amount = parseFloat(val);
+      return !isNaN(amount) && amount > 0;
+    },
+    { message: "Le montant doit être supérieur à 0" }
+  ),
+  date: z.string().transform(val => new Date(val)),
+});
+
+export const insertPettyCashEntrySchema = createInsertSchema(pettyCashEntries).omit({
+  id: true,
+  createdAt: true,
+  updatedAt: true,
+}).extend({
+  amount: z.string().refine(
+    (val) => {
+      const amount = parseFloat(val);
+      return !isNaN(amount) && amount > 0;
+    },
+    { message: "Le montant doit être supérieur à 0" }
+  ),
+  date: z.string().transform(val => new Date(val)),
+});
+
+export const insertTransactionJournalSchema = createInsertSchema(transactionJournal).omit({
+  id: true,
+  entryDate: true,
+}).extend({
+  transactionDate: z.string().transform(val => new Date(val)),
+  debitAmount: z.string().optional().refine(
+    (val) => {
+      if (!val) return true;
+      const amount = parseFloat(val);
+      return !isNaN(amount) && amount >= 0;
+    },
+    { message: "Le montant débit doit être positif" }
+  ),
+  creditAmount: z.string().optional().refine(
+    (val) => {
+      if (!val) return true;
+      const amount = parseFloat(val);
+      return !isNaN(amount) && amount >= 0;
+    },
+    { message: "Le montant crédit doit être positif" }
+  ),
+});
+
 // Types
 export type UpsertUser = typeof users.$inferInsert;
 export type User = typeof users.$inferSelect;
@@ -506,6 +682,9 @@ export type Expense = typeof expenses.$inferSelect;
 export type ImprestFund = typeof imprestFunds.$inferSelect;
 export type ImprestTransaction = typeof imprestTransactions.$inferSelect;
 export type AccountingReport = typeof accountingReports.$inferSelect;
+export type CashBookEntry = typeof cashBookEntries.$inferSelect;
+export type PettyCashEntry = typeof pettyCashEntries.$inferSelect;
+export type TransactionJournal = typeof transactionJournal.$inferSelect;
 
 export type InsertCategory = z.infer<typeof insertCategorySchema>;
 export type InsertClient = z.infer<typeof insertClientSchema>;
@@ -521,3 +700,6 @@ export type InsertExpense = z.infer<typeof insertExpenseSchema>;
 export type InsertImprestFund = z.infer<typeof insertImprestFundSchema>;
 export type InsertImprestTransaction = z.infer<typeof insertImprestTransactionSchema>;
 export type InsertAccountingReport = z.infer<typeof insertAccountingReportSchema>;
+export type InsertCashBookEntry = z.infer<typeof insertCashBookEntrySchema>;
+export type InsertPettyCashEntry = z.infer<typeof insertPettyCashEntrySchema>;
+export type InsertTransactionJournal = z.infer<typeof insertTransactionJournalSchema>;

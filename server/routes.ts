@@ -14,6 +14,9 @@ import {
   insertImprestFundSchema,
   insertImprestTransactionSchema,
   insertAccountingReportSchema,
+  insertCashBookEntrySchema,
+  insertPettyCashEntrySchema,
+  insertTransactionJournalSchema,
 } from "@shared/schema";
 import { z } from "zod";
 
@@ -778,7 +781,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       res.json(transaction);
     } catch (error) {
       console.error("Error creating imprest transaction:", error);
-      res.status(400).json({ message: error.message || "Erreur lors de la création de la transaction d'avance" });
+      res.status(400).json({ message: (error as Error).message || "Erreur lors de la création de la transaction d'avance" });
     }
   });
 
@@ -831,6 +834,243 @@ export async function registerRoutes(app: Express): Promise<Server> {
     } catch (error) {
       console.error("Error fetching accounting stats:", error);
       res.status(500).json({ message: "Erreur lors de la récupération des statistiques comptables" });
+    }
+  });
+
+  // ==========================================
+  // CASH BOOK ROUTES
+  // ==========================================
+  
+  app.get("/api/accounting/cash-book", isAuthenticated, async (req: any, res) => {
+    try {
+      const userId = req.user.id;
+      const entries = await storage.getCashBookEntries(userId);
+      res.json(entries);
+    } catch (error) {
+      console.error("Error fetching cash book entries:", error);
+      res.status(500).json({ message: "Erreur lors de la récupération des entrées du livre de caisse" });
+    }
+  });
+
+  app.get("/api/accounting/cash-book/:id", isAuthenticated, async (req: any, res) => {
+    try {
+      const userId = req.user.id;
+      const id = parseInt(req.params.id);
+      const entry = await storage.getCashBookEntry(id, userId);
+      if (!entry) {
+        return res.status(404).json({ message: "Entrée de caisse introuvable" });
+      }
+      res.json(entry);
+    } catch (error) {
+      console.error("Error fetching cash book entry:", error);
+      res.status(500).json({ message: "Erreur lors de la récupération de l'entrée de caisse" });
+    }
+  });
+
+  app.post("/api/accounting/cash-book", isAuthenticated, async (req: any, res) => {
+    try {
+      const userId = req.user.id;
+      const entryData = insertCashBookEntrySchema.parse({ ...req.body, userId });
+      const entry = await storage.createCashBookEntry(entryData);
+      res.json(entry);
+    } catch (error) {
+      console.error("Error creating cash book entry:", error);
+      res.status(400).json({ message: "Erreur lors de la création de l'entrée de caisse" });
+    }
+  });
+
+  app.put("/api/accounting/cash-book/:id", isAuthenticated, async (req: any, res) => {
+    try {
+      const userId = req.user.id;
+      const id = parseInt(req.params.id);
+      const entryData = insertCashBookEntrySchema.partial().parse(req.body);
+      const entry = await storage.updateCashBookEntry(id, entryData, userId);
+      res.json(entry);
+    } catch (error) {
+      console.error("Error updating cash book entry:", error);
+      res.status(400).json({ message: "Erreur lors de la mise à jour de l'entrée de caisse" });
+    }
+  });
+
+  app.patch("/api/accounting/cash-book/:id/reconcile", isAuthenticated, async (req: any, res) => {
+    try {
+      const userId = req.user.id;
+      const id = parseInt(req.params.id);
+      const entry = await storage.reconcileCashBookEntry(id, userId);
+      res.json(entry);
+    } catch (error) {
+      console.error("Error reconciling cash book entry:", error);
+      res.status(400).json({ message: "Erreur lors de la réconciliation de l'entrée de caisse" });
+    }
+  });
+
+  app.delete("/api/accounting/cash-book/:id", isAuthenticated, async (req: any, res) => {
+    try {
+      const userId = req.user.id;
+      const id = parseInt(req.params.id);
+      await storage.deleteCashBookEntry(id, userId);
+      res.json({ message: "Entrée de caisse supprimée avec succès" });
+    } catch (error) {
+      console.error("Error deleting cash book entry:", error);
+      res.status(500).json({ message: "Erreur lors de la suppression de l'entrée de caisse" });
+    }
+  });
+
+  // ==========================================
+  // PETTY CASH ROUTES
+  // ==========================================
+  
+  app.get("/api/accounting/petty-cash", isAuthenticated, async (req: any, res) => {
+    try {
+      const userId = req.user.id;
+      const entries = await storage.getPettyCashEntries(userId);
+      res.json(entries);
+    } catch (error) {
+      console.error("Error fetching petty cash entries:", error);
+      res.status(500).json({ message: "Erreur lors de la récupération des entrées de petite caisse" });
+    }
+  });
+
+  app.get("/api/accounting/petty-cash/:id", isAuthenticated, async (req: any, res) => {
+    try {
+      const userId = req.user.id;
+      const id = parseInt(req.params.id);
+      const entry = await storage.getPettyCashEntry(id, userId);
+      if (!entry) {
+        return res.status(404).json({ message: "Entrée de petite caisse introuvable" });
+      }
+      res.json(entry);
+    } catch (error) {
+      console.error("Error fetching petty cash entry:", error);
+      res.status(500).json({ message: "Erreur lors de la récupération de l'entrée de petite caisse" });
+    }
+  });
+
+  app.post("/api/accounting/petty-cash", isAuthenticated, async (req: any, res) => {
+    try {
+      const userId = req.user.id;
+      const entryData = insertPettyCashEntrySchema.parse({ ...req.body, userId });
+      const entry = await storage.createPettyCashEntry(entryData);
+      res.json(entry);
+    } catch (error) {
+      console.error("Error creating petty cash entry:", error);
+      res.status(400).json({ message: "Erreur lors de la création de l'entrée de petite caisse" });
+    }
+  });
+
+  app.put("/api/accounting/petty-cash/:id", isAuthenticated, async (req: any, res) => {
+    try {
+      const userId = req.user.id;
+      const id = parseInt(req.params.id);
+      const entryData = insertPettyCashEntrySchema.partial().parse(req.body);
+      const entry = await storage.updatePettyCashEntry(id, entryData, userId);
+      res.json(entry);
+    } catch (error) {
+      console.error("Error updating petty cash entry:", error);
+      res.status(400).json({ message: "Erreur lors de la mise à jour de l'entrée de petite caisse" });
+    }
+  });
+
+  app.patch("/api/accounting/petty-cash/:id/approve", isAuthenticated, async (req: any, res) => {
+    try {
+      const userId = req.user.id;
+      const approvedBy = req.user.id;
+      const id = parseInt(req.params.id);
+      const entry = await storage.approvePettyCashEntry(id, approvedBy, userId);
+      res.json(entry);
+    } catch (error) {
+      console.error("Error approving petty cash entry:", error);
+      res.status(400).json({ message: "Erreur lors de l'approbation de l'entrée de petite caisse" });
+    }
+  });
+
+  app.patch("/api/accounting/petty-cash/:id/reject", isAuthenticated, async (req: any, res) => {
+    try {
+      const userId = req.user.id;
+      const id = parseInt(req.params.id);
+      const entry = await storage.rejectPettyCashEntry(id, userId);
+      res.json(entry);
+    } catch (error) {
+      console.error("Error rejecting petty cash entry:", error);
+      res.status(400).json({ message: "Erreur lors du rejet de l'entrée de petite caisse" });
+    }
+  });
+
+  app.delete("/api/accounting/petty-cash/:id", isAuthenticated, async (req: any, res) => {
+    try {
+      const userId = req.user.id;
+      const id = parseInt(req.params.id);
+      await storage.deletePettyCashEntry(id, userId);
+      res.json({ message: "Entrée de petite caisse supprimée avec succès" });
+    } catch (error) {
+      console.error("Error deleting petty cash entry:", error);
+      res.status(500).json({ message: "Erreur lors de la suppression de l'entrée de petite caisse" });
+    }
+  });
+
+  // ==========================================
+  // TRANSACTION JOURNAL ROUTES
+  // ==========================================
+  
+  app.get("/api/accounting/transaction-journal", isAuthenticated, async (req: any, res) => {
+    try {
+      const userId = req.user.id;
+      const filters = {
+        startDate: req.query.startDate as string,
+        endDate: req.query.endDate as string,
+        sourceModule: req.query.sourceModule as string,
+      };
+      const entries = await storage.getTransactionJournal(userId, filters);
+      res.json(entries);
+    } catch (error) {
+      console.error("Error fetching transaction journal:", error);
+      res.status(500).json({ message: "Erreur lors de la récupération du journal des transactions" });
+    }
+  });
+
+  app.get("/api/accounting/transaction-journal/:id", isAuthenticated, async (req: any, res) => {
+    try {
+      const userId = req.user.id;
+      const id = parseInt(req.params.id);
+      const entry = await storage.getTransactionJournalEntry(id, userId);
+      if (!entry) {
+        return res.status(404).json({ message: "Entrée de journal introuvable" });
+      }
+      res.json(entry);
+    } catch (error) {
+      console.error("Error fetching transaction journal entry:", error);
+      res.status(500).json({ message: "Erreur lors de la récupération de l'entrée de journal" });
+    }
+  });
+
+  app.post("/api/accounting/transaction-journal", isAuthenticated, async (req: any, res) => {
+    try {
+      const userId = req.user.id;
+      const entryData = insertTransactionJournalSchema.parse({ 
+        ...req.body, 
+        userId,
+        createdBy: userId 
+      });
+      const entry = await storage.addToTransactionJournal(entryData);
+      res.json(entry);
+    } catch (error) {
+      console.error("Error creating transaction journal entry:", error);
+      res.status(400).json({ message: "Erreur lors de la création de l'entrée de journal" });
+    }
+  });
+
+  // ==========================================
+  // FINANCIAL DASHBOARD ROUTES
+  // ==========================================
+  
+  app.get("/api/accounting/financial-dashboard", isAuthenticated, async (req: any, res) => {
+    try {
+      const userId = req.user.id;
+      const data = await storage.getFinancialDashboardData(userId);
+      res.json(data);
+    } catch (error) {
+      console.error("Error fetching financial dashboard data:", error);
+      res.status(500).json({ message: "Erreur lors de la récupération des données du tableau de bord financier" });
     }
   });
 

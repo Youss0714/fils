@@ -1,7 +1,7 @@
 # YGestion - Business Management Application
 
 ## Overview
-YGestion is a comprehensive business management application designed for the African market, specifically supporting XOF (Franc CFA) and GHS (Cedi) currencies. Built with React, Express, and PostgreSQL, it provides a complete solution for managing clients, products, categories, invoices, and sales. Key capabilities include professional invoice generation with PDF export, real-time business metrics, robust client and product management, multi-language support (French and English), and automatic stock management. The project aims to offer a modern, responsive, and type-safe solution for small to medium-sized businesses.
+YGestion is a comprehensive business management application designed for the African market, specifically supporting XOF (Franc CFA) and GHS (Cedi) currencies. Built with React, Express, and PostgreSQL, it provides a complete solution for managing clients, products, categories, invoices, sales, and a full accounting module. Key capabilities include professional invoice generation with PDF export, real-time business metrics, robust client and product management, comprehensive accounting system with expense tracking, imprest management, Main Cash Book, Petty Cash operations, Transaction Journal, and financial reporting, multi-language support (French and English), and automatic stock management. The project aims to offer a modern, responsive, and type-safe solution for small to medium-sized businesses with complete financial management capabilities.
 
 ## User Preferences
 Preferred communication style: Simple, everyday language.
@@ -41,6 +41,8 @@ Preferred communication style: Simple, everyday language.
 - **Application Rebranding**: Renamed from GestionPro to YGestion.
 - **PDF Generation**: Utilizes jsPDF and html2canvas for robust PDF export.
 - **Print Functionality**: Includes print-only CSS styles for clean invoice printing.
+- **Extended Accounting System**: Complete accounting module with Main Cash Book, Petty Cash management, Transaction Journal, and comprehensive financial reporting.
+- **Advanced Financial Operations**: Automated transaction tracking, approval workflows, reconciliation features, and real-time financial dashboards.
 
 ## External Dependencies
 - **Database**: Neon PostgreSQL (serverless)
@@ -67,6 +69,14 @@ Preferred communication style: Simple, everyday language.
   - Modified App.tsx to show license activation page for unactivated users
   - Session-based license tracking for immediate activation after registration
   - Auto-association of activated licenses with user accounts on login/register
+✓ **Extended Accounting Module Implementation** (August 12, 2025)
+  - Complete Main Cash Book system with income/expense tracking and reconciliation
+  - Petty Cash management with approval workflow and running balance calculations
+  - Transaction Journal with automated entries from all accounting modules
+  - Financial Dashboard with real-time cash flow analysis and account balances
+  - 3 new database tables: cash_book_entries, petty_cash_entries, transaction_journal
+  - 25+ new storage operations with comprehensive API routes
+  - Integrated transaction tracking across all financial operations
 
 ## Licensing System Implementation (August 10, 2025)
 ✓ **Complete Licensing System**: Full license management system implemented

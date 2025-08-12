@@ -12,6 +12,9 @@ import {
   imprestFunds,
   imprestTransactions,
   accountingReports,
+  cashBookEntries,
+  pettyCashEntries,
+  transactionJournal,
   type User,
   type UpsertUser,
   type Client,
@@ -26,6 +29,9 @@ import {
   type ImprestFund,
   type ImprestTransaction,
   type AccountingReport,
+  type CashBookEntry,
+  type PettyCashEntry,
+  type TransactionJournal,
   type InsertClient,
   type InsertProduct,
   type InsertCategory,
@@ -38,9 +44,12 @@ import {
   type InsertImprestFund,
   type InsertImprestTransaction,
   type InsertAccountingReport,
+  type InsertCashBookEntry,
+  type InsertPettyCashEntry,
+  type InsertTransactionJournal,
 } from "@shared/schema";
 import { db } from "./db";
-import { eq, desc, and, sum, count, sql, like, or } from "drizzle-orm";
+import { eq, desc, and, sum, count, sql, like, or, gte, lte } from "drizzle-orm";
 
 export interface IStorage {
   // User operations
@@ -150,6 +159,31 @@ export interface IStorage {
     monthlyExpensesByCategory: { category: string; amount: number }[];
     recentExpenses: (Expense & { category: ExpenseCategory })[];
   }>;
+
+  // Cash Book operations
+  getCashBookEntries(userId: string): Promise<CashBookEntry[]>;
+  getCashBookEntry(id: number, userId: string): Promise<CashBookEntry | undefined>;
+  createCashBookEntry(data: InsertCashBookEntry): Promise<CashBookEntry>;
+  updateCashBookEntry(id: number, data: Partial<InsertCashBookEntry>, userId: string): Promise<CashBookEntry>;
+  deleteCashBookEntry(id: number, userId: string): Promise<void>;
+  reconcileCashBookEntry(id: number, userId: string): Promise<CashBookEntry>;
+
+  // Petty Cash operations
+  getPettyCashEntries(userId: string): Promise<PettyCashEntry[]>;
+  getPettyCashEntry(id: number, userId: string): Promise<PettyCashEntry | undefined>;
+  createPettyCashEntry(data: InsertPettyCashEntry): Promise<PettyCashEntry>;
+  updatePettyCashEntry(id: number, data: Partial<InsertPettyCashEntry>, userId: string): Promise<PettyCashEntry>;
+  approvePettyCashEntry(id: number, approvedBy: string, userId: string): Promise<PettyCashEntry>;
+  rejectPettyCashEntry(id: number, userId: string): Promise<PettyCashEntry>;
+  deletePettyCashEntry(id: number, userId: string): Promise<void>;
+
+  // Transaction Journal operations
+  getTransactionJournal(userId: string, filters?: any): Promise<TransactionJournal[]>;
+  addToTransactionJournal(data: InsertTransactionJournal): Promise<TransactionJournal>;
+  getTransactionJournalEntry(id: number, userId: string): Promise<TransactionJournal | undefined>;
+
+  // Financial Dashboard
+  getFinancialDashboardData(userId: string): Promise<any>;
 }
 
 export class DatabaseStorage implements IStorage {
@@ -976,6 +1010,285 @@ export class DatabaseStorage implements IStorage {
       monthlyExpensesByCategory: monthlyExpensesByCategoryFormatted,
       recentExpenses,
     };
+  }
+
+  // ==========================================
+  // CASH BOOK OPERATIONS
+  // ==========================================
+  
+  async getCashBookEntries(userId: string): Promise<CashBookEntry[]> {
+    return db.select().from(cashBookEntries).where(eq(cashBookEntries.userId, userId)).orderBy(desc(cashBookEntries.date));
+  }
+
+  async getCashBookEntry(id: number, userId: string): Promise<CashBookEntry | undefined> {
+    const [entry] = await db.select().from(cashBookEntries).where(and(eq(cashBookEntries.id, id), eq(cashBookEntries.userId, userId)));
+    return entry;
+  }
+
+  async createCashBookEntry(data: InsertCashBookEntry): Promise<CashBookEntry> {
+    // Generate unique reference
+    const reference = `CB-${Date.now()}-${Math.random().toString(36).substr(2, 5).toUpperCase()}`;
+    
+    const [newEntry] = await db.insert(cashBookEntries).values({
+      ...data,
+      reference,
+    }).returning();
+
+    // Add to transaction journal
+    await this.addToTransactionJournal({
+      userId: data.userId,
+      transactionDate: data.date,
+      reference,
+      description: data.description,
+      sourceModule: 'cash_book',
+      sourceId: newEntry.id,
+      debitAccount: data.type === 'expense' ? data.account : null,
+      creditAccount: data.type === 'income' ? data.account : null,
+      debitAmount: data.type === 'expense' ? data.amount : null,
+      creditAmount: data.type === 'income' ? data.amount : null,
+      createdBy: data.userId,
+    });
+
+    return newEntry;
+  }
+
+  async updateCashBookEntry(id: number, data: Partial<InsertCashBookEntry>, userId: string): Promise<CashBookEntry> {
+    const [updatedEntry] = await db
+      .update(cashBookEntries)
+      .set({
+        ...data,
+        updatedAt: new Date(),
+      })
+      .where(and(eq(cashBookEntries.id, id), eq(cashBookEntries.userId, userId)))
+      .returning();
+    return updatedEntry;
+  }
+
+  async deleteCashBookEntry(id: number, userId: string): Promise<void> {
+    await db.delete(cashBookEntries).where(and(eq(cashBookEntries.id, id), eq(cashBookEntries.userId, userId)));
+  }
+
+  async reconcileCashBookEntry(id: number, userId: string): Promise<CashBookEntry> {
+    const [updatedEntry] = await db
+      .update(cashBookEntries)
+      .set({
+        isReconciled: true,
+        reconciledAt: new Date(),
+        updatedAt: new Date(),
+      })
+      .where(and(eq(cashBookEntries.id, id), eq(cashBookEntries.userId, userId)))
+      .returning();
+    return updatedEntry;
+  }
+
+  // ==========================================
+  // PETTY CASH OPERATIONS
+  // ==========================================
+  
+  async getPettyCashEntries(userId: string): Promise<PettyCashEntry[]> {
+    return db.select().from(pettyCashEntries).where(eq(pettyCashEntries.userId, userId)).orderBy(desc(pettyCashEntries.date));
+  }
+
+  async getPettyCashEntry(id: number, userId: string): Promise<PettyCashEntry | undefined> {
+    const [entry] = await db.select().from(pettyCashEntries).where(and(eq(pettyCashEntries.id, id), eq(pettyCashEntries.userId, userId)));
+    return entry;
+  }
+
+  async createPettyCashEntry(data: InsertPettyCashEntry): Promise<PettyCashEntry> {
+    // Calculate running balance
+    const lastEntry = await db
+      .select({ runningBalance: pettyCashEntries.runningBalance })
+      .from(pettyCashEntries)
+      .where(eq(pettyCashEntries.userId, data.userId))
+      .orderBy(desc(pettyCashEntries.createdAt))
+      .limit(1);
+
+    const lastBalance = parseFloat(lastEntry[0]?.runningBalance || "0");
+    const newBalance = lastBalance - parseFloat(data.amount);
+
+    const [newEntry] = await db.insert(pettyCashEntries).values({
+      ...data,
+      runningBalance: newBalance.toString(),
+    }).returning();
+
+    return newEntry;
+  }
+
+  async updatePettyCashEntry(id: number, data: Partial<InsertPettyCashEntry>, userId: string): Promise<PettyCashEntry> {
+    const [updatedEntry] = await db
+      .update(pettyCashEntries)
+      .set({
+        ...data,
+        updatedAt: new Date(),
+      })
+      .where(and(eq(pettyCashEntries.id, id), eq(pettyCashEntries.userId, userId)))
+      .returning();
+    return updatedEntry;
+  }
+
+  async approvePettyCashEntry(id: number, approvedBy: string, userId: string): Promise<PettyCashEntry> {
+    const [updatedEntry] = await db
+      .update(pettyCashEntries)
+      .set({
+        status: 'approved',
+        approvedBy,
+        updatedAt: new Date(),
+      })
+      .where(and(eq(pettyCashEntries.id, id), eq(pettyCashEntries.userId, userId)))
+      .returning();
+
+    if (updatedEntry) {
+      // Add to transaction journal
+      await this.addToTransactionJournal({
+        userId,
+        transactionDate: updatedEntry.date,
+        reference: `PC-${updatedEntry.id}`,
+        description: updatedEntry.description,
+        sourceModule: 'petty_cash',
+        sourceId: updatedEntry.id,
+        debitAccount: 'petty_cash_expense',
+        creditAccount: 'petty_cash',
+        debitAmount: updatedEntry.amount,
+        creditAmount: updatedEntry.amount,
+        createdBy: approvedBy,
+      });
+    }
+
+    return updatedEntry;
+  }
+
+  async rejectPettyCashEntry(id: number, userId: string): Promise<PettyCashEntry> {
+    const [updatedEntry] = await db
+      .update(pettyCashEntries)
+      .set({
+        status: 'rejected',
+        updatedAt: new Date(),
+      })
+      .where(and(eq(pettyCashEntries.id, id), eq(pettyCashEntries.userId, userId)))
+      .returning();
+    return updatedEntry;
+  }
+
+  async deletePettyCashEntry(id: number, userId: string): Promise<void> {
+    await db.delete(pettyCashEntries).where(and(eq(pettyCashEntries.id, id), eq(pettyCashEntries.userId, userId)));
+  }
+
+  // ==========================================
+  // TRANSACTION JOURNAL OPERATIONS
+  // ==========================================
+  
+  async getTransactionJournal(userId: string, filters?: any): Promise<TransactionJournal[]> {
+    let query = db
+      .select()
+      .from(transactionJournal)
+      .where(eq(transactionJournal.userId, userId));
+
+    if (filters?.startDate) {
+      query = query.where(and(
+        eq(transactionJournal.userId, userId),
+        gte(transactionJournal.transactionDate, new Date(filters.startDate))
+      ));
+    }
+    if (filters?.endDate) {
+      query = query.where(and(
+        eq(transactionJournal.userId, userId),
+        lte(transactionJournal.transactionDate, new Date(filters.endDate))
+      ));
+    }
+    if (filters?.sourceModule) {
+      query = query.where(and(
+        eq(transactionJournal.userId, userId),
+        eq(transactionJournal.sourceModule, filters.sourceModule)
+      ));
+    }
+
+    return await query.orderBy(desc(transactionJournal.entryDate));
+  }
+
+  async addToTransactionJournal(data: InsertTransactionJournal): Promise<TransactionJournal> {
+    const [newEntry] = await db.insert(transactionJournal).values(data).returning();
+    return newEntry;
+  }
+
+  async getTransactionJournalEntry(id: number, userId: string): Promise<TransactionJournal | undefined> {
+    const [entry] = await db
+      .select()
+      .from(transactionJournal)
+      .where(and(eq(transactionJournal.id, id), eq(transactionJournal.userId, userId)));
+    return entry;
+  }
+
+  // ==========================================
+  // FINANCIAL DASHBOARD OPERATIONS
+  // ==========================================
+  
+  async getFinancialDashboardData(userId: string) {
+    try {
+      // Cash flow summary
+      const cashFlowResult = await db
+        .select({
+          type: cashBookEntries.type,
+          total: sum(cashBookEntries.amount),
+        })
+        .from(cashBookEntries)
+        .where(and(
+          eq(cashBookEntries.userId, userId),
+          sql`${cashBookEntries.date} >= date_trunc('month', current_date)`
+        ))
+        .groupBy(cashBookEntries.type);
+
+      // Account balances
+      const accountBalances = await db
+        .select({
+          account: cashBookEntries.account,
+          balance: sum(sql`CASE WHEN ${cashBookEntries.type} = 'income' THEN ${cashBookEntries.amount} ELSE -${cashBookEntries.amount} END`),
+        })
+        .from(cashBookEntries)
+        .where(eq(cashBookEntries.userId, userId))
+        .groupBy(cashBookEntries.account);
+
+      // Recent transactions
+      const recentTransactions = await db
+        .select()
+        .from(transactionJournal)
+        .where(eq(transactionJournal.userId, userId))
+        .orderBy(desc(transactionJournal.entryDate))
+        .limit(10);
+
+      // Petty cash summary
+      const pettyCashSummary = await db
+        .select({
+          status: pettyCashEntries.status,
+          count: count(),
+          total: sum(pettyCashEntries.amount),
+        })
+        .from(pettyCashEntries)
+        .where(and(
+          eq(pettyCashEntries.userId, userId),
+          sql`${pettyCashEntries.date} >= date_trunc('month', current_date)`
+        ))
+        .groupBy(pettyCashEntries.status);
+
+      return {
+        cashFlow: cashFlowResult.map(c => ({
+          type: c.type,
+          total: parseFloat(c.total || "0")
+        })),
+        accountBalances: accountBalances.map(a => ({
+          account: a.account,
+          balance: parseFloat(a.balance || "0")
+        })),
+        recentTransactions,
+        pettyCashSummary: pettyCashSummary.map(p => ({
+          status: p.status,
+          count: p.count,
+          total: parseFloat(p.total || "0")
+        }))
+      };
+    } catch (error) {
+      console.error("Error getting financial dashboard data:", error);
+      throw error;
+    }
   }
 }
 
