@@ -255,7 +255,13 @@ export function ExpenseManager() {
                     console.log("Expense form values:", values);
                     console.log("Form errors:", expenseForm.formState.errors);
                     if (values.description && values.amount && values.categoryId) {
-                      handleCreateExpense(values);
+                      // Ajouter la référence automatiquement
+                      const expenseData = {
+                        ...values,
+                        reference: `EXP-${Date.now()}`
+                      };
+                      console.log("Sending expense data:", expenseData);
+                      handleCreateExpense(expenseData);
                     } else {
                       toast({
                         title: "Erreur",
