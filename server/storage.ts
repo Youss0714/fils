@@ -15,6 +15,8 @@ import {
   cashBookEntries,
   pettyCashEntries,
   transactionJournal,
+  chartOfAccounts,
+  trialBalance,
   type User,
   type UpsertUser,
   type Client,
@@ -32,6 +34,8 @@ import {
   type CashBookEntry,
   type PettyCashEntry,
   type TransactionJournal,
+  type ChartOfAccounts,
+  type TrialBalance,
   type InsertClient,
   type InsertProduct,
   type InsertCategory,
@@ -47,6 +51,8 @@ import {
   type InsertCashBookEntry,
   type InsertPettyCashEntry,
   type InsertTransactionJournal,
+  type InsertChartOfAccounts,
+  type InsertTrialBalance,
 } from "@shared/schema";
 import { db } from "./db";
 import { eq, desc, and, sum, count, sql, like, or, gte, lte } from "drizzle-orm";
@@ -184,6 +190,18 @@ export interface IStorage {
 
   // Financial Dashboard
   getFinancialDashboardData(userId: string): Promise<any>;
+
+  // Chart of Accounts operations
+  getChartOfAccounts(userId: string): Promise<ChartOfAccounts[]>;
+  getChartOfAccount(id: number, userId: string): Promise<ChartOfAccounts | undefined>;
+  createChartOfAccount(data: InsertChartOfAccounts): Promise<ChartOfAccounts>;
+  updateChartOfAccount(id: number, data: Partial<InsertChartOfAccounts>, userId: string): Promise<ChartOfAccounts>;
+  deleteChartOfAccount(id: number, userId: string): Promise<void>;
+
+  // Trial Balance operations
+  getTrialBalance(userId: string, periodStart: string, periodEnd: string): Promise<TrialBalance[]>;
+  generateTrialBalance(userId: string, periodStart: string, periodEnd: string): Promise<TrialBalance[]>;
+  getTrialBalanceEntry(id: number, userId: string): Promise<TrialBalance | undefined>;
 }
 
 export class DatabaseStorage implements IStorage {
@@ -1380,6 +1398,153 @@ export class DatabaseStorage implements IStorage {
       console.error("Error getting financial dashboard data:", error);
       throw error;
     }
+  }
+
+  // Chart of Accounts operations
+  async getChartOfAccounts(userId: string): Promise<ChartOfAccounts[]> {
+    return await db
+      .select()
+      .from(chartOfAccounts)
+      .where(and(eq(chartOfAccounts.userId, userId), eq(chartOfAccounts.isActive, true)))
+      .orderBy(chartOfAccounts.accountCode);
+  }
+
+  async getChartOfAccount(id: number, userId: string): Promise<ChartOfAccounts | undefined> {
+    const [account] = await db
+      .select()
+      .from(chartOfAccounts)
+      .where(and(eq(chartOfAccounts.id, id), eq(chartOfAccounts.userId, userId)));
+    return account;
+  }
+
+  async createChartOfAccount(data: InsertChartOfAccounts): Promise<ChartOfAccounts> {
+    const [account] = await db.insert(chartOfAccounts).values(data).returning();
+    return account;
+  }
+
+  async updateChartOfAccount(id: number, data: Partial<InsertChartOfAccounts>, userId: string): Promise<ChartOfAccounts> {
+    const [account] = await db
+      .update(chartOfAccounts)
+      .set({ ...data, updatedAt: new Date() })
+      .where(and(eq(chartOfAccounts.id, id), eq(chartOfAccounts.userId, userId)))
+      .returning();
+    return account;
+  }
+
+  async deleteChartOfAccount(id: number, userId: string): Promise<void> {
+    await db
+      .update(chartOfAccounts)
+      .set({ isActive: false, updatedAt: new Date() })
+      .where(and(eq(chartOfAccounts.id, id), eq(chartOfAccounts.userId, userId)));
+  }
+
+  // Trial Balance operations
+  async getTrialBalance(userId: string, periodStart: string, periodEnd: string): Promise<TrialBalance[]> {
+    return await db
+      .select()
+      .from(trialBalance)
+      .where(and(
+        eq(trialBalance.userId, userId),
+        eq(trialBalance.periodStart, periodStart),
+        eq(trialBalance.periodEnd, periodEnd)
+      ))
+      .orderBy(trialBalance.accountId);
+  }
+
+  async generateTrialBalance(userId: string, periodStart: string, periodEnd: string): Promise<TrialBalance[]> {
+    // Get all active accounts for the user
+    const accounts = await this.getChartOfAccounts(userId);
+
+    const trialBalanceData: InsertTrialBalance[] = [];
+
+    for (const account of accounts) {
+      // Calculate opening balance (transactions before period start)
+      const openingBalanceResult = await db
+        .select({ 
+          debitTotal: sum(transactionJournal.debitAmount),
+          creditTotal: sum(transactionJournal.creditAmount)
+        })
+        .from(transactionJournal)
+        .where(and(
+          eq(transactionJournal.userId, userId),
+          or(
+            eq(transactionJournal.debitAccount, account.accountCode),
+            eq(transactionJournal.creditAccount, account.accountCode)
+          ),
+          sql`${transactionJournal.transactionDate} < ${periodStart}`
+        ));
+
+      // Calculate period totals
+      const periodTotalsResult = await db
+        .select({ 
+          debitTotal: sum(transactionJournal.debitAmount),
+          creditTotal: sum(transactionJournal.creditAmount)
+        })
+        .from(transactionJournal)
+        .where(and(
+          eq(transactionJournal.userId, userId),
+          or(
+            eq(transactionJournal.debitAccount, account.accountCode),
+            eq(transactionJournal.creditAccount, account.accountCode)
+          ),
+          sql`${transactionJournal.transactionDate} >= ${periodStart}`,
+          sql`${transactionJournal.transactionDate} <= ${periodEnd}`
+        ));
+
+      const openingDebit = parseFloat(openingBalanceResult[0]?.debitTotal || "0");
+      const openingCredit = parseFloat(openingBalanceResult[0]?.creditTotal || "0");
+      const periodDebit = parseFloat(periodTotalsResult[0]?.debitTotal || "0");
+      const periodCredit = parseFloat(periodTotalsResult[0]?.creditTotal || "0");
+
+      let openingBalance = 0;
+      if (account.normalBalance === "debit") {
+        openingBalance = openingDebit - openingCredit;
+      } else {
+        openingBalance = openingCredit - openingDebit;
+      }
+
+      let closingBalance = openingBalance;
+      if (account.normalBalance === "debit") {
+        closingBalance = openingBalance + periodDebit - periodCredit;
+      } else {
+        closingBalance = openingBalance + periodCredit - periodDebit;
+      }
+
+      trialBalanceData.push({
+        userId,
+        periodStart,
+        periodEnd,
+        accountId: account.id,
+        openingBalance: openingBalance.toFixed(2),
+        debitTotal: periodDebit.toFixed(2),
+        creditTotal: periodCredit.toFixed(2),
+        closingBalance: closingBalance.toFixed(2),
+      });
+    }
+
+    // Delete existing trial balance for this period
+    await db.delete(trialBalance)
+      .where(and(
+        eq(trialBalance.userId, userId),
+        eq(trialBalance.periodStart, periodStart),
+        eq(trialBalance.periodEnd, periodEnd)
+      ));
+
+    // Insert new trial balance data
+    if (trialBalanceData.length > 0) {
+      await db.insert(trialBalance).values(trialBalanceData);
+    }
+
+    // Return the generated trial balance
+    return await this.getTrialBalance(userId, periodStart, periodEnd);
+  }
+
+  async getTrialBalanceEntry(id: number, userId: string): Promise<TrialBalance | undefined> {
+    const [entry] = await db
+      .select()
+      .from(trialBalance)
+      .where(and(eq(trialBalance.id, id), eq(trialBalance.userId, userId)));
+    return entry;
   }
 }
 

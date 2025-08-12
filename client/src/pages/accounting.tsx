@@ -9,6 +9,8 @@ import { PlusCircle, TrendingUp, TrendingDown, DollarSign, FileText, Wallet, Cre
 import { ExpenseManager } from "../components/accounting/expense-manager";
 import { ImprestManager } from "../components/accounting/imprest-manager";
 import { ReportsManager } from "../components/accounting/reports-manager";
+import { ChartOfAccountsManager } from "../components/accounting/chart-of-accounts-manager";
+import { TrialBalanceManager } from "../components/accounting/trial-balance-manager";
 import { EXPENSE_STATUS, PAYMENT_METHODS, IMPREST_STATUS } from "@shared/schema";
 
 export default function AccountingPage() {
@@ -190,6 +192,20 @@ export default function AccountingPage() {
               <span className="whitespace-nowrap">Fonds d'avance</span>
             </TabsTrigger>
             <TabsTrigger 
+              value="chart-of-accounts" 
+              className="flex items-center justify-start gap-3 w-full sm:w-auto px-6 py-3 text-sm font-medium rounded-md transition-all hover:bg-purple-50 dark:hover:bg-purple-900/20 data-[state=active]:bg-purple-500 data-[state=active]:text-white data-[state=active]:shadow-md hover:shadow-sm"
+            >
+              <CreditCard className="h-5 w-5" />
+              <span className="whitespace-nowrap">Plan Comptable</span>
+            </TabsTrigger>
+            <TabsTrigger 
+              value="trial-balance" 
+              className="flex items-center justify-start gap-3 w-full sm:w-auto px-6 py-3 text-sm font-medium rounded-md transition-all hover:bg-orange-50 dark:hover:bg-orange-900/20 data-[state=active]:bg-orange-500 data-[state=active]:text-white data-[state=active]:shadow-md hover:shadow-sm"
+            >
+              <DollarSign className="h-5 w-5" />
+              <span className="whitespace-nowrap">Balance</span>
+            </TabsTrigger>
+            <TabsTrigger 
               value="reports" 
               className="flex items-center justify-start gap-3 w-full sm:w-auto px-6 py-3 text-sm font-medium rounded-md transition-all hover:bg-green-50 dark:hover:bg-green-900/20 data-[state=active]:bg-green-500 data-[state=active]:text-white data-[state=active]:shadow-md hover:shadow-sm"
             >
@@ -205,6 +221,14 @@ export default function AccountingPage() {
 
         <TabsContent value="imprest">
           <ImprestManager />
+        </TabsContent>
+
+        <TabsContent value="chart-of-accounts">
+          <ChartOfAccountsManager />
+        </TabsContent>
+
+        <TabsContent value="trial-balance">
+          <TrialBalanceManager />
         </TabsContent>
 
         <TabsContent value="reports">

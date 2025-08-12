@@ -253,6 +253,37 @@ export const transactionJournal = pgTable("transaction_journal", {
   createdBy: varchar("created_by").notNull().references(() => users.id),
 });
 
+// Chart of Accounts - Plan comptable
+export const chartOfAccounts = pgTable("chart_of_accounts", {
+  id: serial("id").primaryKey(),
+  userId: varchar("user_id").notNull().references(() => users.id),
+  accountCode: varchar("account_code", { length: 20 }).notNull(),
+  accountName: varchar("account_name", { length: 255 }).notNull(),
+  accountType: varchar("account_type", { length: 50 }).notNull(), // 'asset', 'liability', 'equity', 'revenue', 'expense'
+  parentAccountId: integer("parent_account_id").references(() => chartOfAccounts.id),
+  isActive: boolean("is_active").default(true),
+  description: text("description"),
+  normalBalance: varchar("normal_balance", { length: 10 }).notNull(), // 'debit' ou 'credit'
+  level: integer("level").notNull().default(1), // Niveau hiérarchique
+  createdAt: timestamp("created_at").defaultNow(),
+  updatedAt: timestamp("updated_at").defaultNow(),
+});
+
+// Trial Balance - Balance de vérification
+export const trialBalance = pgTable("trial_balance", {
+  id: serial("id").primaryKey(),
+  userId: varchar("user_id").notNull().references(() => users.id),
+  periodStart: date("period_start").notNull(),
+  periodEnd: date("period_end").notNull(),
+  accountId: integer("account_id").notNull().references(() => chartOfAccounts.id),
+  openingBalance: decimal("opening_balance", { precision: 12, scale: 2 }).default("0"),
+  debitTotal: decimal("debit_total", { precision: 12, scale: 2 }).default("0"),
+  creditTotal: decimal("credit_total", { precision: 12, scale: 2 }).default("0"),
+  closingBalance: decimal("closing_balance", { precision: 12, scale: 2 }).default("0"),
+  generatedAt: timestamp("generated_at").defaultNow(),
+  createdAt: timestamp("created_at").defaultNow(),
+});
+
 // Relations
 export const usersRelations = relations(users, ({ many }) => ({
   clients: many(clients),
@@ -268,6 +299,8 @@ export const usersRelations = relations(users, ({ many }) => ({
   cashBookEntries: many(cashBookEntries),
   pettyCashEntries: many(pettyCashEntries),
   transactionJournal: many(transactionJournal),
+  chartOfAccounts: many(chartOfAccounts),
+  trialBalance: many(trialBalance),
 }));
 
 export const licensesRelations = relations(licenses, ({ }) => ({}));
@@ -427,6 +460,30 @@ export const transactionJournalRelations = relations(transactionJournal, ({ one 
   }),
 }));
 
+export const chartOfAccountsRelations = relations(chartOfAccounts, ({ one, many }) => ({
+  user: one(users, {
+    fields: [chartOfAccounts.userId],
+    references: [users.id],
+  }),
+  parentAccount: one(chartOfAccounts, {
+    fields: [chartOfAccounts.parentAccountId],
+    references: [chartOfAccounts.id],
+  }),
+  subAccounts: many(chartOfAccounts),
+  trialBalanceEntries: many(trialBalance),
+}));
+
+export const trialBalanceRelations = relations(trialBalance, ({ one }) => ({
+  user: one(users, {
+    fields: [trialBalance.userId],
+    references: [users.id],
+  }),
+  account: one(chartOfAccounts, {
+    fields: [trialBalance.accountId],
+    references: [chartOfAccounts.id],
+  }),
+}));
+
 // Tax rates available for invoices
 export const TAX_RATES = [
   { value: "3.00", label: "3%" },
@@ -476,6 +533,20 @@ export const REPORT_TYPES = [
   { value: "imprest_summary", label: "Résumé des avances" },
   { value: "monthly_report", label: "Rapport mensuel" },
   { value: "yearly_report", label: "Rapport annuel" },
+] as const;
+
+// Account types for chart of accounts
+export const ACCOUNT_TYPES = [
+  { value: "asset", label: "Actifs", normalBalance: "debit", icon: "🏢" },
+  { value: "liability", label: "Passifs", normalBalance: "credit", icon: "💳" },
+  { value: "equity", label: "Capitaux propres", normalBalance: "credit", icon: "💰" },
+  { value: "revenue", label: "Revenus", normalBalance: "credit", icon: "📈" },
+  { value: "expense", label: "Charges", normalBalance: "debit", icon: "📉" },
+] as const;
+
+export const NORMAL_BALANCE_TYPES = [
+  { value: "debit", label: "Débit" },
+  { value: "credit", label: "Crédit" },
 ] as const;
 
 // Cash Book constants
@@ -668,6 +739,21 @@ export const insertTransactionJournalSchema = createInsertSchema(transactionJour
   ),
 });
 
+export const insertChartOfAccountsSchema = createInsertSchema(chartOfAccounts).omit({
+  id: true,
+  createdAt: true,
+  updatedAt: true,
+});
+
+export const insertTrialBalanceSchema = createInsertSchema(trialBalance).omit({
+  id: true,
+  generatedAt: true,
+  createdAt: true,
+}).extend({
+  periodStart: z.string().transform(val => new Date(val)),
+  periodEnd: z.string().transform(val => new Date(val)),
+});
+
 // Types
 export type UpsertUser = typeof users.$inferInsert;
 export type User = typeof users.$inferSelect;
@@ -688,6 +774,8 @@ export type AccountingReport = typeof accountingReports.$inferSelect;
 export type CashBookEntry = typeof cashBookEntries.$inferSelect;
 export type PettyCashEntry = typeof pettyCashEntries.$inferSelect;
 export type TransactionJournal = typeof transactionJournal.$inferSelect;
+export type ChartOfAccounts = typeof chartOfAccounts.$inferSelect;
+export type TrialBalance = typeof trialBalance.$inferSelect;
 
 export type InsertCategory = z.infer<typeof insertCategorySchema>;
 export type InsertClient = z.infer<typeof insertClientSchema>;
@@ -706,3 +794,5 @@ export type InsertAccountingReport = z.infer<typeof insertAccountingReportSchema
 export type InsertCashBookEntry = z.infer<typeof insertCashBookEntrySchema>;
 export type InsertPettyCashEntry = z.infer<typeof insertPettyCashEntrySchema>;
 export type InsertTransactionJournal = z.infer<typeof insertTransactionJournalSchema>;
+export type InsertChartOfAccounts = z.infer<typeof insertChartOfAccountsSchema>;
+export type InsertTrialBalance = z.infer<typeof insertTrialBalanceSchema>;
