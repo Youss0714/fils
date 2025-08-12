@@ -373,14 +373,14 @@ export function ExpenseManager() {
                       render={({ field }) => (
                         <FormItem>
                           <FormLabel>Fonds d'avance (optionnel)</FormLabel>
-                          <Select onValueChange={(value) => field.onChange(value ? parseInt(value) : undefined)} value={field.value ? String(field.value) : ""}>
+                          <Select onValueChange={(value) => field.onChange(value === "none" ? undefined : parseInt(value))} value={field.value ? String(field.value) : "none"}>
                             <FormControl>
                               <SelectTrigger>
                                 <SelectValue placeholder="Aucun fonds" />
                               </SelectTrigger>
                             </FormControl>
                             <SelectContent>
-                              <SelectItem value="">Aucun fonds</SelectItem>
+                              <SelectItem value="none">Aucun fonds</SelectItem>
                               {imprestFunds.map((fund: any) => (
                                 <SelectItem key={fund.id} value={fund.id.toString()}>
                                   {fund.accountHolder} - {parseFloat(fund.currentBalance).toLocaleString('fr-FR')} FCFA
