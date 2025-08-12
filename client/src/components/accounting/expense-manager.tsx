@@ -497,13 +497,86 @@ export function ExpenseManager() {
                             </Button>
                           </>
                         )}
-                        <Button
-                          size="sm"
-                          variant="outline"
-                          onClick={() => setSelectedExpense(expense)}
-                        >
-                          <Eye className="h-4 w-4" />
-                        </Button>
+                        <Dialog>
+                          <DialogTrigger asChild>
+                            <Button
+                              size="sm"
+                              variant="outline"
+                            >
+                              <Eye className="h-4 w-4" />
+                            </Button>
+                          </DialogTrigger>
+                          <DialogContent className="max-w-md">
+                            <DialogHeader>
+                              <DialogTitle>Détails de la dépense</DialogTitle>
+                              <DialogDescription>
+                                Informations complètes sur cette dépense
+                              </DialogDescription>
+                            </DialogHeader>
+                            <div className="space-y-4">
+                              <div className="grid grid-cols-2 gap-4">
+                                <div>
+                                  <Label className="text-sm font-medium text-muted-foreground">Référence</Label>
+                                  <p className="text-sm">{expense.reference}</p>
+                                </div>
+                                <div>
+                                  <Label className="text-sm font-medium text-muted-foreground">Montant</Label>
+                                  <p className="text-sm font-semibold">{parseFloat(expense.amount).toLocaleString('fr-FR')} FCFA</p>
+                                </div>
+                              </div>
+                              <div className="grid grid-cols-2 gap-4">
+                                <div>
+                                  <Label className="text-sm font-medium text-muted-foreground">Catégorie</Label>
+                                  <p className="text-sm">{expense.category?.name || 'Non définie'}</p>
+                                </div>
+                                <div>
+                                  <Label className="text-sm font-medium text-muted-foreground">Date</Label>
+                                  <p className="text-sm">{new Date(expense.expenseDate).toLocaleDateString('fr-FR')}</p>
+                                </div>
+                              </div>
+                              <div>
+                                <Label className="text-sm font-medium text-muted-foreground">Description</Label>
+                                <p className="text-sm">{expense.description}</p>
+                              </div>
+                              <div className="grid grid-cols-2 gap-4">
+                                <div>
+                                  <Label className="text-sm font-medium text-muted-foreground">Méthode de paiement</Label>
+                                  <p className="text-sm">
+                                    {PAYMENT_METHODS.find(m => m.value === expense.paymentMethod)?.label || expense.paymentMethod}
+                                  </p>
+                                </div>
+                                <div>
+                                  <Label className="text-sm font-medium text-muted-foreground">Statut</Label>
+                                  <Badge variant="secondary" className={EXPENSE_STATUS.find(s => s.value === expense.status)?.color}>
+                                    {EXPENSE_STATUS.find(s => s.value === expense.status)?.icon} {EXPENSE_STATUS.find(s => s.value === expense.status)?.label}
+                                  </Badge>
+                                </div>
+                              </div>
+                              {expense.notes && (
+                                <div>
+                                  <Label className="text-sm font-medium text-muted-foreground">Notes</Label>
+                                  <p className="text-sm">{expense.notes}</p>
+                                </div>
+                              )}
+                              {expense.approvedBy && (
+                                <div className="grid grid-cols-2 gap-4">
+                                  <div>
+                                    <Label className="text-sm font-medium text-muted-foreground">Approuvé par</Label>
+                                    <p className="text-sm">{expense.approvedBy}</p>
+                                  </div>
+                                  <div>
+                                    <Label className="text-sm font-medium text-muted-foreground">Date d'approbation</Label>
+                                    <p className="text-sm">{new Date(expense.approvedAt).toLocaleDateString('fr-FR')}</p>
+                                  </div>
+                                </div>
+                              )}
+                              <div>
+                                <Label className="text-sm font-medium text-muted-foreground">Créé le</Label>
+                                <p className="text-sm">{new Date(expense.createdAt).toLocaleDateString('fr-FR')} à {new Date(expense.createdAt).toLocaleTimeString('fr-FR')}</p>
+                              </div>
+                            </div>
+                          </DialogContent>
+                        </Dialog>
                       </div>
                     </div>
                   </div>
