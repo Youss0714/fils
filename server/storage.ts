@@ -776,10 +776,48 @@ export class DatabaseStorage implements IStorage {
   }
 
   async createExpense(expense: InsertExpense): Promise<Expense> {
-    // Generate unique reference
-    const reference = `EXP-${Date.now()}-${Math.random().toString(36).substr(2, 4).toUpperCase()}`;
-    const [newExpense] = await db.insert(expenses).values({ ...expense, reference }).returning();
-    return newExpense;
+    return await db.transaction(async (tx) => {
+      // Generate unique reference if not provided
+      const reference = expense.reference || `EXP-${Date.now()}-${Math.random().toString(36).substr(2, 4).toUpperCase()}`;
+      
+      // Create the expense
+      const [newExpense] = await tx.insert(expenses).values({ ...expense, reference }).returning();
+      
+      // If linked to an imprest fund, deduct the amount and create transaction
+      if (expense.imprestId) {
+        // Get current fund balance
+        const [fund] = await tx.select().from(imprestFunds).where(eq(imprestFunds.id, expense.imprestId));
+        if (!fund) throw new Error("Fonds d'avance introuvable");
+        
+        const currentBalance = parseFloat(fund.currentBalance);
+        const expenseAmount = parseFloat(expense.amount);
+        
+        if (currentBalance < expenseAmount) {
+          throw new Error(`Solde insuffisant. Solde actuel: ${currentBalance} FCFA, Dépense: ${expenseAmount} FCFA`);
+        }
+        
+        const newBalance = currentBalance - expenseAmount;
+        
+        // Update fund balance
+        await tx.update(imprestFunds)
+          .set({ currentBalance: newBalance.toString(), updatedAt: new Date() })
+          .where(eq(imprestFunds.id, expense.imprestId));
+        
+        // Create imprest transaction record
+        await tx.insert(imprestTransactions).values({
+          reference: `ITX-${Date.now()}`,
+          imprestId: expense.imprestId,
+          type: 'expense',
+          amount: expense.amount,
+          description: `Dépense: ${expense.description}`,
+          balanceAfter: newBalance.toString(),
+          expenseId: newExpense.id,
+          userId: expense.userId,
+        });
+      }
+      
+      return newExpense;
+    });
   }
 
   async updateExpense(id: number, expense: Partial<InsertExpense>, userId: string): Promise<Expense> {

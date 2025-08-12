@@ -40,6 +40,10 @@ export function ExpenseManager() {
     queryKey: ["/api/accounting/expense-categories"],
   });
 
+  const { data: imprestFunds = [] } = useQuery<any[]>({
+    queryKey: ["/api/accounting/imprest-funds"],
+  });
+
   // Forms
   const expenseForm = useForm({
     resolver: zodResolver(insertExpenseSchema),
@@ -51,6 +55,7 @@ export function ExpenseManager() {
       expenseDate: new Date().toISOString().split('T')[0],
       categoryId: undefined,
       notes: "",
+      imprestId: undefined,
     },
   });
 
@@ -69,6 +74,7 @@ export function ExpenseManager() {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["/api/accounting/expenses"] });
       queryClient.invalidateQueries({ queryKey: ["/api/accounting/stats"] });
+      queryClient.invalidateQueries({ queryKey: ["/api/accounting/imprest-funds"] });
       setIsExpenseDialogOpen(false);
       expenseForm.reset();
       toast({ title: "Dépense créée avec succès" });
@@ -353,6 +359,31 @@ export function ExpenseManager() {
                               {PAYMENT_METHODS.map((method) => (
                                 <SelectItem key={method.value} value={method.value}>
                                   {method.icon} {method.label}
+                                </SelectItem>
+                              ))}
+                            </SelectContent>
+                          </Select>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+                    <FormField
+                      control={expenseForm.control}
+                      name="imprestId"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>Fonds d'avance (optionnel)</FormLabel>
+                          <Select onValueChange={(value) => field.onChange(value ? parseInt(value) : undefined)}>
+                            <FormControl>
+                              <SelectTrigger>
+                                <SelectValue placeholder="Aucun fonds" />
+                              </SelectTrigger>
+                            </FormControl>
+                            <SelectContent>
+                              <SelectItem value="">Aucun fonds</SelectItem>
+                              {imprestFunds.map((fund: any) => (
+                                <SelectItem key={fund.id} value={fund.id.toString()}>
+                                  {fund.accountHolder} - {parseFloat(fund.currentBalance).toLocaleString('fr-FR')} FCFA
                                 </SelectItem>
                               ))}
                             </SelectContent>

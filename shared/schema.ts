@@ -148,6 +148,7 @@ export const expenses = pgTable("expenses", {
   status: varchar("status", { length: 50 }).notNull().default("pending"), // pending, approved, paid, rejected
   receiptUrl: varchar("receipt_url", { length: 500 }), // URL du reçu/justificatif
   notes: text("notes"),
+  imprestId: integer("imprest_id").references(() => imprestFunds.id), // Lien vers le fonds d'avance
   userId: varchar("user_id").notNull().references(() => users.id),
   approvedBy: varchar("approved_by").references(() => users.id),
   approvedAt: timestamp("approved_at"),
