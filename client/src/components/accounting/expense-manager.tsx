@@ -10,6 +10,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Pagination, PaginationContent, PaginationItem, PaginationLink, PaginationNext, PaginationPrevious } from "@/components/ui/pagination";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Plus, Edit, Trash2, Check, X, Eye, DollarSign } from "lucide-react";
@@ -29,6 +30,8 @@ export function ExpenseManager() {
   const [selectedExpense, setSelectedExpense] = useState<any>(null);
   const [isExpenseDialogOpen, setIsExpenseDialogOpen] = useState(false);
   const [isCategoryDialogOpen, setIsCategoryDialogOpen] = useState(false);
+  const [currentPage, setCurrentPage] = useState(1);
+  const [itemsPerPage] = useState(5);
   const queryClient = useQueryClient();
   const { toast } = useToast();
 
@@ -468,7 +471,16 @@ export function ExpenseManager() {
                 </p>
               </div>
             ) : (
-              expenses?.map((expense: any) => {
+              (() => {
+                const startIndex = (currentPage - 1) * itemsPerPage;
+                const endIndex = startIndex + itemsPerPage;
+                const paginatedExpenses = expenses?.slice(startIndex, endIndex) || [];
+                const totalPages = Math.ceil((expenses?.length || 0) / itemsPerPage);
+
+                return (
+                  <>
+                    <div className="space-y-4">
+                      {paginatedExpenses.map((expense: any) => {
                 const status = EXPENSE_STATUS.find(s => s.value === expense.status);
                 const paymentMethod = PAYMENT_METHODS.find(p => p.value === expense.paymentMethod);
                 
@@ -610,8 +622,48 @@ export function ExpenseManager() {
                       <ExpensePDF expense={expense} user={user} />
                     </div>
                   </div>
+                        );
+                      })}
+                    </div>
+                    
+                    {totalPages > 1 && (
+                      <Pagination className="mt-6">
+                        <PaginationContent>
+                          <PaginationItem>
+                            <PaginationPrevious 
+                              onClick={() => setCurrentPage(Math.max(1, currentPage - 1))}
+                              className={currentPage === 1 ? "pointer-events-none opacity-50" : "cursor-pointer"}
+                            >
+                              Précédent
+                            </PaginationPrevious>
+                          </PaginationItem>
+                          
+                          {Array.from({ length: totalPages }, (_, i) => i + 1).map((page) => (
+                            <PaginationItem key={page}>
+                              <PaginationLink
+                                onClick={() => setCurrentPage(page)}
+                                isActive={currentPage === page}
+                                className="cursor-pointer"
+                              >
+                                {page}
+                              </PaginationLink>
+                            </PaginationItem>
+                          ))}
+                          
+                          <PaginationItem>
+                            <PaginationNext
+                              onClick={() => setCurrentPage(Math.min(totalPages, currentPage + 1))}
+                              className={currentPage === totalPages ? "pointer-events-none opacity-50" : "cursor-pointer"}
+                            >
+                              Suivant
+                            </PaginationNext>
+                          </PaginationItem>
+                        </PaginationContent>
+                      </Pagination>
+                    )}
+                  </>
                 );
-              })
+              })()
             )}
           </div>
         </CardContent>

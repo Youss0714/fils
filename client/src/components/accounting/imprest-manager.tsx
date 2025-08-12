@@ -9,6 +9,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
 import { Label } from "@/components/ui/label";
+import { Pagination, PaginationContent, PaginationItem, PaginationLink, PaginationNext, PaginationPrevious } from "@/components/ui/pagination";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Plus, Wallet, ArrowUp, ArrowDown, Eye, DollarSign } from "lucide-react";
@@ -29,6 +30,8 @@ export function ImprestManager() {
   const [isFundDialogOpen, setIsFundDialogOpen] = useState(false);
   const [isTransactionDialogOpen, setIsTransactionDialogOpen] = useState(false);
   const [transactionType, setTransactionType] = useState<'deposit' | 'withdrawal' | 'expense'>('deposit');
+  const [currentPage, setCurrentPage] = useState(1);
+  const [itemsPerPage] = useState(3);
   const queryClient = useQueryClient();
   const { toast } = useToast();
 
@@ -252,7 +255,16 @@ export function ImprestManager() {
                   </p>
                 </div>
               ) : (
-                imprestFunds.map((fund: any) => {
+                (() => {
+                  const startIndex = (currentPage - 1) * itemsPerPage;
+                  const endIndex = startIndex + itemsPerPage;
+                  const paginatedFunds = imprestFunds.slice(startIndex, endIndex);
+                  const totalPages = Math.ceil(imprestFunds.length / itemsPerPage);
+
+                  return (
+                    <>
+                      <div className="space-y-4">
+                        {paginatedFunds.map((fund: any) => {
                   const status = IMPREST_STATUS.find(s => s.value === fund.status);
                   const balance = parseFloat(fund.currentBalance);
                   const initial = parseFloat(fund.initialAmount);
@@ -300,8 +312,48 @@ export function ImprestManager() {
                         <ImprestFundPDF imprestFund={fund} user={user} />
                       </div>
                     </div>
+                          );
+                        })}
+                      </div>
+                      
+                      {totalPages > 1 && (
+                        <Pagination className="mt-6">
+                          <PaginationContent>
+                            <PaginationItem>
+                              <PaginationPrevious 
+                                onClick={() => setCurrentPage(Math.max(1, currentPage - 1))}
+                                className={currentPage === 1 ? "pointer-events-none opacity-50" : "cursor-pointer"}
+                              >
+                                Précédent
+                              </PaginationPrevious>
+                            </PaginationItem>
+                            
+                            {Array.from({ length: totalPages }, (_, i) => i + 1).map((page) => (
+                              <PaginationItem key={page}>
+                                <PaginationLink
+                                  onClick={() => setCurrentPage(page)}
+                                  isActive={currentPage === page}
+                                  className="cursor-pointer"
+                                >
+                                  {page}
+                                </PaginationLink>
+                              </PaginationItem>
+                            ))}
+                            
+                            <PaginationItem>
+                              <PaginationNext
+                                onClick={() => setCurrentPage(Math.min(totalPages, currentPage + 1))}
+                                className={currentPage === totalPages ? "pointer-events-none opacity-50" : "cursor-pointer"}
+                              >
+                                Suivant
+                              </PaginationNext>
+                            </PaginationItem>
+                          </PaginationContent>
+                        </Pagination>
+                      )}
+                    </>
                   );
-                })
+                })()
               )}
             </div>
           </CardContent>
