@@ -8,6 +8,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
+import { Label } from "@/components/ui/label";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Plus, Wallet, ArrowUp, ArrowDown, Eye, DollarSign } from "lucide-react";
@@ -62,10 +63,7 @@ export function ImprestManager() {
 
   // Mutations
   const createFundMutation = useMutation({
-    mutationFn: (data: InsertImprestFund) => apiRequest("/api/accounting/imprest-funds", {
-      method: "POST",
-      body: data,
-    }),
+    mutationFn: (data: InsertImprestFund) => apiRequest("/api/accounting/imprest-funds", "POST", data),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["/api/accounting/imprest-funds"] });
       queryClient.invalidateQueries({ queryKey: ["/api/accounting/stats"] });
@@ -83,10 +81,7 @@ export function ImprestManager() {
   });
 
   const createTransactionMutation = useMutation({
-    mutationFn: (data: InsertImprestTransaction) => apiRequest("/api/accounting/imprest-transactions", {
-      method: "POST",
-      body: data,
-    }),
+    mutationFn: (data: InsertImprestTransaction) => apiRequest("/api/accounting/imprest-transactions", "POST", data),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["/api/accounting/imprest-funds"] });
       queryClient.invalidateQueries({ queryKey: ["/api/accounting/imprest-funds", selectedFund?.id, "transactions"] });
@@ -210,7 +205,7 @@ export function ImprestManager() {
           </CardHeader>
           <CardContent>
             <div className="space-y-4">
-              {imprestFunds?.length === 0 ? (
+              {(!imprestFunds || imprestFunds.length === 0) ? (
                 <div className="text-center py-8">
                   <Wallet className="mx-auto h-12 w-12 text-muted-foreground" />
                   <h3 className="mt-2 text-sm font-semibold">Aucun fonds d'avance</h3>
@@ -301,7 +296,7 @@ export function ImprestManager() {
                     <Form {...transactionForm}>
                       <form onSubmit={transactionForm.handleSubmit(handleCreateTransaction)} className="space-y-4">
                         <div>
-                          <Label>Type de transaction</Label>
+                          <Label htmlFor="transaction-type">Type de transaction</Label>
                           <Select value={transactionType} onValueChange={(value: any) => setTransactionType(value)}>
                             <SelectTrigger>
                               <SelectValue />
@@ -382,7 +377,7 @@ export function ImprestManager() {
                 <div>
                   <h4 className="font-medium mb-3">Historique des transactions</h4>
                   <div className="space-y-2">
-                    {transactions?.length === 0 ? (
+                    {(!transactions || transactions.length === 0) ? (
                       <p className="text-sm text-muted-foreground text-center py-4">
                         Aucune transaction pour ce fonds
                       </p>
