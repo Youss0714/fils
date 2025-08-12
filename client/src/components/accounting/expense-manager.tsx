@@ -229,7 +229,18 @@ export function ExpenseManager() {
                       </FormItem>
                     )}
                   />
-                  <DialogFooter>
+                  <DialogFooter className="flex flex-col sm:flex-row gap-2 sm:gap-0 sm:space-x-2">
+                    <Button 
+                      type="button" 
+                      variant="outline"
+                      onClick={() => {
+                        setIsCategoryDialogOpen(false);
+                        categoryForm.reset();
+                      }}
+                      disabled={createCategoryMutation.isPending}
+                    >
+                      Annuler
+                    </Button>
                     <Button 
                       type="submit" 
                       disabled={createCategoryMutation.isPending}
@@ -411,7 +422,18 @@ export function ExpenseManager() {
                       </FormItem>
                     )}
                   />
-                  <DialogFooter>
+                  <DialogFooter className="flex flex-col sm:flex-row gap-2 sm:gap-0 sm:space-x-2">
+                    <Button 
+                      type="button" 
+                      variant="outline"
+                      onClick={() => {
+                        setIsExpenseDialogOpen(false);
+                        expenseForm.reset();
+                      }}
+                      disabled={createExpenseMutation.isPending}
+                    >
+                      Annuler
+                    </Button>
                     <Button 
                       type="submit" 
                       disabled={createExpenseMutation.isPending}

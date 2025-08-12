@@ -99,6 +99,11 @@ Preferred communication style: Simple, everyday language.
   - Added color-coded tabs: red for expenses, blue for imprest funds, green for reports
   - Enhanced visual feedback with hover effects and active states
   - Responsive design with mobile-first approach
+✓ **Enhanced User Experience with Cancel Buttons** (August 12, 2025)
+  - Added "Annuler" (Cancel) buttons to all creation forms alongside submit buttons
+  - Implemented consistent form handling with proper form reset on cancel
+  - Applied to expense creation, category creation, imprest fund creation, and transaction forms
+  - Improved responsive layout with proper spacing for mobile and desktop
 
 ## Licensing System Implementation (August 10, 2025)
 ✓ **Complete Licensing System**: Full license management system implemented

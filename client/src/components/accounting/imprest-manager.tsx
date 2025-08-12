@@ -206,7 +206,18 @@ export function ImprestManager() {
                     </FormItem>
                   )}
                 />
-                <DialogFooter>
+                <DialogFooter className="flex flex-col sm:flex-row gap-2 sm:gap-0 sm:space-x-2">
+                  <Button 
+                    type="button" 
+                    variant="outline"
+                    onClick={() => {
+                      setIsFundDialogOpen(false);
+                      fundForm.reset();
+                    }}
+                    disabled={createFundMutation.isPending}
+                  >
+                    Annuler
+                  </Button>
                   <Button 
                     type="submit" 
                     disabled={createFundMutation.isPending}
@@ -366,7 +377,18 @@ export function ImprestManager() {
                             </FormItem>
                           )}
                         />
-                        <DialogFooter>
+                        <DialogFooter className="flex flex-col sm:flex-row gap-2 sm:gap-0 sm:space-x-2">
+                          <Button 
+                            type="button" 
+                            variant="outline"
+                            onClick={() => {
+                              setIsTransactionDialogOpen(false);
+                              transactionForm.reset();
+                            }}
+                            disabled={createTransactionMutation.isPending}
+                          >
+                            Annuler
+                          </Button>
                           <Button type="submit" disabled={createTransactionMutation.isPending}>
                             {createTransactionMutation.isPending ? "Création..." : "Créer la transaction"}
                           </Button>
