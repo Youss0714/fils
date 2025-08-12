@@ -48,12 +48,9 @@ export function ReportsManager() {
       // Generate report data based on type and period
       const reportData = generateReportData(data.type, data.periodStart, data.periodEnd);
       
-      return apiRequest("/api/accounting/reports", {
-        method: "POST",
-        body: {
-          ...data,
-          data: reportData,
-        },
+      return apiRequest("POST", "/api/accounting/reports", {
+        ...data,
+        data: reportData,
       });
     },
     onSuccess: () => {
@@ -72,9 +69,7 @@ export function ReportsManager() {
   });
 
   const deleteReportMutation = useMutation({
-    mutationFn: (id: number) => apiRequest(`/api/accounting/reports/${id}`, {
-      method: "DELETE",
-    }),
+    mutationFn: (id: number) => apiRequest("DELETE", `/api/accounting/reports/${id}`),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["/api/accounting/reports"] });
       toast({ title: "Rapport supprimé avec succès" });

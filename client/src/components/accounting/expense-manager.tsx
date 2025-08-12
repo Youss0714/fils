@@ -116,7 +116,7 @@ export function ExpenseManager() {
   });
 
   const rejectExpenseMutation = useMutation({
-    mutationFn: (id: number) => apiRequest(`/api/accounting/expenses/${id}/reject`, "PATCH"),
+    mutationFn: (id: number) => apiRequest("PATCH", `/api/accounting/expenses/${id}/reject`),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["/api/accounting/expenses"] });
       queryClient.invalidateQueries({ queryKey: ["/api/accounting/stats"] });
