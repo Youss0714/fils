@@ -202,7 +202,11 @@ export function ExpenseManager() {
                     )}
                   />
                   <DialogFooter>
-                    <Button type="submit" disabled={createCategoryMutation.isPending}>
+                    <Button 
+                      type="submit" 
+                      disabled={createCategoryMutation.isPending}
+                      onClick={() => console.log("Button clicked! Form values:", categoryForm.getValues())}
+                    >
                       {createCategoryMutation.isPending ? "Création..." : "Créer"}
                     </Button>
                   </DialogFooter>
@@ -273,14 +277,14 @@ export function ExpenseManager() {
                       render={({ field }) => (
                         <FormItem>
                           <FormLabel>Catégorie</FormLabel>
-                          <Select onValueChange={(value) => field.onChange(parseInt(value))} value={field.value?.toString()}>
+                          <Select onValueChange={(value) => field.onChange(parseInt(value))} value={field.value ? field.value.toString() : ""}>
                             <FormControl>
                               <SelectTrigger>
                                 <SelectValue placeholder="Sélectionnez une catégorie" />
                               </SelectTrigger>
                             </FormControl>
                             <SelectContent>
-                              {categories?.map((category: any) => (
+                              {categories.map((category: any) => (
                                 <SelectItem key={category.id} value={category.id.toString()}>
                                   {category.name}
                                   {category.isMajor && <Badge variant="secondary" className="ml-2">Majeure</Badge>}
