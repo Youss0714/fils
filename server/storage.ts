@@ -1423,9 +1423,12 @@ export class DatabaseStorage implements IStorage {
   }
 
   async updateChartOfAccount(id: number, data: Partial<InsertChartOfAccounts>, userId: string): Promise<ChartOfAccounts> {
+    // Supprimer userId des données de mise à jour pour éviter les conflits
+    const { userId: _, ...updateData } = data;
+    
     const [account] = await db
       .update(chartOfAccounts)
-      .set({ ...data, updatedAt: new Date() })
+      .set({ ...updateData, updatedAt: new Date() })
       .where(and(eq(chartOfAccounts.id, id), eq(chartOfAccounts.userId, userId)))
       .returning();
     return account;

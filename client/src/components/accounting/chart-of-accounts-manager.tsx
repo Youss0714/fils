@@ -120,22 +120,34 @@ export function ChartOfAccountsManager() {
 
   const onSubmit = (data: z.infer<typeof formSchema>) => {
     console.log("Form submitted with data:", data);
-    const accountData: InsertChartOfAccounts = {
-      accountCode: data.accountCode,
-      accountName: data.accountName,
-      accountType: data.accountType,
-      normalBalance: data.normalBalance,
-      description: data.description || null,
-      level: data.level,
-      parentAccountId: data.parentAccountId || null,
-      userId: "", // Will be set by the server
-      isActive: true,
-    };
-
+    
     if (editingAccount) {
-      updateAccountMutation.mutate({ id: editingAccount.id, data: accountData });
+      // Pour la mise à jour, ne pas inclure userId
+      const updateData = {
+        accountCode: data.accountCode,
+        accountName: data.accountName,
+        accountType: data.accountType,
+        normalBalance: data.normalBalance,
+        description: data.description || null,
+        level: data.level,
+        parentAccountId: data.parentAccountId || null,
+        isActive: true,
+      };
+      updateAccountMutation.mutate({ id: editingAccount.id, data: updateData });
     } else {
-      createAccountMutation.mutate(accountData);
+      // Pour la création, inclure userId (qui sera défini par le serveur)
+      const createData: InsertChartOfAccounts = {
+        accountCode: data.accountCode,
+        accountName: data.accountName,
+        accountType: data.accountType,
+        normalBalance: data.normalBalance,
+        description: data.description || null,
+        level: data.level,
+        parentAccountId: data.parentAccountId || null,
+        userId: "", // Will be set by the server
+        isActive: true,
+      };
+      createAccountMutation.mutate(createData);
     }
   };
 
