@@ -65,7 +65,7 @@ export function ExpenseManager() {
 
   // Mutations
   const createExpenseMutation = useMutation({
-    mutationFn: (data: InsertExpense) => apiRequest("/api/accounting/expenses", "POST", data),
+    mutationFn: (data: InsertExpense) => apiRequest("POST", "/api/accounting/expenses", data),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["/api/accounting/expenses"] });
       queryClient.invalidateQueries({ queryKey: ["/api/accounting/stats"] });
@@ -83,7 +83,7 @@ export function ExpenseManager() {
   });
 
   const createCategoryMutation = useMutation({
-    mutationFn: (data: InsertExpenseCategory) => apiRequest("/api/accounting/expense-categories", "POST", data),
+    mutationFn: (data: InsertExpenseCategory) => apiRequest("POST", "/api/accounting/expense-categories", data),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["/api/accounting/expense-categories"] });
       setIsCategoryDialogOpen(false);
@@ -100,7 +100,7 @@ export function ExpenseManager() {
   });
 
   const approveExpenseMutation = useMutation({
-    mutationFn: (id: number) => apiRequest(`/api/accounting/expenses/${id}/approve`, "PATCH"),
+    mutationFn: (id: number) => apiRequest("PATCH", `/api/accounting/expenses/${id}/approve`),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["/api/accounting/expenses"] });
       queryClient.invalidateQueries({ queryKey: ["/api/accounting/stats"] });

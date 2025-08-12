@@ -63,7 +63,7 @@ export function ImprestManager() {
 
   // Mutations
   const createFundMutation = useMutation({
-    mutationFn: (data: InsertImprestFund) => apiRequest("/api/accounting/imprest-funds", "POST", data),
+    mutationFn: (data: InsertImprestFund) => apiRequest("POST", "/api/accounting/imprest-funds", data),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["/api/accounting/imprest-funds"] });
       queryClient.invalidateQueries({ queryKey: ["/api/accounting/stats"] });
@@ -81,7 +81,7 @@ export function ImprestManager() {
   });
 
   const createTransactionMutation = useMutation({
-    mutationFn: (data: InsertImprestTransaction) => apiRequest("/api/accounting/imprest-transactions", "POST", data),
+    mutationFn: (data: InsertImprestTransaction) => apiRequest("POST", "/api/accounting/imprest-transactions", data),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["/api/accounting/imprest-funds"] });
       queryClient.invalidateQueries({ queryKey: ["/api/accounting/imprest-funds", selectedFund?.id, "transactions"] });
