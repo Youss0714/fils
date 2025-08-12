@@ -174,24 +174,24 @@ export default function AccountingPage() {
       {/* Main Tabs */}
       <Tabs defaultValue="expenses" className="space-y-6">
         <div className="flex flex-col sm:flex-row gap-4 items-start">
-          <TabsList className="flex flex-col sm:flex-row w-full sm:w-auto h-auto p-1 bg-muted rounded-lg">
+          <TabsList className="flex flex-col sm:flex-row w-full sm:w-auto h-auto p-1 bg-gray-100 dark:bg-gray-800 rounded-lg shadow-sm">
             <TabsTrigger 
               value="expenses" 
-              className="flex items-center justify-start gap-3 w-full sm:w-auto px-6 py-3 text-sm font-medium rounded-md transition-all data-[state=active]:bg-background data-[state=active]:text-foreground data-[state=active]:shadow-sm"
+              className="flex items-center justify-start gap-3 w-full sm:w-auto px-6 py-3 text-sm font-medium rounded-md transition-all hover:bg-red-50 dark:hover:bg-red-900/20 data-[state=active]:bg-red-500 data-[state=active]:text-white data-[state=active]:shadow-md hover:shadow-sm"
             >
               <CreditCard className="h-5 w-5" />
               <span className="whitespace-nowrap">Dépenses</span>
             </TabsTrigger>
             <TabsTrigger 
               value="imprest" 
-              className="flex items-center justify-start gap-3 w-full sm:w-auto px-6 py-3 text-sm font-medium rounded-md transition-all data-[state=active]:bg-background data-[state=active]:text-foreground data-[state=active]:shadow-sm"
+              className="flex items-center justify-start gap-3 w-full sm:w-auto px-6 py-3 text-sm font-medium rounded-md transition-all hover:bg-blue-50 dark:hover:bg-blue-900/20 data-[state=active]:bg-blue-500 data-[state=active]:text-white data-[state=active]:shadow-md hover:shadow-sm"
             >
               <Wallet className="h-5 w-5" />
               <span className="whitespace-nowrap">Fonds d'avance</span>
             </TabsTrigger>
             <TabsTrigger 
               value="reports" 
-              className="flex items-center justify-start gap-3 w-full sm:w-auto px-6 py-3 text-sm font-medium rounded-md transition-all data-[state=active]:bg-background data-[state=active]:text-foreground data-[state=active]:shadow-sm"
+              className="flex items-center justify-start gap-3 w-full sm:w-auto px-6 py-3 text-sm font-medium rounded-md transition-all hover:bg-green-50 dark:hover:bg-green-900/20 data-[state=active]:bg-green-500 data-[state=active]:text-white data-[state=active]:shadow-md hover:shadow-sm"
             >
               <FileText className="h-5 w-5" />
               <span className="whitespace-nowrap">Rapports</span>
