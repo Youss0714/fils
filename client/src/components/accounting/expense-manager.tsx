@@ -32,16 +32,16 @@ export function ExpenseManager() {
   const { toast } = useToast();
 
   // Queries
-  const { data: expenses, isLoading: expensesLoading } = useQuery({
+  const { data: expenses = [], isLoading: expensesLoading } = useQuery<any[]>({
     queryKey: ["/api/accounting/expenses"],
   });
 
-  const { data: categories } = useQuery({
+  const { data: categories = [] } = useQuery<any[]>({
     queryKey: ["/api/accounting/expense-categories"],
   });
 
   // Forms
-  const expenseForm = useForm<InsertExpense>({
+  const expenseForm = useForm({
     resolver: zodResolver(insertExpenseSchema),
     defaultValues: {
       description: "",
@@ -49,10 +49,12 @@ export function ExpenseManager() {
       paymentMethod: "cash",
       status: "pending",
       expenseDate: new Date().toISOString().split('T')[0],
+      categoryId: undefined,
+      notes: "",
     },
   });
 
-  const categoryForm = useForm<InsertExpenseCategory>({
+  const categoryForm = useForm({
     resolver: zodResolver(insertExpenseCategorySchema),
     defaultValues: {
       name: "",
@@ -63,10 +65,7 @@ export function ExpenseManager() {
 
   // Mutations
   const createExpenseMutation = useMutation({
-    mutationFn: (data: InsertExpense) => apiRequest("/api/accounting/expenses", {
-      method: "POST",
-      body: data,
-    }),
+    mutationFn: (data: InsertExpense) => apiRequest("/api/accounting/expenses", "POST", data),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["/api/accounting/expenses"] });
       queryClient.invalidateQueries({ queryKey: ["/api/accounting/stats"] });
@@ -84,10 +83,7 @@ export function ExpenseManager() {
   });
 
   const createCategoryMutation = useMutation({
-    mutationFn: (data: InsertExpenseCategory) => apiRequest("/api/accounting/expense-categories", {
-      method: "POST",
-      body: data,
-    }),
+    mutationFn: (data: InsertExpenseCategory) => apiRequest("/api/accounting/expense-categories", "POST", data),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["/api/accounting/expense-categories"] });
       setIsCategoryDialogOpen(false);
@@ -104,9 +100,7 @@ export function ExpenseManager() {
   });
 
   const approveExpenseMutation = useMutation({
-    mutationFn: (id: number) => apiRequest(`/api/accounting/expenses/${id}/approve`, {
-      method: "PATCH",
-    }),
+    mutationFn: (id: number) => apiRequest(`/api/accounting/expenses/${id}/approve`, "PATCH"),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["/api/accounting/expenses"] });
       queryClient.invalidateQueries({ queryKey: ["/api/accounting/stats"] });
@@ -122,9 +116,7 @@ export function ExpenseManager() {
   });
 
   const rejectExpenseMutation = useMutation({
-    mutationFn: (id: number) => apiRequest(`/api/accounting/expenses/${id}/reject`, {
-      method: "PATCH",
-    }),
+    mutationFn: (id: number) => apiRequest(`/api/accounting/expenses/${id}/reject`, "PATCH"),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["/api/accounting/expenses"] });
       queryClient.invalidateQueries({ queryKey: ["/api/accounting/stats"] });
@@ -139,11 +131,13 @@ export function ExpenseManager() {
     },
   });
 
-  const handleCreateExpense = (data: InsertExpense) => {
+  const handleCreateExpense = (data: any) => {
+    console.log("Creating expense:", data);
     createExpenseMutation.mutate(data);
   };
 
-  const handleCreateCategory = (data: InsertExpenseCategory) => {
+  const handleCreateCategory = (data: any) => {
+    console.log("Creating category:", data);
     createCategoryMutation.mutate(data);
   };
 
