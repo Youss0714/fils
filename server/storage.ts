@@ -908,6 +908,26 @@ export class DatabaseStorage implements IStorage {
         });
       }
 
+      // Add to transaction journal for trial balance integration
+      if (expense.accountId) {
+        const account = await tx.select().from(chartOfAccounts).where(eq(chartOfAccounts.id, expense.accountId)).limit(1);
+        if (account.length > 0) {
+          await tx.insert(transactionJournal).values({
+            userId: expense.userId,
+            transactionDate: new Date(expense.expenseDate),
+            reference: expense.reference,
+            description: `Dépense approuvée: ${expense.description}`,
+            sourceModule: 'expenses',
+            sourceId: expense.id,
+            debitAccount: account[0].accountCode,
+            creditAccount: 'cash', // Compte de trésorerie
+            debitAmount: expense.amount,
+            creditAmount: expense.amount,
+            createdBy: approvedBy,
+          });
+        }
+      }
+
       return updatedExpense;
     });
   }
