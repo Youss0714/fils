@@ -260,7 +260,7 @@ export const chartOfAccounts = pgTable("chart_of_accounts", {
   accountCode: varchar("account_code", { length: 20 }).notNull(),
   accountName: varchar("account_name", { length: 255 }).notNull(),
   accountType: varchar("account_type", { length: 50 }).notNull(), // 'asset', 'liability', 'equity', 'revenue', 'expense'
-  parentAccountId: integer("parent_account_id").references(() => chartOfAccounts.id),
+  parentAccountId: integer("parent_account_id").references((): any => chartOfAccounts.id),
   isActive: boolean("is_active").default(true),
   description: text("description"),
   normalBalance: varchar("normal_balance", { length: 10 }).notNull(), // 'debit' ou 'credit'
@@ -468,7 +468,7 @@ export const chartOfAccountsRelations = relations(chartOfAccounts, ({ one, many 
   parentAccount: one(chartOfAccounts, {
     fields: [chartOfAccounts.parentAccountId],
     references: [chartOfAccounts.id],
-  }),
+  }) as any,
   subAccounts: many(chartOfAccounts),
   trialBalanceEntries: many(trialBalance),
 }));
