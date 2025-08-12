@@ -172,21 +172,32 @@ export default function AccountingPage() {
       )}
 
       {/* Main Tabs */}
-      <Tabs defaultValue="expenses" className="space-y-4">
-        <TabsList className="grid w-full grid-cols-3">
-          <TabsTrigger value="expenses" className="flex items-center gap-2">
-            <CreditCard className="h-4 w-4" />
-            Dépenses
-          </TabsTrigger>
-          <TabsTrigger value="imprest" className="flex items-center gap-2">
-            <Wallet className="h-4 w-4" />
-            Fonds d'avance
-          </TabsTrigger>
-          <TabsTrigger value="reports" className="flex items-center gap-2">
-            <FileText className="h-4 w-4" />
-            Rapports
-          </TabsTrigger>
-        </TabsList>
+      <Tabs defaultValue="expenses" className="space-y-6">
+        <div className="flex flex-col sm:flex-row gap-4 items-start">
+          <TabsList className="flex flex-col sm:flex-row w-full sm:w-auto h-auto p-1 bg-muted rounded-lg">
+            <TabsTrigger 
+              value="expenses" 
+              className="flex items-center justify-start gap-3 w-full sm:w-auto px-6 py-3 text-sm font-medium rounded-md transition-all data-[state=active]:bg-background data-[state=active]:text-foreground data-[state=active]:shadow-sm"
+            >
+              <CreditCard className="h-5 w-5" />
+              <span className="whitespace-nowrap">Dépenses</span>
+            </TabsTrigger>
+            <TabsTrigger 
+              value="imprest" 
+              className="flex items-center justify-start gap-3 w-full sm:w-auto px-6 py-3 text-sm font-medium rounded-md transition-all data-[state=active]:bg-background data-[state=active]:text-foreground data-[state=active]:shadow-sm"
+            >
+              <Wallet className="h-5 w-5" />
+              <span className="whitespace-nowrap">Fonds d'avance</span>
+            </TabsTrigger>
+            <TabsTrigger 
+              value="reports" 
+              className="flex items-center justify-start gap-3 w-full sm:w-auto px-6 py-3 text-sm font-medium rounded-md transition-all data-[state=active]:bg-background data-[state=active]:text-foreground data-[state=active]:shadow-sm"
+            >
+              <FileText className="h-5 w-5" />
+              <span className="whitespace-nowrap">Rapports</span>
+            </TabsTrigger>
+          </TabsList>
+        </div>
 
         <TabsContent value="expenses">
           <ExpenseManager />
