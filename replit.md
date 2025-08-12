@@ -116,6 +116,12 @@ Preferred communication style: Simple, everyday language.
   - Features include company information, detailed expense breakdown, and financial summary
   - French localization with proper formatting for business use
   - Responsive buttons that appear only when expenses exist
+✓ **Bulk Audit Features** (August 12, 2025)
+  - Added bulk print functionality for all expenses with professional audit report format
+  - Implemented bulk PDF download for comprehensive expense auditing
+  - Features include company information, detailed expense breakdown, and financial summary
+  - French localization with proper formatting for business use
+  - Responsive buttons that appear only when expenses exist
 
 ## Licensing System Implementation (August 10, 2025)
 ✓ **Complete Licensing System**: Full license management system implemented

@@ -210,7 +210,7 @@ export function ExpenseManager() {
               <div class="expense-item">
                 <div class="expense-header">
                   <span>${expense.description}</span>
-                  <span>${parseFloat(expense.amount).toLocaleString('fr-FR')} FCFA</span>
+                  <span>${parseFloat(expense.amount).toLocaleString('fr-FR', { useGrouping: true }).replace(/\s/g, ' ')} FCFA</span>
                 </div>
                 <div class="expense-details">
                   <p><strong>Référence:</strong> ${expense.reference}</p>
@@ -226,7 +226,7 @@ export function ExpenseManager() {
 
           <div class="summary">
             <h3>Résumé</h3>
-            <p class="total">Total général: ${totalAmount.toLocaleString('fr-FR')} FCFA</p>
+            <p class="total">Total général: ${totalAmount.toLocaleString('fr-FR', { useGrouping: true }).replace(/\s/g, ' ')} FCFA</p>
             <p>Dépenses approuvées: ${expenses.filter((e: any) => e.status === 'approved').length}</p>
             <p>Dépenses en attente: ${expenses.filter((e: any) => e.status === 'pending').length}</p>
             <p>Dépenses rejetées: ${expenses.filter((e: any) => e.status === 'rejected').length}</p>
@@ -302,7 +302,7 @@ export function ExpenseManager() {
 
         pdf.setFont('helvetica', 'bold');
         pdf.text(expense.description, margin, yPos);
-        pdf.text(`${parseFloat(expense.amount).toLocaleString('fr-FR')} FCFA`, pageWidth - margin, yPos, { align: 'right' });
+        pdf.text(`${parseFloat(expense.amount).toLocaleString('fr-FR', { useGrouping: true }).replace(/\s/g, ' ')} FCFA`, pageWidth - margin, yPos, { align: 'right' });
         
         yPos += 7;
         pdf.setFont('helvetica', 'normal');
@@ -335,7 +335,7 @@ export function ExpenseManager() {
       pdf.text('Résumé', margin, yPos);
       yPos += 10;
       pdf.setFontSize(12);
-      pdf.text(`Total général: ${totalAmount.toLocaleString('fr-FR')} FCFA`, margin, yPos);
+      pdf.text(`Total général: ${totalAmount.toLocaleString('fr-FR', { useGrouping: true }).replace(/\s/g, ' ')} FCFA`, margin, yPos);
       yPos += 8;
       pdf.setFontSize(10);
       pdf.text(`Dépenses approuvées: ${expenses.filter((e: any) => e.status === 'approved').length}`, margin, yPos);
