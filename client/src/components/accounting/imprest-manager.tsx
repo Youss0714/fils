@@ -144,7 +144,24 @@ export function ImprestManager() {
               </DialogDescription>
             </DialogHeader>
             <Form {...fundForm}>
-              <form onSubmit={fundForm.handleSubmit(handleCreateFund)} className="space-y-4">
+              <form 
+                onSubmit={(e) => {
+                  e.preventDefault();
+                  console.log("Fund form submitted");
+                  const values = fundForm.getValues();
+                  console.log("Fund form values:", values);
+                  if (values.accountHolder && values.initialAmount && values.purpose) {
+                    handleCreateFund(values);
+                  } else {
+                    toast({
+                      title: "Erreur",
+                      description: "Tous les champs sont requis",
+                      variant: "destructive"
+                    });
+                  }
+                }}
+                className="space-y-4"
+              >
                 <FormField
                   control={fundForm.control}
                   name="accountHolder"
@@ -185,7 +202,11 @@ export function ImprestManager() {
                   )}
                 />
                 <DialogFooter>
-                  <Button type="submit" disabled={createFundMutation.isPending}>
+                  <Button 
+                    type="submit" 
+                    disabled={createFundMutation.isPending}
+                    onClick={() => console.log("Fund button clicked!")}
+                  >
                     {createFundMutation.isPending ? "Création..." : "Créer le fonds"}
                   </Button>
                 </DialogFooter>
