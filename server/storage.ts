@@ -1032,6 +1032,7 @@ export class DatabaseStorage implements IStorage {
     const [newEntry] = await db.insert(cashBookEntries).values({
       ...data,
       reference,
+      date: data.date,
     }).returning();
 
     // Add to transaction journal
@@ -1042,10 +1043,10 @@ export class DatabaseStorage implements IStorage {
       description: data.description,
       sourceModule: 'cash_book',
       sourceId: newEntry.id,
-      debitAccount: data.type === 'expense' ? data.account : null,
-      creditAccount: data.type === 'income' ? data.account : null,
-      debitAmount: data.type === 'expense' ? data.amount : null,
-      creditAmount: data.type === 'income' ? data.amount : null,
+      debitAccount: data.type === 'expense' ? data.account : undefined,
+      creditAccount: data.type === 'income' ? data.account : undefined,
+      debitAmount: data.type === 'expense' ? data.amount : undefined,
+      creditAmount: data.type === 'income' ? data.amount : undefined,
       createdBy: data.userId,
     });
 
@@ -1053,10 +1054,15 @@ export class DatabaseStorage implements IStorage {
   }
 
   async updateCashBookEntry(id: number, data: Partial<InsertCashBookEntry>, userId: string): Promise<CashBookEntry> {
+    const updateData = { ...data };
+    if (updateData.date instanceof Date) {
+      updateData.date = updateData.date.toISOString().split('T')[0];
+    }
+    
     const [updatedEntry] = await db
       .update(cashBookEntries)
       .set({
-        ...data,
+        ...updateData,
         updatedAt: new Date(),
       })
       .where(and(eq(cashBookEntries.id, id), eq(cashBookEntries.userId, userId)))
@@ -1108,17 +1114,22 @@ export class DatabaseStorage implements IStorage {
 
     const [newEntry] = await db.insert(pettyCashEntries).values({
       ...data,
-      runningBalance: newBalance.toString(),
+      date: data.date,
     }).returning();
 
     return newEntry;
   }
 
   async updatePettyCashEntry(id: number, data: Partial<InsertPettyCashEntry>, userId: string): Promise<PettyCashEntry> {
+    const updateData = { ...data };
+    if (updateData.date instanceof Date) {
+      updateData.date = updateData.date.toISOString().split('T')[0];
+    }
+    
     const [updatedEntry] = await db
       .update(pettyCashEntries)
       .set({
-        ...data,
+        ...updateData,
         updatedAt: new Date(),
       })
       .where(and(eq(pettyCashEntries.id, id), eq(pettyCashEntries.userId, userId)))
@@ -1141,7 +1152,7 @@ export class DatabaseStorage implements IStorage {
       // Add to transaction journal
       await this.addToTransactionJournal({
         userId,
-        transactionDate: updatedEntry.date,
+        transactionDate: new Date(updatedEntry.date),
         reference: `PC-${updatedEntry.id}`,
         description: updatedEntry.description,
         sourceModule: 'petty_cash',

@@ -63,12 +63,8 @@ export function ImprestManager() {
 
   // Mutations
   const createFundMutation = useMutation({
-    mutationFn: (data: InsertImprestFund) => {
-      console.log("Mutation data being sent:", data);
-      return apiRequest("/api/accounting/imprest-funds", "POST", data);
-    },
-    onSuccess: (result) => {
-      console.log("Mutation success:", result);
+    mutationFn: (data: InsertImprestFund) => apiRequest("/api/accounting/imprest-funds", "POST", data),
+    onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["/api/accounting/imprest-funds"] });
       queryClient.invalidateQueries({ queryKey: ["/api/accounting/stats"] });
       setIsFundDialogOpen(false);
@@ -76,7 +72,6 @@ export function ImprestManager() {
       toast({ title: "Fonds d'avance créé avec succès" });
     },
     onError: (error: any) => {
-      console.error("Mutation error:", error);
       toast({ 
         title: "Erreur", 
         description: error.message || "Erreur lors de la création du fonds",
@@ -106,21 +101,6 @@ export function ImprestManager() {
 
   const handleCreateFund = (data: InsertImprestFund) => {
     console.log("Form data:", data);
-    console.log("Form errors:", fundForm.formState.errors);
-    console.log("Form is valid:", fundForm.formState.isValid);
-    console.log("Form is submitting:", fundForm.formState.isSubmitting);
-    
-    // Vérifier si toutes les valeurs nécessaires sont présentes
-    if (!data.accountHolder || !data.initialAmount || !data.purpose) {
-      console.error("Données manquantes:", { accountHolder: data.accountHolder, initialAmount: data.initialAmount, purpose: data.purpose });
-      toast({
-        title: "Erreur",
-        description: "Veuillez remplir tous les champs obligatoires",
-        variant: "destructive"
-      });
-      return;
-    }
-    
     createFundMutation.mutate(data);
   };
 
