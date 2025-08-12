@@ -578,6 +578,8 @@ export const insertExpenseSchema = createInsertSchema(expenses).omit({
 
 export const insertImprestFundSchema = createInsertSchema(imprestFunds).omit({
   id: true,
+  reference: true,
+  currentBalance: true,
   createdAt: true,
   updatedAt: true,
 }).extend({
