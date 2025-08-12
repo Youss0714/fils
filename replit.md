@@ -59,7 +59,8 @@ Preferred communication style: Simple, everyday language.
 ✓ **Dependencies**: All packages properly installed and configured  
 ✓ **Security Implementation**: Proper client/server separation with secure authentication
 ✓ **Migration Verification**: Full user registration, profile setup, and module access confirmed
-✓ **Bug Fixes**: Resolved Select component value prop issues in expense manager form  
+✓ **Bug Fixes**: Resolved Select component value prop issues in expense manager form
+✓ **Business Logic Fix**: Imprest fund deduction now occurs only after expense approval (not on creation)  
 ✓ **Logo Feature Removed**: Company logo upload functionality completely removed as requested
   - Deleted logo-upload.tsx component
   - Removed logo upload UI from settings page  
