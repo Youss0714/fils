@@ -42,10 +42,7 @@ export function TrialBalanceManager() {
   // Generate trial balance mutation
   const generateTrialBalanceMutation = useMutation({
     mutationFn: (data: { periodStart: string; periodEnd: string }) =>
-      apiRequest("/api/accounting/trial-balance/generate", {
-        method: "POST",
-        body: data,
-      }),
+      apiRequest("POST", "/api/accounting/trial-balance/generate", data),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["/api/accounting/trial-balance"] });
       toast({
