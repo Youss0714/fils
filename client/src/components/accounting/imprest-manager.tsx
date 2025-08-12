@@ -12,6 +12,7 @@ import { Label } from "@/components/ui/label";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Plus, Wallet, ArrowUp, ArrowDown, Eye, DollarSign } from "lucide-react";
+import { ImprestFundPDF } from "./imprest-fund-pdf";
 import { useToast } from "@/hooks/use-toast";
 import { apiRequest } from "@/lib/queryClient";
 import { 
@@ -39,6 +40,10 @@ export function ImprestManager() {
   const { data: transactions = [] } = useQuery<any[]>({
     queryKey: ["/api/accounting/imprest-funds", selectedFund?.id, "transactions"],
     enabled: !!selectedFund?.id,
+  });
+
+  const { data: user } = useQuery<any>({
+    queryKey: ["/api/user"],
   });
 
   // Forms
@@ -279,6 +284,9 @@ export function ImprestManager() {
                         <p className="text-xs text-muted-foreground mt-1">
                           {usagePercent.toFixed(1)}% utilisé
                         </p>
+                      </div>
+                      <div className="mt-3 pt-3 border-t flex justify-end">
+                        <ImprestFundPDF imprestFund={fund} user={user} />
                       </div>
                     </div>
                   );

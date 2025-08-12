@@ -13,6 +13,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Plus, Edit, Trash2, Check, X, Eye, DollarSign } from "lucide-react";
+import { ExpensePDF } from "./expense-pdf";
 import { useToast } from "@/hooks/use-toast";
 import { apiRequest } from "@/lib/queryClient";
 import { 
@@ -42,6 +43,10 @@ export function ExpenseManager() {
 
   const { data: imprestFunds = [] } = useQuery<any[]>({
     queryKey: ["/api/accounting/imprest-funds"],
+  });
+
+  const { data: user } = useQuery<any>({
+    queryKey: ["/api/user"],
   });
 
   // Forms
@@ -578,6 +583,9 @@ export function ExpenseManager() {
                           </DialogContent>
                         </Dialog>
                       </div>
+                    </div>
+                    <div className="mt-4 flex justify-end">
+                      <ExpensePDF expense={expense} user={user} />
                     </div>
                   </div>
                 );
