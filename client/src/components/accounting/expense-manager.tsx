@@ -13,7 +13,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Pagination, PaginationContent, PaginationItem, PaginationLink, PaginationNext, PaginationPrevious } from "@/components/ui/pagination";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { Plus, Edit, Trash2, Check, X, Eye, DollarSign } from "lucide-react";
+import { Plus, Edit, Trash2, Check, X, Eye, DollarSign, Printer, Download } from "lucide-react";
 import { ExpensePDF } from "./expense-pdf";
 import { useToast } from "@/hooks/use-toast";
 import { apiRequest } from "@/lib/queryClient";
@@ -153,6 +153,211 @@ export function ExpenseManager() {
   const handleCreateCategory = (data: any) => {
     console.log("Creating category:", data);
     createCategoryMutation.mutate(data);
+  };
+
+  // Bulk print/download functions
+  const handleBulkPrint = () => {
+    if (!expenses || expenses.length === 0) {
+      toast({
+        title: "Aucune dépense",
+        description: "Il n'y a aucune dépense à imprimer",
+        variant: "destructive"
+      });
+      return;
+    }
+
+    const printWindow = window.open('', '_blank');
+    if (!printWindow) return;
+
+    const totalAmount = expenses.reduce((sum: number, expense: any) => sum + parseFloat(expense.amount), 0);
+    
+    printWindow.document.write(`
+      <!DOCTYPE html>
+      <html>
+        <head>
+          <title>Rapport de dépenses - Audit</title>
+          <style>
+            body { font-family: Arial, sans-serif; margin: 20px; }
+            .header { text-align: center; margin-bottom: 30px; border-bottom: 2px solid #333; padding-bottom: 20px; }
+            .company-info { margin-bottom: 20px; }
+            .expense-item { border-bottom: 1px solid #ddd; padding: 15px 0; }
+            .expense-header { display: flex; justify-content: space-between; font-weight: bold; margin-bottom: 10px; }
+            .expense-details { margin-left: 20px; color: #666; }
+            .summary { margin-top: 30px; padding-top: 20px; border-top: 2px solid #333; }
+            .total { font-size: 1.2em; font-weight: bold; }
+            @media print { 
+              body { margin: 0; }
+              .no-print { display: none; }
+            }
+          </style>
+        </head>
+        <body>
+          <div class="header">
+            <h1>RAPPORT DE DÉPENSES - AUDIT</h1>
+            <p>Généré le ${new Date().toLocaleDateString('fr-FR')}</p>
+          </div>
+          
+          <div class="company-info">
+            <h3>Informations de l'entreprise</h3>
+            <p><strong>Entreprise:</strong> ${user?.company || 'N/A'}</p>
+            <p><strong>Responsable:</strong> ${user?.firstName} ${user?.lastName}</p>
+            <p><strong>Email:</strong> ${user?.email}</p>
+          </div>
+
+          <div class="expenses-list">
+            <h3>Détail des dépenses (${expenses.length} dépense(s))</h3>
+            ${expenses.map((expense: any) => `
+              <div class="expense-item">
+                <div class="expense-header">
+                  <span>${expense.description}</span>
+                  <span>${parseFloat(expense.amount).toLocaleString('fr-FR')} FCFA</span>
+                </div>
+                <div class="expense-details">
+                  <p><strong>Référence:</strong> ${expense.reference}</p>
+                  <p><strong>Catégorie:</strong> ${expense.category?.name || 'N/A'}</p>
+                  <p><strong>Date:</strong> ${new Date(expense.expenseDate).toLocaleDateString('fr-FR')}</p>
+                  <p><strong>Statut:</strong> ${expense.status === 'approved' ? 'Approuvée' : expense.status === 'pending' ? 'En attente' : 'Rejetée'}</p>
+                  <p><strong>Mode de paiement:</strong> ${PAYMENT_METHODS.find(p => p.value === expense.paymentMethod)?.label || expense.paymentMethod}</p>
+                  ${expense.notes ? `<p><strong>Notes:</strong> ${expense.notes}</p>` : ''}
+                </div>
+              </div>
+            `).join('')}
+          </div>
+
+          <div class="summary">
+            <h3>Résumé</h3>
+            <p class="total">Total général: ${totalAmount.toLocaleString('fr-FR')} FCFA</p>
+            <p>Dépenses approuvées: ${expenses.filter((e: any) => e.status === 'approved').length}</p>
+            <p>Dépenses en attente: ${expenses.filter((e: any) => e.status === 'pending').length}</p>
+            <p>Dépenses rejetées: ${expenses.filter((e: any) => e.status === 'rejected').length}</p>
+          </div>
+        </body>
+      </html>
+    `);
+    
+    printWindow.document.close();
+    printWindow.focus();
+    printWindow.print();
+  };
+
+  const handleBulkDownload = async () => {
+    if (!expenses || expenses.length === 0) {
+      toast({
+        title: "Aucune dépense",
+        description: "Il n'y a aucune dépense à télécharger",
+        variant: "destructive"
+      });
+      return;
+    }
+
+    try {
+      const { jsPDF } = await import('jspdf');
+      const html2canvas = (await import('html2canvas')).default;
+
+      const pdf = new jsPDF('p', 'mm', 'a4');
+      const pageWidth = pdf.internal.pageSize.getWidth();
+      const pageHeight = pdf.internal.pageSize.getHeight();
+      const margin = 20;
+      const totalAmount = expenses.reduce((sum: number, expense: any) => sum + parseFloat(expense.amount), 0);
+
+      // Header
+      pdf.setFontSize(18);
+      pdf.setFont('helvetica', 'bold');
+      pdf.text('RAPPORT DE DÉPENSES - AUDIT', pageWidth / 2, 30, { align: 'center' });
+      
+      pdf.setFontSize(12);
+      pdf.setFont('helvetica', 'normal');
+      pdf.text(`Généré le ${new Date().toLocaleDateString('fr-FR')}`, pageWidth / 2, 40, { align: 'center' });
+
+      // Company info
+      let yPos = 60;
+      pdf.setFontSize(14);
+      pdf.setFont('helvetica', 'bold');
+      pdf.text('Informations de l\'entreprise', margin, yPos);
+      
+      yPos += 10;
+      pdf.setFontSize(10);
+      pdf.setFont('helvetica', 'normal');
+      pdf.text(`Entreprise: ${user?.company || 'N/A'}`, margin, yPos);
+      yPos += 7;
+      pdf.text(`Responsable: ${user?.firstName} ${user?.lastName}`, margin, yPos);
+      yPos += 7;
+      pdf.text(`Email: ${user?.email}`, margin, yPos);
+
+      // Expenses list
+      yPos += 20;
+      pdf.setFontSize(14);
+      pdf.setFont('helvetica', 'bold');
+      pdf.text(`Détail des dépenses (${expenses.length} dépense(s))`, margin, yPos);
+
+      yPos += 15;
+      pdf.setFontSize(10);
+      pdf.setFont('helvetica', 'normal');
+
+      for (const expense of expenses) {
+        if (yPos > pageHeight - 40) {
+          pdf.addPage();
+          yPos = 30;
+        }
+
+        pdf.setFont('helvetica', 'bold');
+        pdf.text(expense.description, margin, yPos);
+        pdf.text(`${parseFloat(expense.amount).toLocaleString('fr-FR')} FCFA`, pageWidth - margin, yPos, { align: 'right' });
+        
+        yPos += 7;
+        pdf.setFont('helvetica', 'normal');
+        pdf.text(`Référence: ${expense.reference}`, margin + 5, yPos);
+        yPos += 5;
+        pdf.text(`Catégorie: ${expense.category?.name || 'N/A'}`, margin + 5, yPos);
+        yPos += 5;
+        pdf.text(`Date: ${new Date(expense.expenseDate).toLocaleDateString('fr-FR')}`, margin + 5, yPos);
+        yPos += 5;
+        pdf.text(`Statut: ${expense.status === 'approved' ? 'Approuvée' : expense.status === 'pending' ? 'En attente' : 'Rejetée'}`, margin + 5, yPos);
+        yPos += 5;
+        pdf.text(`Mode: ${PAYMENT_METHODS.find(p => p.value === expense.paymentMethod)?.label || expense.paymentMethod}`, margin + 5, yPos);
+        
+        if (expense.notes) {
+          yPos += 5;
+          pdf.text(`Notes: ${expense.notes}`, margin + 5, yPos);
+        }
+        
+        yPos += 10;
+      }
+
+      // Summary
+      if (yPos > pageHeight - 60) {
+        pdf.addPage();
+        yPos = 30;
+      }
+
+      yPos += 10;
+      pdf.setFont('helvetica', 'bold');
+      pdf.text('Résumé', margin, yPos);
+      yPos += 10;
+      pdf.setFontSize(12);
+      pdf.text(`Total général: ${totalAmount.toLocaleString('fr-FR')} FCFA`, margin, yPos);
+      yPos += 8;
+      pdf.setFontSize(10);
+      pdf.text(`Dépenses approuvées: ${expenses.filter((e: any) => e.status === 'approved').length}`, margin, yPos);
+      yPos += 6;
+      pdf.text(`Dépenses en attente: ${expenses.filter((e: any) => e.status === 'pending').length}`, margin, yPos);
+      yPos += 6;
+      pdf.text(`Dépenses rejetées: ${expenses.filter((e: any) => e.status === 'rejected').length}`, margin, yPos);
+
+      pdf.save(`rapport-depenses-audit-${new Date().toISOString().split('T')[0]}.pdf`);
+      
+      toast({
+        title: "PDF téléchargé",
+        description: "Le rapport de dépenses a été téléchargé avec succès"
+      });
+    } catch (error) {
+      console.error('Erreur lors de la génération du PDF:', error);
+      toast({
+        title: "Erreur",
+        description: "Erreur lors de la génération du PDF",
+        variant: "destructive"
+      });
+    }
   };
 
   if (expensesLoading) {
@@ -455,10 +660,26 @@ export function ExpenseManager() {
       {/* Expenses List */}
       <Card>
         <CardHeader>
-          <CardTitle>Liste des dépenses</CardTitle>
-          <CardDescription>
-            Toutes vos dépenses d'entreprise
-          </CardDescription>
+          <div className="flex items-start justify-between">
+            <div>
+              <CardTitle>Liste des dépenses</CardTitle>
+              <CardDescription>
+                Toutes vos dépenses d'entreprise
+              </CardDescription>
+            </div>
+            {expenses && expenses.length > 0 && (
+              <div className="flex gap-2">
+                <Button variant="outline" size="sm" onClick={handleBulkPrint}>
+                  <Printer className="mr-2 h-4 w-4" />
+                  Imprimer tout
+                </Button>
+                <Button variant="outline" size="sm" onClick={handleBulkDownload}>
+                  <Download className="mr-2 h-4 w-4" />
+                  PDF Audit
+                </Button>
+              </div>
+            )}
+          </div>
         </CardHeader>
         <CardContent>
           <div className="space-y-4">
