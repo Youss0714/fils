@@ -19,11 +19,14 @@ import { insertChartOfAccountsSchema, ACCOUNT_TYPES, NORMAL_BALANCE_TYPES } from
 import type { ChartOfAccounts, InsertChartOfAccounts } from "@shared/schema";
 import { z } from "zod";
 
-const formSchema = insertChartOfAccountsSchema.extend({
+const formSchema = z.object({
   accountCode: z.string().min(1, "Le code du compte est requis"),
   accountName: z.string().min(1, "Le nom du compte est requis"),
   accountType: z.string().min(1, "Le type de compte est requis"),
   normalBalance: z.string().min(1, "Le solde normal est requis"),
+  description: z.string().optional(),
+  level: z.number().min(1).max(5).default(1),
+  parentAccountId: z.number().optional(),
 });
 
 export function ChartOfAccountsManager() {
@@ -46,7 +49,7 @@ export function ChartOfAccountsManager() {
   });
 
   // Get chart of accounts
-  const { data: accounts, isLoading } = useQuery({
+  const { data: accounts, isLoading } = useQuery<ChartOfAccounts[]>({
     queryKey: ["/api/accounting/chart-of-accounts"],
   });
 
@@ -124,10 +127,23 @@ export function ChartOfAccountsManager() {
   });
 
   const onSubmit = (data: z.infer<typeof formSchema>) => {
+    console.log("Form submitted with data:", data);
+    const accountData: InsertChartOfAccounts = {
+      accountCode: data.accountCode,
+      accountName: data.accountName,
+      accountType: data.accountType,
+      normalBalance: data.normalBalance,
+      description: data.description || null,
+      level: data.level,
+      parentAccountId: data.parentAccountId || null,
+      userId: "", // Will be set by the server
+      isActive: true,
+    };
+
     if (editingAccount) {
-      updateAccountMutation.mutate({ id: editingAccount.id, data });
+      updateAccountMutation.mutate({ id: editingAccount.id, data: accountData });
     } else {
-      createAccountMutation.mutate(data);
+      createAccountMutation.mutate(accountData);
     }
   };
 
@@ -237,7 +253,7 @@ export function ChartOfAccountsManager() {
                   <div className="space-y-2">
                     <Label htmlFor="accountType">Type de Compte *</Label>
                     <Select 
-                      value={form.watch("accountType")} 
+                      value={form.watch("accountType") || ""} 
                       onValueChange={(value) => {
                         form.setValue("accountType", value);
                         // Auto-set normal balance based on account type
@@ -271,7 +287,7 @@ export function ChartOfAccountsManager() {
                   <div className="space-y-2">
                     <Label htmlFor="normalBalance">Solde Normal *</Label>
                     <Select 
-                      value={form.watch("normalBalance")} 
+                      value={form.watch("normalBalance") || ""} 
                       onValueChange={(value) => form.setValue("normalBalance", value)}
                     >
                       <SelectTrigger>
@@ -301,7 +317,7 @@ export function ChartOfAccountsManager() {
                         </SelectTrigger>
                         <SelectContent>
                           <SelectItem value="">Aucun compte parent</SelectItem>
-                          {accounts.map((account: ChartOfAccounts) => (
+                          {accounts.map((account) => (
                             <SelectItem key={account.id} value={account.id.toString()}>
                               {account.accountCode} - {account.accountName}
                             </SelectItem>
@@ -373,9 +389,9 @@ export function ChartOfAccountsManager() {
                   </TableRow>
                 </TableHeader>
                 <TableBody>
-                  {accounts.map((account: ChartOfAccounts) => {
+                  {accounts?.map((account) => {
                     const accountTypeInfo = getAccountTypeInfo(account.accountType);
-                    const parentAccount = accounts.find((a: ChartOfAccounts) => a.id === account.parentAccountId);
+                    const parentAccount = accounts.find((a) => a.id === account.parentAccountId);
                     
                     return (
                       <TableRow key={account.id}>
