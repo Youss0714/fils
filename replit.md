@@ -69,6 +69,10 @@ Preferred communication style: Simple, everyday language.
   - Fixed userId foreign key constraint violation in update operations
   - Improved dialog layout with proper scrolling and button visibility
   - All CRUD operations now fully functional (Create, Read, Update, Delete)
+✓ **Trial Balance System**: Fixed API request format in trial-balance-manager.tsx
+  - Corrected apiRequest function call to use proper parameter order (method, url, data)
+  - Trial balance generation and consultation now fully operational
+  - Professional balance display with totals, equilibrium status, and PDF export capability
 ✓ **Logo Feature Removed**: Company logo upload functionality completely removed as requested
   - Deleted logo-upload.tsx component
   - Removed logo upload UI from settings page  
