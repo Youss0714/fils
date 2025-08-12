@@ -174,7 +174,24 @@ export function ExpenseManager() {
                 </DialogDescription>
               </DialogHeader>
               <Form {...categoryForm}>
-                <form onSubmit={categoryForm.handleSubmit(handleCreateCategory)} className="space-y-4">
+                <form 
+                  onSubmit={(e) => {
+                    e.preventDefault();
+                    console.log("Form submitted");
+                    const values = categoryForm.getValues();
+                    console.log("Form values:", values);
+                    if (values.name && values.name.trim()) {
+                      handleCreateCategory(values);
+                    } else {
+                      toast({
+                        title: "Erreur",
+                        description: "Le nom de la catégorie est requis",
+                        variant: "destructive"
+                      });
+                    }
+                  }} 
+                  className="space-y-4"
+                >
                   <FormField
                     control={categoryForm.control}
                     name="name"
@@ -205,7 +222,7 @@ export function ExpenseManager() {
                     <Button 
                       type="submit" 
                       disabled={createCategoryMutation.isPending}
-                      onClick={() => console.log("Button clicked! Form values:", categoryForm.getValues())}
+                      onClick={() => console.log("Button clicked directly")}
                     >
                       {createCategoryMutation.isPending ? "Création..." : "Créer"}
                     </Button>
@@ -277,7 +294,7 @@ export function ExpenseManager() {
                       render={({ field }) => (
                         <FormItem>
                           <FormLabel>Catégorie</FormLabel>
-                          <Select onValueChange={(value) => field.onChange(parseInt(value))} value={field.value ? field.value.toString() : ""}>
+                          <Select onValueChange={(value) => field.onChange(parseInt(value))}>
                             <FormControl>
                               <SelectTrigger>
                                 <SelectValue placeholder="Sélectionnez une catégorie" />
