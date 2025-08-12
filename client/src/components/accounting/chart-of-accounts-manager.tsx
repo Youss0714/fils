@@ -56,10 +56,7 @@ export function ChartOfAccountsManager() {
   // Create account mutation
   const createAccountMutation = useMutation({
     mutationFn: (data: InsertChartOfAccounts) =>
-      apiRequest("/api/accounting/chart-of-accounts", {
-        method: "POST",
-        body: data,
-      }),
+      apiRequest("POST", "/api/accounting/chart-of-accounts", data),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["/api/accounting/chart-of-accounts"] });
       setIsDialogOpen(false);
@@ -81,10 +78,7 @@ export function ChartOfAccountsManager() {
   // Update account mutation
   const updateAccountMutation = useMutation({
     mutationFn: ({ id, data }: { id: number; data: Partial<InsertChartOfAccounts> }) =>
-      apiRequest(`/api/accounting/chart-of-accounts/${id}`, {
-        method: "PATCH",
-        body: data,
-      }),
+      apiRequest("PATCH", `/api/accounting/chart-of-accounts/${id}`, data),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["/api/accounting/chart-of-accounts"] });
       setIsDialogOpen(false);
@@ -107,9 +101,7 @@ export function ChartOfAccountsManager() {
   // Delete account mutation
   const deleteAccountMutation = useMutation({
     mutationFn: (id: number) =>
-      apiRequest(`/api/accounting/chart-of-accounts/${id}`, {
-        method: "DELETE",
-      }),
+      apiRequest("DELETE", `/api/accounting/chart-of-accounts/${id}`),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["/api/accounting/chart-of-accounts"] });
       toast({
