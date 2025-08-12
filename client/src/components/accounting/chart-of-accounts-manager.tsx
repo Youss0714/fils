@@ -192,7 +192,7 @@ export function ChartOfAccountsManager() {
                   Nouveau Compte
                 </Button>
               </DialogTrigger>
-              <DialogContent className="max-w-md">
+              <DialogContent className="max-w-md max-h-[90vh] overflow-y-auto">
                 <DialogHeader>
                   <DialogTitle>
                     {editingAccount ? "Modifier le Compte" : "Nouveau Compte"}
@@ -325,11 +325,11 @@ export function ChartOfAccountsManager() {
                       id="description"
                       {...form.register("description")}
                       placeholder="Description du compte..."
-                      rows={3}
+                      rows={2}
                     />
                   </div>
 
-                  <div className="flex gap-2 pt-4">
+                  <div className="flex gap-2 pt-4 mt-4 border-t">
                     <Button 
                       type="submit" 
                       disabled={createAccountMutation.isPending || updateAccountMutation.isPending}
