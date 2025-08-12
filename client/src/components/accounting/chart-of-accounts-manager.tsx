@@ -299,16 +299,16 @@ export function ChartOfAccountsManager() {
                     <div className="space-y-2">
                       <Label htmlFor="parentAccountId">Compte Parent (optionnel)</Label>
                       <Select 
-                        value={form.watch("parentAccountId")?.toString() || ""} 
+                        value={form.watch("parentAccountId")?.toString() || "none"} 
                         onValueChange={(value) => 
-                          form.setValue("parentAccountId", value ? parseInt(value) : undefined)
+                          form.setValue("parentAccountId", value === "none" ? undefined : parseInt(value))
                         }
                       >
                         <SelectTrigger>
                           <SelectValue placeholder="Sélectionner un compte parent" />
                         </SelectTrigger>
                         <SelectContent>
-                          <SelectItem value="">Aucun compte parent</SelectItem>
+                          <SelectItem value="none">Aucun compte parent</SelectItem>
                           {accounts.map((account) => (
                             <SelectItem key={account.id} value={account.id.toString()}>
                               {account.accountCode} - {account.accountName}
