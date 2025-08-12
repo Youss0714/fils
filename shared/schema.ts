@@ -143,6 +143,7 @@ export const expenses = pgTable("expenses", {
   description: text("description").notNull(),
   amount: decimal("amount", { precision: 10, scale: 2 }).notNull(),
   categoryId: integer("category_id").notNull().references(() => expenseCategories.id),
+  accountId: integer("account_id").references(() => chartOfAccounts.id), // Lien vers le plan comptable
   expenseDate: timestamp("expense_date").notNull(),
   paymentMethod: varchar("payment_method", { length: 50 }).notNull(), // cash, bank_transfer, check, card
   status: varchar("status", { length: 50 }).notNull().default("pending"), // pending, approved, paid, rejected
@@ -204,7 +205,8 @@ export const cashBookEntries = pgTable("cash_book_entries", {
   description: text("description").notNull(),
   type: varchar("type", { length: 20 }).notNull(), // 'income', 'expense', 'transfer'
   amount: decimal("amount", { precision: 12, scale: 2 }).notNull(),
-  account: varchar("account", { length: 100 }).notNull(), // Compte concerné
+  accountId: integer("account_id").references(() => chartOfAccounts.id), // Lien vers le plan comptable
+  account: varchar("account", { length: 100 }).notNull(), // Compte concerné (legacy)
   counterparty: varchar("counterparty", { length: 255 }), // Contrepartie
   category: varchar("category", { length: 100 }),
   paymentMethod: varchar("payment_method", { length: 50 }).notNull(),
@@ -391,6 +393,14 @@ export const expensesRelations = relations(expenses, ({ one }) => ({
     fields: [expenses.categoryId],
     references: [expenseCategories.id],
   }),
+  account: one(chartOfAccounts, {
+    fields: [expenses.accountId],
+    references: [chartOfAccounts.id],
+  }),
+  imprestFund: one(imprestFunds, {
+    fields: [expenses.imprestId],
+    references: [imprestFunds.id],
+  }),
   approver: one(users, {
     fields: [expenses.approvedBy],
     references: [users.id],
@@ -436,6 +446,10 @@ export const cashBookEntriesRelations = relations(cashBookEntries, ({ one }) => 
     fields: [cashBookEntries.userId],
     references: [users.id],
   }),
+  account: one(chartOfAccounts, {
+    fields: [cashBookEntries.accountId],
+    references: [chartOfAccounts.id],
+  }),
 }));
 
 export const pettyCashEntriesRelations = relations(pettyCashEntries, ({ one }) => ({
@@ -470,6 +484,8 @@ export const chartOfAccountsRelations = relations(chartOfAccounts, ({ one, many 
     references: [chartOfAccounts.id],
   }) as any,
   subAccounts: many(chartOfAccounts),
+  expenses: many(expenses),
+  cashBookEntries: many(cashBookEntries),
   trialBalanceEntries: many(trialBalance),
 }));
 

@@ -48,6 +48,10 @@ export function ExpenseManager() {
     queryKey: ["/api/accounting/imprest-funds"],
   });
 
+  const { data: chartOfAccounts = [] } = useQuery<any[]>({
+    queryKey: ["/api/accounting/chart-of-accounts"],
+  });
+
   const { data: user } = useQuery<any>({
     queryKey: ["/api/user"],
   });
@@ -62,6 +66,7 @@ export function ExpenseManager() {
       status: "pending",
       expenseDate: new Date().toISOString().split('T')[0],
       categoryId: undefined,
+      accountId: undefined,
       notes: "",
       imprestId: undefined,
     },
@@ -569,6 +574,33 @@ export function ExpenseManager() {
                     />
                     <FormField
                       control={expenseForm.control}
+                      name="accountId"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>Compte Comptable</FormLabel>
+                          <Select onValueChange={(value) => field.onChange(value === "none" ? undefined : parseInt(value))} value={field.value ? String(field.value) : "none"}>
+                            <FormControl>
+                              <SelectTrigger>
+                                <SelectValue placeholder="Sélectionnez un compte" />
+                              </SelectTrigger>
+                            </FormControl>
+                            <SelectContent>
+                              <SelectItem value="none">Aucun compte</SelectItem>
+                              {chartOfAccounts
+                                .filter((account: any) => account.accountType === 'expense')
+                                .map((account: any) => (
+                                <SelectItem key={account.id} value={account.id.toString()}>
+                                  {account.accountCode} - {account.accountName}
+                                </SelectItem>
+                              ))}
+                            </SelectContent>
+                          </Select>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+                    <FormField
+                      control={expenseForm.control}
                       name="paymentMethod"
                       render={({ field }) => (
                         <FormItem>
@@ -713,6 +745,12 @@ export function ExpenseManager() {
                           <h4 className="font-medium">{expense.description}</h4>
                           <div className="flex items-center gap-2 text-sm text-muted-foreground">
                             <span>{expense.category?.name}</span>
+                            {expense.account && (
+                              <>
+                                <span>•</span>
+                                <span className="text-blue-600">{expense.account.accountCode}</span>
+                              </>
+                            )}
                             <span>•</span>
                             <span>{paymentMethod?.icon} {paymentMethod?.label}</span>
                             <span>•</span>
@@ -794,6 +832,12 @@ export function ExpenseManager() {
                                   <p className="text-sm">{new Date(expense.expenseDate).toLocaleDateString('fr-FR')}</p>
                                 </div>
                               </div>
+                              {expense.account && (
+                                <div>
+                                  <Label className="text-sm font-medium text-muted-foreground">Compte Comptable</Label>
+                                  <p className="text-sm">{expense.account.accountCode} - {expense.account.accountName}</p>
+                                </div>
+                              )}
                               <div>
                                 <Label className="text-sm font-medium text-muted-foreground">Description</Label>
                                 <p className="text-sm">{expense.description}</p>

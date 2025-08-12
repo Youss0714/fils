@@ -73,6 +73,12 @@ Preferred communication style: Simple, everyday language.
   - Corrected apiRequest function call to use proper parameter order (method, url, data)
   - Trial balance generation and consultation now fully operational
   - Professional balance display with totals, equilibrium status, and PDF export capability
+✓ **Chart of Accounts Integration with Expenses**: Transformed chart of accounts to central accounting system
+  - Added accountId field to expenses table for direct linking to chart of accounts
+  - Enhanced expense forms to include chart of accounts selection (filtered by expense type)
+  - Updated expense displays to show account codes and names alongside categories
+  - Modified database queries to include account information in expense listings
+  - Plan comptable is now the central hub for all financial transaction classification
 ✓ **Logo Feature Removed**: Company logo upload functionality completely removed as requested
   - Deleted logo-upload.tsx component
   - Removed logo upload UI from settings page  

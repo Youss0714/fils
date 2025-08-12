@@ -764,33 +764,75 @@ export class DatabaseStorage implements IStorage {
   }
 
   // Expenses
-  async getExpenses(userId: string): Promise<(Expense & { category: ExpenseCategory })[]> {
-    const results = await db
-      .select()
+  async getExpenses(userId: string): Promise<any[]> {
+    return await db
+      .select({
+        id: expenses.id,
+        reference: expenses.reference,
+        description: expenses.description,
+        amount: expenses.amount,
+        expenseDate: expenses.expenseDate,
+        paymentMethod: expenses.paymentMethod,
+        status: expenses.status,
+        receiptUrl: expenses.receiptUrl,
+        notes: expenses.notes,
+        imprestId: expenses.imprestId,
+        approvedBy: expenses.approvedBy,
+        approvedAt: expenses.approvedAt,
+        createdAt: expenses.createdAt,
+        category: {
+          id: expenseCategories.id,
+          name: expenseCategories.name,
+          isMajor: expenseCategories.isMajor,
+        },
+        account: {
+          id: chartOfAccounts.id,
+          accountCode: chartOfAccounts.accountCode,
+          accountName: chartOfAccounts.accountName,
+          accountType: chartOfAccounts.accountType,
+        },
+      })
       .from(expenses)
       .leftJoin(expenseCategories, eq(expenses.categoryId, expenseCategories.id))
+      .leftJoin(chartOfAccounts, eq(expenses.accountId, chartOfAccounts.id))
       .where(eq(expenses.userId, userId))
       .orderBy(desc(expenses.createdAt));
-
-    return results.map(row => ({
-      ...row.expenses,
-      category: row.expense_categories!,
-    }));
   }
 
-  async getExpense(id: number, userId: string): Promise<(Expense & { category: ExpenseCategory }) | undefined> {
+  async getExpense(id: number, userId: string): Promise<any | undefined> {
     const [result] = await db
-      .select()
+      .select({
+        id: expenses.id,
+        reference: expenses.reference,
+        description: expenses.description,
+        amount: expenses.amount,
+        expenseDate: expenses.expenseDate,
+        paymentMethod: expenses.paymentMethod,
+        status: expenses.status,
+        receiptUrl: expenses.receiptUrl,
+        notes: expenses.notes,
+        imprestId: expenses.imprestId,
+        approvedBy: expenses.approvedBy,
+        approvedAt: expenses.approvedAt,
+        createdAt: expenses.createdAt,
+        category: {
+          id: expenseCategories.id,
+          name: expenseCategories.name,
+          isMajor: expenseCategories.isMajor,
+        },
+        account: {
+          id: chartOfAccounts.id,
+          accountCode: chartOfAccounts.accountCode,
+          accountName: chartOfAccounts.accountName,
+          accountType: chartOfAccounts.accountType,
+        },
+      })
       .from(expenses)
       .leftJoin(expenseCategories, eq(expenses.categoryId, expenseCategories.id))
+      .leftJoin(chartOfAccounts, eq(expenses.accountId, chartOfAccounts.id))
       .where(and(eq(expenses.id, id), eq(expenses.userId, userId)));
 
-    if (!result) return undefined;
-
-    return {
-      ...result.expenses,
-      category: result.expense_categories!,
-    };
+    return result;
   }
 
   async createExpense(expense: InsertExpense): Promise<Expense> {
