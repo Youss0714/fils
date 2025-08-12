@@ -247,7 +247,25 @@ export function ExpenseManager() {
                 </DialogDescription>
               </DialogHeader>
               <Form {...expenseForm}>
-                <form onSubmit={expenseForm.handleSubmit(handleCreateExpense)} className="space-y-4">
+                <form 
+                  onSubmit={(e) => {
+                    e.preventDefault();
+                    console.log("Expense form submitted");
+                    const values = expenseForm.getValues();
+                    console.log("Expense form values:", values);
+                    console.log("Form errors:", expenseForm.formState.errors);
+                    if (values.description && values.amount && values.categoryId) {
+                      handleCreateExpense(values);
+                    } else {
+                      toast({
+                        title: "Erreur",
+                        description: "Description, montant et catégorie sont requis",
+                        variant: "destructive"
+                      });
+                    }
+                  }}
+                  className="space-y-4"
+                >
                   <div className="grid grid-cols-2 gap-4">
                     <FormField
                       control={expenseForm.control}
@@ -352,7 +370,11 @@ export function ExpenseManager() {
                     )}
                   />
                   <DialogFooter>
-                    <Button type="submit" disabled={createExpenseMutation.isPending}>
+                    <Button 
+                      type="submit" 
+                      disabled={createExpenseMutation.isPending}
+                      onClick={() => console.log("Expense button clicked!")}
+                    >
                       {createExpenseMutation.isPending ? "Création..." : "Créer la dépense"}
                     </Button>
                   </DialogFooter>
