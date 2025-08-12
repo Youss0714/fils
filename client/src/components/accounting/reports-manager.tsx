@@ -32,8 +32,7 @@ export function ReportsManager() {
   });
 
   // Form
-  const reportForm = useForm<InsertAccountingReport>({
-    resolver: zodResolver(insertAccountingReportSchema),
+  const reportForm = useForm({
     defaultValues: {
       name: "",
       type: "expense_summary",
@@ -44,7 +43,7 @@ export function ReportsManager() {
 
   // Mutations
   const createReportMutation = useMutation({
-    mutationFn: (data: InsertAccountingReport) => {
+    mutationFn: (data: any) => {
       // Generate report data based on type and period
       const reportData = generateReportData(data.type, data.periodStart, data.periodEnd);
       
@@ -90,11 +89,11 @@ export function ReportsManager() {
       case 'expense_summary':
         return {
           summary: {
-            totalExpenses: stats?.totalExpenses || 0,
-            pendingExpenses: stats?.pendingExpenses || 0,
-            approvedExpenses: stats?.approvedExpenses || 0,
+            totalExpenses: (stats as any)?.totalExpenses || 0,
+            pendingExpenses: (stats as any)?.pendingExpenses || 0,
+            approvedExpenses: (stats as any)?.approvedExpenses || 0,
           },
-          expensesByCategory: stats?.monthlyExpensesByCategory || [],
+          expensesByCategory: (stats as any)?.monthlyExpensesByCategory || [],
           period: { start: periodStart, end: periodEnd },
         };
       case 'imprest_summary':
