@@ -9,6 +9,11 @@ import {
   insertInvoiceSchema,
   insertInvoiceItemSchema,
   insertLicenseSchema,
+  insertExpenseCategorySchema,
+  insertExpenseSchema,
+  insertImprestFundSchema,
+  insertImprestTransactionSchema,
+  insertAccountingReportSchema,
 } from "@shared/schema";
 import { z } from "zod";
 
@@ -543,6 +548,289 @@ export async function registerRoutes(app: Express): Promise<Server> {
     } catch (error) {
       console.error("Error revoking license:", error);
       res.status(500).json({ message: "Erreur lors de la révocation de la licence" });
+    }
+  });
+
+  // ==========================================
+  // ACCOUNTING MODULE ROUTES
+  // ==========================================
+
+  // Expense Categories routes
+  app.get("/api/accounting/expense-categories", isAuthenticated, async (req: any, res) => {
+    try {
+      const userId = req.user.id;
+      const categories = await storage.getExpenseCategories(userId);
+      res.json(categories);
+    } catch (error) {
+      console.error("Error fetching expense categories:", error);
+      res.status(500).json({ message: "Erreur lors de la récupération des catégories de dépenses" });
+    }
+  });
+
+  app.post("/api/accounting/expense-categories", isAuthenticated, async (req: any, res) => {
+    try {
+      const userId = req.user.id;
+      const categoryData = insertExpenseCategorySchema.parse({ ...req.body, userId });
+      const category = await storage.createExpenseCategory(categoryData);
+      res.json(category);
+    } catch (error) {
+      console.error("Error creating expense category:", error);
+      res.status(400).json({ message: "Erreur lors de la création de la catégorie de dépense" });
+    }
+  });
+
+  app.put("/api/accounting/expense-categories/:id", isAuthenticated, async (req: any, res) => {
+    try {
+      const userId = req.user.id;
+      const id = parseInt(req.params.id);
+      const categoryData = insertExpenseCategorySchema.partial().parse(req.body);
+      const category = await storage.updateExpenseCategory(id, categoryData, userId);
+      res.json(category);
+    } catch (error) {
+      console.error("Error updating expense category:", error);
+      res.status(400).json({ message: "Erreur lors de la mise à jour de la catégorie de dépense" });
+    }
+  });
+
+  app.delete("/api/accounting/expense-categories/:id", isAuthenticated, async (req: any, res) => {
+    try {
+      const userId = req.user.id;
+      const id = parseInt(req.params.id);
+      await storage.deleteExpenseCategory(id, userId);
+      res.json({ message: "Catégorie de dépense supprimée avec succès" });
+    } catch (error) {
+      console.error("Error deleting expense category:", error);
+      res.status(500).json({ message: "Erreur lors de la suppression de la catégorie de dépense" });
+    }
+  });
+
+  // Expenses routes
+  app.get("/api/accounting/expenses", isAuthenticated, async (req: any, res) => {
+    try {
+      const userId = req.user.id;
+      const expenses = await storage.getExpenses(userId);
+      res.json(expenses);
+    } catch (error) {
+      console.error("Error fetching expenses:", error);
+      res.status(500).json({ message: "Erreur lors de la récupération des dépenses" });
+    }
+  });
+
+  app.get("/api/accounting/expenses/:id", isAuthenticated, async (req: any, res) => {
+    try {
+      const userId = req.user.id;
+      const id = parseInt(req.params.id);
+      const expense = await storage.getExpense(id, userId);
+      if (!expense) {
+        return res.status(404).json({ message: "Dépense introuvable" });
+      }
+      res.json(expense);
+    } catch (error) {
+      console.error("Error fetching expense:", error);
+      res.status(500).json({ message: "Erreur lors de la récupération de la dépense" });
+    }
+  });
+
+  app.post("/api/accounting/expenses", isAuthenticated, async (req: any, res) => {
+    try {
+      const userId = req.user.id;
+      const expenseData = insertExpenseSchema.parse({ ...req.body, userId });
+      const expense = await storage.createExpense(expenseData);
+      res.json(expense);
+    } catch (error) {
+      console.error("Error creating expense:", error);
+      res.status(400).json({ message: "Erreur lors de la création de la dépense" });
+    }
+  });
+
+  app.put("/api/accounting/expenses/:id", isAuthenticated, async (req: any, res) => {
+    try {
+      const userId = req.user.id;
+      const id = parseInt(req.params.id);
+      const expenseData = insertExpenseSchema.partial().parse(req.body);
+      const expense = await storage.updateExpense(id, expenseData, userId);
+      res.json(expense);
+    } catch (error) {
+      console.error("Error updating expense:", error);
+      res.status(400).json({ message: "Erreur lors de la mise à jour de la dépense" });
+    }
+  });
+
+  app.patch("/api/accounting/expenses/:id/approve", isAuthenticated, async (req: any, res) => {
+    try {
+      const userId = req.user.id;
+      const approvedBy = req.user.id;
+      const id = parseInt(req.params.id);
+      const expense = await storage.approveExpense(id, approvedBy, userId);
+      res.json(expense);
+    } catch (error) {
+      console.error("Error approving expense:", error);
+      res.status(400).json({ message: "Erreur lors de l'approbation de la dépense" });
+    }
+  });
+
+  app.patch("/api/accounting/expenses/:id/reject", isAuthenticated, async (req: any, res) => {
+    try {
+      const userId = req.user.id;
+      const id = parseInt(req.params.id);
+      const expense = await storage.rejectExpense(id, userId);
+      res.json(expense);
+    } catch (error) {
+      console.error("Error rejecting expense:", error);
+      res.status(400).json({ message: "Erreur lors du rejet de la dépense" });
+    }
+  });
+
+  app.delete("/api/accounting/expenses/:id", isAuthenticated, async (req: any, res) => {
+    try {
+      const userId = req.user.id;
+      const id = parseInt(req.params.id);
+      await storage.deleteExpense(id, userId);
+      res.json({ message: "Dépense supprimée avec succès" });
+    } catch (error) {
+      console.error("Error deleting expense:", error);
+      res.status(500).json({ message: "Erreur lors de la suppression de la dépense" });
+    }
+  });
+
+  // Imprest Funds routes
+  app.get("/api/accounting/imprest-funds", isAuthenticated, async (req: any, res) => {
+    try {
+      const userId = req.user.id;
+      const funds = await storage.getImprestFunds(userId);
+      res.json(funds);
+    } catch (error) {
+      console.error("Error fetching imprest funds:", error);
+      res.status(500).json({ message: "Erreur lors de la récupération des fonds d'avance" });
+    }
+  });
+
+  app.get("/api/accounting/imprest-funds/:id", isAuthenticated, async (req: any, res) => {
+    try {
+      const userId = req.user.id;
+      const id = parseInt(req.params.id);
+      const fund = await storage.getImprestFund(id, userId);
+      if (!fund) {
+        return res.status(404).json({ message: "Fonds d'avance introuvable" });
+      }
+      res.json(fund);
+    } catch (error) {
+      console.error("Error fetching imprest fund:", error);
+      res.status(500).json({ message: "Erreur lors de la récupération du fonds d'avance" });
+    }
+  });
+
+  app.post("/api/accounting/imprest-funds", isAuthenticated, async (req: any, res) => {
+    try {
+      const userId = req.user.id;
+      const fundData = insertImprestFundSchema.parse({ ...req.body, userId });
+      const fund = await storage.createImprestFund(fundData);
+      res.json(fund);
+    } catch (error) {
+      console.error("Error creating imprest fund:", error);
+      res.status(400).json({ message: "Erreur lors de la création du fonds d'avance" });
+    }
+  });
+
+  app.put("/api/accounting/imprest-funds/:id", isAuthenticated, async (req: any, res) => {
+    try {
+      const userId = req.user.id;
+      const id = parseInt(req.params.id);
+      const fundData = insertImprestFundSchema.partial().parse(req.body);
+      const fund = await storage.updateImprestFund(id, fundData, userId);
+      res.json(fund);
+    } catch (error) {
+      console.error("Error updating imprest fund:", error);
+      res.status(400).json({ message: "Erreur lors de la mise à jour du fonds d'avance" });
+    }
+  });
+
+  app.delete("/api/accounting/imprest-funds/:id", isAuthenticated, async (req: any, res) => {
+    try {
+      const userId = req.user.id;
+      const id = parseInt(req.params.id);
+      await storage.deleteImprestFund(id, userId);
+      res.json({ message: "Fonds d'avance supprimé avec succès" });
+    } catch (error) {
+      console.error("Error deleting imprest fund:", error);
+      res.status(500).json({ message: "Erreur lors de la suppression du fonds d'avance" });
+    }
+  });
+
+  // Imprest Transactions routes
+  app.get("/api/accounting/imprest-funds/:imprestId/transactions", isAuthenticated, async (req: any, res) => {
+    try {
+      const userId = req.user.id;
+      const imprestId = parseInt(req.params.imprestId);
+      const transactions = await storage.getImprestTransactions(imprestId, userId);
+      res.json(transactions);
+    } catch (error) {
+      console.error("Error fetching imprest transactions:", error);
+      res.status(500).json({ message: "Erreur lors de la récupération des transactions d'avance" });
+    }
+  });
+
+  app.post("/api/accounting/imprest-transactions", isAuthenticated, async (req: any, res) => {
+    try {
+      const userId = req.user.id;
+      const transactionData = insertImprestTransactionSchema.parse({ ...req.body, userId });
+      const transaction = await storage.createImprestTransaction(transactionData);
+      res.json(transaction);
+    } catch (error) {
+      console.error("Error creating imprest transaction:", error);
+      res.status(400).json({ message: error.message || "Erreur lors de la création de la transaction d'avance" });
+    }
+  });
+
+  // Accounting Reports routes
+  app.get("/api/accounting/reports", isAuthenticated, async (req: any, res) => {
+    try {
+      const userId = req.user.id;
+      const reports = await storage.getAccountingReports(userId);
+      res.json(reports);
+    } catch (error) {
+      console.error("Error fetching accounting reports:", error);
+      res.status(500).json({ message: "Erreur lors de la récupération des rapports comptables" });
+    }
+  });
+
+  app.post("/api/accounting/reports", isAuthenticated, async (req: any, res) => {
+    try {
+      const userId = req.user.id;
+      const reportData = insertAccountingReportSchema.parse({ 
+        ...req.body, 
+        userId,
+        generatedBy: userId,
+      });
+      const report = await storage.createAccountingReport(reportData);
+      res.json(report);
+    } catch (error) {
+      console.error("Error creating accounting report:", error);
+      res.status(400).json({ message: "Erreur lors de la création du rapport comptable" });
+    }
+  });
+
+  app.delete("/api/accounting/reports/:id", isAuthenticated, async (req: any, res) => {
+    try {
+      const userId = req.user.id;
+      const id = parseInt(req.params.id);
+      await storage.deleteAccountingReport(id, userId);
+      res.json({ message: "Rapport comptable supprimé avec succès" });
+    } catch (error) {
+      console.error("Error deleting accounting report:", error);
+      res.status(500).json({ message: "Erreur lors de la suppression du rapport comptable" });
+    }
+  });
+
+  // Accounting Statistics route
+  app.get("/api/accounting/stats", isAuthenticated, async (req: any, res) => {
+    try {
+      const userId = req.user.id;
+      const stats = await storage.getAccountingStats(userId);
+      res.json(stats);
+    } catch (error) {
+      console.error("Error fetching accounting stats:", error);
+      res.status(500).json({ message: "Erreur lors de la récupération des statistiques comptables" });
     }
   });
 

@@ -7,6 +7,11 @@ import {
   invoiceItems,
   sales,
   licenses,
+  expenseCategories,
+  expenses,
+  imprestFunds,
+  imprestTransactions,
+  accountingReports,
   type User,
   type UpsertUser,
   type Client,
@@ -16,6 +21,11 @@ import {
   type InvoiceItem,
   type Sale,
   type License,
+  type ExpenseCategory,
+  type Expense,
+  type ImprestFund,
+  type ImprestTransaction,
+  type AccountingReport,
   type InsertClient,
   type InsertProduct,
   type InsertCategory,
@@ -23,6 +33,11 @@ import {
   type InsertInvoiceItem,
   type InsertSale,
   type InsertLicense,
+  type InsertExpenseCategory,
+  type InsertExpense,
+  type InsertImprestFund,
+  type InsertImprestTransaction,
+  type InsertAccountingReport,
 } from "@shared/schema";
 import { db } from "./db";
 import { eq, desc, and, sum, count, sql, like, or } from "drizzle-orm";
@@ -90,6 +105,51 @@ export interface IStorage {
   createLicense(license: InsertLicense): Promise<License>;
   activateLicense(key: string, clientName?: string, deviceId?: string): Promise<License>;
   revokeLicense(key: string): Promise<License>;
+
+  // Accounting operations
+  
+  // Expense Categories
+  getExpenseCategories(userId: string): Promise<ExpenseCategory[]>;
+  getExpenseCategory(id: number, userId: string): Promise<ExpenseCategory | undefined>;
+  createExpenseCategory(category: InsertExpenseCategory): Promise<ExpenseCategory>;
+  updateExpenseCategory(id: number, category: Partial<InsertExpenseCategory>, userId: string): Promise<ExpenseCategory>;
+  deleteExpenseCategory(id: number, userId: string): Promise<void>;
+
+  // Expenses
+  getExpenses(userId: string): Promise<(Expense & { category: ExpenseCategory })[]>;
+  getExpense(id: number, userId: string): Promise<(Expense & { category: ExpenseCategory }) | undefined>;
+  createExpense(expense: InsertExpense): Promise<Expense>;
+  updateExpense(id: number, expense: Partial<InsertExpense>, userId: string): Promise<Expense>;
+  deleteExpense(id: number, userId: string): Promise<void>;
+  approveExpense(id: number, approvedBy: string, userId: string): Promise<Expense>;
+  rejectExpense(id: number, userId: string): Promise<Expense>;
+
+  // Imprest Funds
+  getImprestFunds(userId: string): Promise<ImprestFund[]>;
+  getImprestFund(id: number, userId: string): Promise<ImprestFund | undefined>;
+  createImprestFund(fund: InsertImprestFund): Promise<ImprestFund>;
+  updateImprestFund(id: number, fund: Partial<InsertImprestFund>, userId: string): Promise<ImprestFund>;
+  deleteImprestFund(id: number, userId: string): Promise<void>;
+
+  // Imprest Transactions
+  getImprestTransactions(imprestId: number, userId: string): Promise<ImprestTransaction[]>;
+  createImprestTransaction(transaction: InsertImprestTransaction): Promise<ImprestTransaction>;
+  
+  // Accounting Reports
+  getAccountingReports(userId: string): Promise<AccountingReport[]>;
+  createAccountingReport(report: InsertAccountingReport): Promise<AccountingReport>;
+  deleteAccountingReport(id: number, userId: string): Promise<void>;
+
+  // Accounting Statistics
+  getAccountingStats(userId: string): Promise<{
+    totalExpenses: number;
+    pendingExpenses: number;
+    approvedExpenses: number;
+    totalImprestFunds: number;
+    activeImprestFunds: number;
+    monthlyExpensesByCategory: { category: string; amount: number }[];
+    recentExpenses: (Expense & { category: ExpenseCategory })[];
+  }>;
 }
 
 export class DatabaseStorage implements IStorage {
@@ -619,6 +679,303 @@ export class DatabaseStorage implements IStorage {
       .where(eq(licenses.key, key))
       .returning();
     return license;
+  }
+
+  // Accounting operations implementation
+
+  // Expense Categories
+  async getExpenseCategories(userId: string): Promise<ExpenseCategory[]> {
+    return db.select().from(expenseCategories).where(eq(expenseCategories.userId, userId)).orderBy(desc(expenseCategories.createdAt));
+  }
+
+  async getExpenseCategory(id: number, userId: string): Promise<ExpenseCategory | undefined> {
+    const [category] = await db.select().from(expenseCategories).where(and(eq(expenseCategories.id, id), eq(expenseCategories.userId, userId)));
+    return category;
+  }
+
+  async createExpenseCategory(category: InsertExpenseCategory): Promise<ExpenseCategory> {
+    const [newCategory] = await db.insert(expenseCategories).values(category).returning();
+    return newCategory;
+  }
+
+  async updateExpenseCategory(id: number, category: Partial<InsertExpenseCategory>, userId: string): Promise<ExpenseCategory> {
+    const [updatedCategory] = await db
+      .update(expenseCategories)
+      .set(category)
+      .where(and(eq(expenseCategories.id, id), eq(expenseCategories.userId, userId)))
+      .returning();
+    return updatedCategory;
+  }
+
+  async deleteExpenseCategory(id: number, userId: string): Promise<void> {
+    await db.delete(expenseCategories).where(and(eq(expenseCategories.id, id), eq(expenseCategories.userId, userId)));
+  }
+
+  // Expenses
+  async getExpenses(userId: string): Promise<(Expense & { category: ExpenseCategory })[]> {
+    const results = await db
+      .select()
+      .from(expenses)
+      .leftJoin(expenseCategories, eq(expenses.categoryId, expenseCategories.id))
+      .where(eq(expenses.userId, userId))
+      .orderBy(desc(expenses.createdAt));
+
+    return results.map(row => ({
+      ...row.expenses,
+      category: row.expense_categories!,
+    }));
+  }
+
+  async getExpense(id: number, userId: string): Promise<(Expense & { category: ExpenseCategory }) | undefined> {
+    const [result] = await db
+      .select()
+      .from(expenses)
+      .leftJoin(expenseCategories, eq(expenses.categoryId, expenseCategories.id))
+      .where(and(eq(expenses.id, id), eq(expenses.userId, userId)));
+
+    if (!result) return undefined;
+
+    return {
+      ...result.expenses,
+      category: result.expense_categories!,
+    };
+  }
+
+  async createExpense(expense: InsertExpense): Promise<Expense> {
+    // Generate unique reference
+    const reference = `EXP-${Date.now()}-${Math.random().toString(36).substr(2, 4).toUpperCase()}`;
+    const [newExpense] = await db.insert(expenses).values({ ...expense, reference }).returning();
+    return newExpense;
+  }
+
+  async updateExpense(id: number, expense: Partial<InsertExpense>, userId: string): Promise<Expense> {
+    const [updatedExpense] = await db
+      .update(expenses)
+      .set(expense)
+      .where(and(eq(expenses.id, id), eq(expenses.userId, userId)))
+      .returning();
+    return updatedExpense;
+  }
+
+  async deleteExpense(id: number, userId: string): Promise<void> {
+    await db.delete(expenses).where(and(eq(expenses.id, id), eq(expenses.userId, userId)));
+  }
+
+  async approveExpense(id: number, approvedBy: string, userId: string): Promise<Expense> {
+    const [updatedExpense] = await db
+      .update(expenses)
+      .set({ 
+        status: 'approved', 
+        approvedBy, 
+        approvedAt: new Date() 
+      })
+      .where(and(eq(expenses.id, id), eq(expenses.userId, userId)))
+      .returning();
+    return updatedExpense;
+  }
+
+  async rejectExpense(id: number, userId: string): Promise<Expense> {
+    const [updatedExpense] = await db
+      .update(expenses)
+      .set({ status: 'rejected' })
+      .where(and(eq(expenses.id, id), eq(expenses.userId, userId)))
+      .returning();
+    return updatedExpense;
+  }
+
+  // Imprest Funds
+  async getImprestFunds(userId: string): Promise<ImprestFund[]> {
+    return db.select().from(imprestFunds).where(eq(imprestFunds.userId, userId)).orderBy(desc(imprestFunds.createdAt));
+  }
+
+  async getImprestFund(id: number, userId: string): Promise<ImprestFund | undefined> {
+    const [fund] = await db.select().from(imprestFunds).where(and(eq(imprestFunds.id, id), eq(imprestFunds.userId, userId)));
+    return fund;
+  }
+
+  async createImprestFund(fund: InsertImprestFund): Promise<ImprestFund> {
+    // Generate unique reference
+    const reference = `IMP-${Date.now()}-${Math.random().toString(36).substr(2, 4).toUpperCase()}`;
+    const initialAmount = parseFloat(fund.initialAmount as any);
+    const [newFund] = await db.insert(imprestFunds).values({ 
+      ...fund, 
+      reference,
+      initialAmount: initialAmount.toString(),
+      currentBalance: initialAmount.toString(),
+    }).returning();
+    return newFund;
+  }
+
+  async updateImprestFund(id: number, fund: Partial<InsertImprestFund>, userId: string): Promise<ImprestFund> {
+    const [updatedFund] = await db
+      .update(imprestFunds)
+      .set({ ...fund, updatedAt: new Date() })
+      .where(and(eq(imprestFunds.id, id), eq(imprestFunds.userId, userId)))
+      .returning();
+    return updatedFund;
+  }
+
+  async deleteImprestFund(id: number, userId: string): Promise<void> {
+    // First delete related transactions
+    await db.delete(imprestTransactions).where(eq(imprestTransactions.imprestId, id));
+    // Then delete the fund
+    await db.delete(imprestFunds).where(and(eq(imprestFunds.id, id), eq(imprestFunds.userId, userId)));
+  }
+
+  // Imprest Transactions
+  async getImprestTransactions(imprestId: number, userId: string): Promise<ImprestTransaction[]> {
+    return db.select().from(imprestTransactions)
+      .where(and(eq(imprestTransactions.imprestId, imprestId), eq(imprestTransactions.userId, userId)))
+      .orderBy(desc(imprestTransactions.createdAt));
+  }
+
+  async createImprestTransaction(transaction: InsertImprestTransaction): Promise<ImprestTransaction> {
+    // Generate unique reference
+    const reference = `TXN-${Date.now()}-${Math.random().toString(36).substr(2, 4).toUpperCase()}`;
+    
+    // Get current fund to calculate new balance
+    const [fund] = await db.select().from(imprestFunds).where(eq(imprestFunds.id, transaction.imprestId));
+    if (!fund) throw new Error("Imprest fund not found");
+    
+    const currentBalance = parseFloat(fund.currentBalance);
+    const transactionAmount = parseFloat(transaction.amount as any);
+    
+    let newBalance: number;
+    if (transaction.type === 'deposit') {
+      newBalance = currentBalance + transactionAmount;
+    } else {
+      newBalance = currentBalance - transactionAmount;
+      if (newBalance < 0) throw new Error("Insufficient funds");
+    }
+    
+    // Create transaction
+    const [newTransaction] = await db.insert(imprestTransactions).values({
+      ...transaction,
+      reference,
+      amount: transactionAmount.toString(),
+      balanceAfter: newBalance.toString(),
+    }).returning();
+    
+    // Update fund balance
+    await db.update(imprestFunds)
+      .set({ 
+        currentBalance: newBalance.toString(),
+        updatedAt: new Date() 
+      })
+      .where(eq(imprestFunds.id, transaction.imprestId));
+    
+    return newTransaction;
+  }
+
+  // Accounting Reports
+  async getAccountingReports(userId: string): Promise<AccountingReport[]> {
+    return db.select().from(accountingReports).where(eq(accountingReports.userId, userId)).orderBy(desc(accountingReports.createdAt));
+  }
+
+  async createAccountingReport(report: InsertAccountingReport): Promise<AccountingReport> {
+    const [newReport] = await db.insert(accountingReports).values(report).returning();
+    return newReport;
+  }
+
+  async deleteAccountingReport(id: number, userId: string): Promise<void> {
+    await db.delete(accountingReports).where(and(eq(accountingReports.id, id), eq(accountingReports.userId, userId)));
+  }
+
+  // Accounting Statistics
+  async getAccountingStats(userId: string): Promise<{
+    totalExpenses: number;
+    pendingExpenses: number;
+    approvedExpenses: number;
+    totalImprestFunds: number;
+    activeImprestFunds: number;
+    monthlyExpensesByCategory: { category: string; amount: number }[];
+    recentExpenses: (Expense & { category: ExpenseCategory })[];
+  }> {
+    const now = new Date();
+    const thisMonth = new Date(now.getFullYear(), now.getMonth(), 1);
+    
+    // Total expenses amount
+    const totalExpensesResult = await db
+      .select({ total: sum(expenses.amount) })
+      .from(expenses)
+      .where(eq(expenses.userId, userId));
+    
+    const totalExpenses = parseFloat(totalExpensesResult[0]?.total || "0");
+
+    // Pending expenses count
+    const pendingExpensesResult = await db
+      .select({ count: count() })
+      .from(expenses)
+      .where(and(eq(expenses.userId, userId), eq(expenses.status, "pending")));
+    
+    const pendingExpenses = pendingExpensesResult[0]?.count || 0;
+
+    // Approved expenses count
+    const approvedExpensesResult = await db
+      .select({ count: count() })
+      .from(expenses)
+      .where(and(eq(expenses.userId, userId), eq(expenses.status, "approved")));
+    
+    const approvedExpenses = approvedExpensesResult[0]?.count || 0;
+
+    // Total imprest funds amount
+    const totalImprestResult = await db
+      .select({ total: sum(imprestFunds.currentBalance) })
+      .from(imprestFunds)
+      .where(eq(imprestFunds.userId, userId));
+    
+    const totalImprestFunds = parseFloat(totalImprestResult[0]?.total || "0");
+
+    // Active imprest funds count
+    const activeImprestResult = await db
+      .select({ count: count() })
+      .from(imprestFunds)
+      .where(and(eq(imprestFunds.userId, userId), eq(imprestFunds.status, "active")));
+    
+    const activeImprestFunds = activeImprestResult[0]?.count || 0;
+
+    // Monthly expenses by category
+    const monthlyExpensesByCategory = await db
+      .select({
+        category: expenseCategories.name,
+        amount: sum(expenses.amount),
+      })
+      .from(expenses)
+      .leftJoin(expenseCategories, eq(expenses.categoryId, expenseCategories.id))
+      .where(and(
+        eq(expenses.userId, userId),
+        sql`${expenses.expenseDate} >= ${thisMonth.toISOString()}`
+      ))
+      .groupBy(expenseCategories.name);
+
+    const monthlyExpensesByCategoryFormatted = monthlyExpensesByCategory.map(row => ({
+      category: row.category || 'Sans catégorie',
+      amount: parseFloat(row.amount || "0"),
+    }));
+
+    // Recent expenses
+    const recentExpensesResult = await db
+      .select()
+      .from(expenses)
+      .leftJoin(expenseCategories, eq(expenses.categoryId, expenseCategories.id))
+      .where(eq(expenses.userId, userId))
+      .orderBy(desc(expenses.createdAt))
+      .limit(5);
+
+    const recentExpenses = recentExpensesResult.map(row => ({
+      ...row.expenses,
+      category: row.expense_categories!,
+    }));
+
+    return {
+      totalExpenses,
+      pendingExpenses,
+      approvedExpenses,
+      totalImprestFunds,
+      activeImprestFunds,
+      monthlyExpensesByCategory: monthlyExpensesByCategoryFormatted,
+      recentExpenses,
+    };
   }
 }
 

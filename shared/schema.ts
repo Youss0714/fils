@@ -126,6 +126,73 @@ export const licenses = pgTable("licenses", {
   createdAt: timestamp("created_at").defaultNow(),
 });
 
+// Accounting module tables
+export const expenseCategories = pgTable("expense_categories", {
+  id: serial("id").primaryKey(),
+  name: varchar("name", { length: 255 }).notNull(),
+  description: text("description"),
+  isMajor: boolean("is_major").default(false), // true for major expenses, false for minor
+  userId: varchar("user_id").notNull().references(() => users.id),
+  createdAt: timestamp("created_at").defaultNow(),
+});
+
+export const expenses = pgTable("expenses", {
+  id: serial("id").primaryKey(),
+  reference: varchar("reference", { length: 100 }).notNull(), // Référence unique
+  description: text("description").notNull(),
+  amount: decimal("amount", { precision: 10, scale: 2 }).notNull(),
+  categoryId: integer("category_id").notNull().references(() => expenseCategories.id),
+  expenseDate: timestamp("expense_date").notNull(),
+  paymentMethod: varchar("payment_method", { length: 50 }).notNull(), // cash, bank_transfer, check, card
+  status: varchar("status", { length: 50 }).notNull().default("pending"), // pending, approved, paid, rejected
+  receiptUrl: varchar("receipt_url", { length: 500 }), // URL du reçu/justificatif
+  notes: text("notes"),
+  userId: varchar("user_id").notNull().references(() => users.id),
+  approvedBy: varchar("approved_by").references(() => users.id),
+  approvedAt: timestamp("approved_at"),
+  createdAt: timestamp("created_at").defaultNow(),
+});
+
+export const imprestFunds = pgTable("imprest_funds", {
+  id: serial("id").primaryKey(),
+  reference: varchar("reference", { length: 100 }).notNull().unique(),
+  accountHolder: varchar("account_holder", { length: 255 }).notNull(), // Détenteur du compte
+  initialAmount: decimal("initial_amount", { precision: 10, scale: 2 }).notNull(),
+  currentBalance: decimal("current_balance", { precision: 10, scale: 2 }).notNull(),
+  purpose: text("purpose").notNull(), // Objectif du fonds
+  status: varchar("status", { length: 50 }).notNull().default("active"), // active, suspended, closed
+  userId: varchar("user_id").notNull().references(() => users.id),
+  createdAt: timestamp("created_at").defaultNow(),
+  updatedAt: timestamp("updated_at").defaultNow(),
+});
+
+export const imprestTransactions = pgTable("imprest_transactions", {
+  id: serial("id").primaryKey(),
+  reference: varchar("reference", { length: 100 }).notNull(),
+  imprestId: integer("imprest_id").notNull().references(() => imprestFunds.id),
+  type: varchar("type", { length: 50 }).notNull(), // deposit, withdrawal, expense
+  amount: decimal("amount", { precision: 10, scale: 2 }).notNull(),
+  description: text("description").notNull(),
+  balanceAfter: decimal("balance_after", { precision: 10, scale: 2 }).notNull(),
+  expenseId: integer("expense_id").references(() => expenses.id), // Lié à une dépense si applicable
+  receiptUrl: varchar("receipt_url", { length: 500 }),
+  notes: text("notes"),
+  userId: varchar("user_id").notNull().references(() => users.id),
+  createdAt: timestamp("created_at").defaultNow(),
+});
+
+export const accountingReports = pgTable("accounting_reports", {
+  id: serial("id").primaryKey(),
+  name: varchar("name", { length: 255 }).notNull(),
+  type: varchar("type", { length: 50 }).notNull(), // expense_summary, imprest_summary, monthly_report, yearly_report
+  periodStart: timestamp("period_start").notNull(),
+  periodEnd: timestamp("period_end").notNull(),
+  data: jsonb("data").notNull(), // Données du rapport en JSON
+  generatedBy: varchar("generated_by").notNull().references(() => users.id),
+  userId: varchar("user_id").notNull().references(() => users.id),
+  createdAt: timestamp("created_at").defaultNow(),
+});
+
 // Relations
 export const usersRelations = relations(users, ({ many }) => ({
   clients: many(clients),
@@ -133,6 +200,11 @@ export const usersRelations = relations(users, ({ many }) => ({
   categories: many(categories),
   invoices: many(invoices),
   sales: many(sales),
+  expenseCategories: many(expenseCategories),
+  expenses: many(expenses),
+  imprestFunds: many(imprestFunds),
+  imprestTransactions: many(imprestTransactions),
+  accountingReports: many(accountingReports),
 }));
 
 export const licensesRelations = relations(licenses, ({ }) => ({}));
@@ -205,6 +277,64 @@ export const salesRelations = relations(sales, ({ one }) => ({
   }),
 }));
 
+// Accounting relations
+export const expenseCategoriesRelations = relations(expenseCategories, ({ one, many }) => ({
+  user: one(users, {
+    fields: [expenseCategories.userId],
+    references: [users.id],
+  }),
+  expenses: many(expenses),
+}));
+
+export const expensesRelations = relations(expenses, ({ one }) => ({
+  user: one(users, {
+    fields: [expenses.userId],
+    references: [users.id],
+  }),
+  category: one(expenseCategories, {
+    fields: [expenses.categoryId],
+    references: [expenseCategories.id],
+  }),
+  approver: one(users, {
+    fields: [expenses.approvedBy],
+    references: [users.id],
+  }),
+}));
+
+export const imprestFundsRelations = relations(imprestFunds, ({ one, many }) => ({
+  user: one(users, {
+    fields: [imprestFunds.userId],
+    references: [users.id],
+  }),
+  transactions: many(imprestTransactions),
+}));
+
+export const imprestTransactionsRelations = relations(imprestTransactions, ({ one }) => ({
+  user: one(users, {
+    fields: [imprestTransactions.userId],
+    references: [users.id],
+  }),
+  imprestFund: one(imprestFunds, {
+    fields: [imprestTransactions.imprestId],
+    references: [imprestFunds.id],
+  }),
+  expense: one(expenses, {
+    fields: [imprestTransactions.expenseId],
+    references: [expenses.id],
+  }),
+}));
+
+export const accountingReportsRelations = relations(accountingReports, ({ one }) => ({
+  user: one(users, {
+    fields: [accountingReports.userId],
+    references: [users.id],
+  }),
+  generatedBy: one(users, {
+    fields: [accountingReports.generatedBy],
+    references: [users.id],
+  }),
+}));
+
 // Tax rates available for invoices
 export const TAX_RATES = [
   { value: "3.00", label: "3%" },
@@ -220,6 +350,40 @@ export const INVOICE_STATUS = [
   { value: "en_attente", label: "En attente", icon: "⏳", color: "bg-yellow-100 text-yellow-800" },
   { value: "payee", label: "Payée", icon: "✅", color: "bg-green-100 text-green-800" },
   { value: "partiellement_reglee", label: "Partiellement réglée", icon: "💳", color: "bg-blue-100 text-blue-800" },
+] as const;
+
+// Accounting constants
+export const EXPENSE_STATUS = [
+  { value: "pending", label: "En attente", icon: "⏳", color: "bg-yellow-100 text-yellow-800" },
+  { value: "approved", label: "Approuvée", icon: "✅", color: "bg-green-100 text-green-800" },
+  { value: "paid", label: "Payée", icon: "💰", color: "bg-blue-100 text-blue-800" },
+  { value: "rejected", label: "Rejetée", icon: "❌", color: "bg-red-100 text-red-800" },
+] as const;
+
+export const PAYMENT_METHODS = [
+  { value: "cash", label: "Espèces", icon: "💵" },
+  { value: "bank_transfer", label: "Virement bancaire", icon: "🏦" },
+  { value: "check", label: "Chèque", icon: "📝" },
+  { value: "card", label: "Carte", icon: "💳" },
+] as const;
+
+export const IMPREST_STATUS = [
+  { value: "active", label: "Actif", icon: "✅", color: "bg-green-100 text-green-800" },
+  { value: "suspended", label: "Suspendu", icon: "⏸️", color: "bg-orange-100 text-orange-800" },
+  { value: "closed", label: "Fermé", icon: "🔒", color: "bg-red-100 text-red-800" },
+] as const;
+
+export const IMPREST_TRANSACTION_TYPES = [
+  { value: "deposit", label: "Dépôt", icon: "⬇️", color: "bg-green-100 text-green-800" },
+  { value: "withdrawal", label: "Retrait", icon: "⬆️", color: "bg-blue-100 text-blue-800" },
+  { value: "expense", label: "Dépense", icon: "💰", color: "bg-red-100 text-red-800" },
+] as const;
+
+export const REPORT_TYPES = [
+  { value: "expense_summary", label: "Résumé des dépenses" },
+  { value: "imprest_summary", label: "Résumé des avances" },
+  { value: "monthly_report", label: "Rapport mensuel" },
+  { value: "yearly_report", label: "Rapport annuel" },
 ] as const;
 
 // Insert schemas
@@ -269,6 +433,62 @@ export const insertLicenseSchema = createInsertSchema(licenses).omit({
   revokedAt: true,
 });
 
+// Accounting insert schemas
+export const insertExpenseCategorySchema = createInsertSchema(expenseCategories).omit({
+  id: true,
+  createdAt: true,
+});
+
+export const insertExpenseSchema = createInsertSchema(expenses).omit({
+  id: true,
+  createdAt: true,
+  approvedAt: true,
+}).extend({
+  amount: z.string().refine(
+    (val) => {
+      const amount = parseFloat(val);
+      return !isNaN(amount) && amount > 0;
+    },
+    { message: "Le montant doit être supérieur à 0" }
+  ),
+  expenseDate: z.string().transform(val => new Date(val)),
+});
+
+export const insertImprestFundSchema = createInsertSchema(imprestFunds).omit({
+  id: true,
+  createdAt: true,
+  updatedAt: true,
+}).extend({
+  initialAmount: z.string().refine(
+    (val) => {
+      const amount = parseFloat(val);
+      return !isNaN(amount) && amount > 0;
+    },
+    { message: "Le montant initial doit être supérieur à 0" }
+  ),
+});
+
+export const insertImprestTransactionSchema = createInsertSchema(imprestTransactions).omit({
+  id: true,
+  createdAt: true,
+}).extend({
+  amount: z.string().refine(
+    (val) => {
+      const amount = parseFloat(val);
+      return !isNaN(amount) && amount > 0;
+    },
+    { message: "Le montant doit être supérieur à 0" }
+  ),
+});
+
+export const insertAccountingReportSchema = createInsertSchema(accountingReports).omit({
+  id: true,
+  createdAt: true,
+}).extend({
+  periodStart: z.string().transform(val => new Date(val)),
+  periodEnd: z.string().transform(val => new Date(val)),
+});
+
 // Types
 export type UpsertUser = typeof users.$inferInsert;
 export type User = typeof users.$inferSelect;
@@ -280,6 +500,13 @@ export type InvoiceItem = typeof invoiceItems.$inferSelect;
 export type Sale = typeof sales.$inferSelect;
 export type License = typeof licenses.$inferSelect;
 
+// Accounting types
+export type ExpenseCategory = typeof expenseCategories.$inferSelect;
+export type Expense = typeof expenses.$inferSelect;
+export type ImprestFund = typeof imprestFunds.$inferSelect;
+export type ImprestTransaction = typeof imprestTransactions.$inferSelect;
+export type AccountingReport = typeof accountingReports.$inferSelect;
+
 export type InsertCategory = z.infer<typeof insertCategorySchema>;
 export type InsertClient = z.infer<typeof insertClientSchema>;
 export type InsertProduct = z.infer<typeof insertProductSchema>;
@@ -287,3 +514,10 @@ export type InsertInvoice = z.infer<typeof insertInvoiceSchema>;
 export type InsertInvoiceItem = z.infer<typeof insertInvoiceItemSchema>;
 export type InsertSale = z.infer<typeof insertSaleSchema>;
 export type InsertLicense = z.infer<typeof insertLicenseSchema>;
+
+// Accounting insert types
+export type InsertExpenseCategory = z.infer<typeof insertExpenseCategorySchema>;
+export type InsertExpense = z.infer<typeof insertExpenseSchema>;
+export type InsertImprestFund = z.infer<typeof insertImprestFundSchema>;
+export type InsertImprestTransaction = z.infer<typeof insertImprestTransactionSchema>;
+export type InsertAccountingReport = z.infer<typeof insertAccountingReportSchema>;

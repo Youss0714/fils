@@ -11,7 +11,8 @@ import {
   Download,
   LogOut,
   X,
-  Shield
+  Shield,
+  Calculator
 } from "lucide-react";
 import { Link, useLocation } from "wouter";
 import { useAuth } from "@/hooks/useAuth";
@@ -33,6 +34,7 @@ export default function Sidebar() {
     { name: t('categories'), href: "/categories", icon: Tags },
     { name: t('invoices'), href: "/invoices", icon: FileText },
     { name: t('sales'), href: "/sales", icon: TrendingUp },
+    { name: "Comptabilité", href: "/accounting", icon: Calculator },
   ];
 
   const secondaryNavigation = [

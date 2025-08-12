@@ -22,6 +22,7 @@ import Export from "@/pages/export";
 import UserRegistration from "@/pages/user-registration";
 import LicenseActivation from "@/pages/license-activation";
 import AdminLicenses from "@/pages/admin-licenses";
+import Accounting from "@/pages/accounting";
 import Sidebar from "@/components/sidebar";
 import TrialBanner from "@/components/trial-banner";
 
@@ -113,6 +114,7 @@ function AppContent() {
             <Route path="/invoices" component={Invoices} />
             <Route path="/invoices/:id" component={InvoiceDetail} />
             <Route path="/sales" component={Sales} />
+            <Route path="/accounting" component={Accounting} />
             <Route path="/settings" component={Settings} />
             <Route path="/export" component={Export} />
             <Route path="/complete-profile" component={UserRegistration} />
