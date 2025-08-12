@@ -324,7 +324,7 @@ export function ExpenseManager() {
                       render={({ field }) => (
                         <FormItem>
                           <FormLabel>Catégorie</FormLabel>
-                          <Select onValueChange={(value) => field.onChange(parseInt(value))}>
+                          <Select onValueChange={(value) => field.onChange(parseInt(value))} value={field.value?.toString() || ""}>
                             <FormControl>
                               <SelectTrigger>
                                 <SelectValue placeholder="Sélectionnez une catégorie" />
@@ -373,7 +373,7 @@ export function ExpenseManager() {
                       render={({ field }) => (
                         <FormItem>
                           <FormLabel>Fonds d'avance (optionnel)</FormLabel>
-                          <Select onValueChange={(value) => field.onChange(value ? parseInt(value) : undefined)}>
+                          <Select onValueChange={(value) => field.onChange(value ? parseInt(value) : undefined)} value={field.value?.toString() || ""}>
                             <FormControl>
                               <SelectTrigger>
                                 <SelectValue placeholder="Aucun fonds" />
