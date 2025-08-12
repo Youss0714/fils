@@ -32,11 +32,11 @@ export function ImprestManager() {
   const { toast } = useToast();
 
   // Queries
-  const { data: imprestFunds, isLoading: fundsLoading } = useQuery({
+  const { data: imprestFunds = [], isLoading: fundsLoading } = useQuery<any[]>({
     queryKey: ["/api/accounting/imprest-funds"],
   });
 
-  const { data: transactions } = useQuery({
+  const { data: transactions = [] } = useQuery<any[]>({
     queryKey: ["/api/accounting/imprest-funds", selectedFund?.id, "transactions"],
     enabled: !!selectedFund?.id,
   });
@@ -100,6 +100,8 @@ export function ImprestManager() {
   });
 
   const handleCreateFund = (data: InsertImprestFund) => {
+    console.log("Form data:", data);
+    console.log("Form errors:", fundForm.formState.errors);
     createFundMutation.mutate(data);
   };
 
@@ -205,7 +207,7 @@ export function ImprestManager() {
           </CardHeader>
           <CardContent>
             <div className="space-y-4">
-              {(!imprestFunds || imprestFunds.length === 0) ? (
+              {imprestFunds.length === 0 ? (
                 <div className="text-center py-8">
                   <Wallet className="mx-auto h-12 w-12 text-muted-foreground" />
                   <h3 className="mt-2 text-sm font-semibold">Aucun fonds d'avance</h3>
@@ -214,7 +216,7 @@ export function ImprestManager() {
                   </p>
                 </div>
               ) : (
-                imprestFunds?.map((fund: any) => {
+                imprestFunds.map((fund: any) => {
                   const status = IMPREST_STATUS.find(s => s.value === fund.status);
                   const balance = parseFloat(fund.currentBalance);
                   const initial = parseFloat(fund.initialAmount);
@@ -377,12 +379,12 @@ export function ImprestManager() {
                 <div>
                   <h4 className="font-medium mb-3">Historique des transactions</h4>
                   <div className="space-y-2">
-                    {(!transactions || transactions.length === 0) ? (
+                    {transactions.length === 0 ? (
                       <p className="text-sm text-muted-foreground text-center py-4">
                         Aucune transaction pour ce fonds
                       </p>
                     ) : (
-                      transactions?.map((transaction: any) => {
+                      transactions.map((transaction: any) => {
                         const type = IMPREST_TRANSACTION_TYPES.find(t => t.value === transaction.type);
                         const amount = parseFloat(transaction.amount);
                         
