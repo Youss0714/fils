@@ -180,16 +180,26 @@ export function ExpenseManager() {
       <!DOCTYPE html>
       <html>
         <head>
-          <title>Rapport de dépenses - Audit</title>
+          <title>Liste des dépenses</title>
           <style>
             body { font-family: Arial, sans-serif; margin: 20px; }
             .header { text-align: center; margin-bottom: 30px; border-bottom: 2px solid #333; padding-bottom: 20px; }
-            .company-info { margin-bottom: 20px; }
-            .expense-item { border-bottom: 1px solid #ddd; padding: 15px 0; }
-            .expense-header { display: flex; justify-content: space-between; font-weight: bold; margin-bottom: 10px; }
-            .expense-details { margin-left: 20px; color: #666; }
+            .expenses-table { width: 100%; border-collapse: collapse; margin-top: 20px; }
+            .expenses-table th, .expenses-table td { 
+              border: 1px solid #ddd; 
+              padding: 12px; 
+              text-align: left; 
+            }
+            .expenses-table th { 
+              background-color: #f5f5f5; 
+              font-weight: bold; 
+            }
+            .expenses-table tbody tr:nth-child(even) { 
+              background-color: #f9f9f9; 
+            }
+            .amount { text-align: right; font-weight: bold; }
             .summary { margin-top: 30px; padding-top: 20px; border-top: 2px solid #333; }
-            .total { font-size: 1.2em; font-weight: bold; }
+            .total { font-size: 1.2em; font-weight: bold; text-align: right; }
             @media print { 
               body { margin: 0; }
               .no-print { display: none; }
@@ -198,43 +208,34 @@ export function ExpenseManager() {
         </head>
         <body>
           <div class="header">
-            <h1>RAPPORT DE DÉPENSES - AUDIT</h1>
+            <h1>LISTE DES DÉPENSES</h1>
             <p>Généré le ${new Date().toLocaleDateString('fr-FR')}</p>
           </div>
-          
-          <div class="company-info">
-            <h3>Informations de l'entreprise</h3>
-            <p><strong>Entreprise:</strong> ${user?.company || 'N/A'}</p>
-            <p><strong>Responsable:</strong> ${user?.firstName} ${user?.lastName}</p>
-            <p><strong>Email:</strong> ${user?.email}</p>
-          </div>
 
-          <div class="expenses-list">
-            <h3>Détail des dépenses (${expenses.length} dépense(s))</h3>
-            ${expenses.map((expense: any) => `
-              <div class="expense-item">
-                <div class="expense-header">
-                  <span>${expense.description}</span>
-                  <span>${parseFloat(expense.amount).toLocaleString('fr-FR', { useGrouping: true }).replace(/\s/g, ' ')} FCFA</span>
-                </div>
-                <div class="expense-details">
-                  <p><strong>Référence:</strong> ${expense.reference}</p>
-                  <p><strong>Catégorie:</strong> ${expense.category?.name || 'N/A'}</p>
-                  <p><strong>Date:</strong> ${new Date(expense.expenseDate).toLocaleDateString('fr-FR')}</p>
-                  <p><strong>Statut:</strong> ${expense.status === 'approved' ? 'Approuvée' : expense.status === 'pending' ? 'En attente' : 'Rejetée'}</p>
-                  <p><strong>Mode de paiement:</strong> ${PAYMENT_METHODS.find(p => p.value === expense.paymentMethod)?.label || expense.paymentMethod}</p>
-                  ${expense.notes ? `<p><strong>Notes:</strong> ${expense.notes}</p>` : ''}
-                </div>
-              </div>
-            `).join('')}
-          </div>
+          <table class="expenses-table">
+            <thead>
+              <tr>
+                <th>Date</th>
+                <th>Description</th>
+                <th>Montant (FCFA)</th>
+              </tr>
+            </thead>
+            <tbody>
+              ${expenses.map((expense: any) => `
+                <tr>
+                  <td>${new Date(expense.expenseDate).toLocaleDateString('fr-FR')}</td>
+                  <td>${expense.description}</td>
+                  <td class="amount">${parseFloat(expense.amount).toLocaleString('fr-FR', { useGrouping: true }).replace(/\s/g, ' ')}</td>
+                </tr>
+              `).join('')}
+            </tbody>
+          </table>
 
           <div class="summary">
-            <h3>Résumé</h3>
-            <p class="total">Total général: ${totalAmount.toLocaleString('fr-FR', { useGrouping: true }).replace(/\s/g, ' ')} FCFA</p>
-            <p>Dépenses approuvées: ${expenses.filter((e: any) => e.status === 'approved').length}</p>
-            <p>Dépenses en attente: ${expenses.filter((e: any) => e.status === 'pending').length}</p>
-            <p>Dépenses rejetées: ${expenses.filter((e: any) => e.status === 'rejected').length}</p>
+            <div class="total">
+              <p>TOTAL: ${totalAmount.toLocaleString('fr-FR', { useGrouping: true }).replace(/\s/g, ' ')} FCFA</p>
+            </div>
+            <p><em>Nombre total de dépenses: ${expenses.length}</em></p>
           </div>
         </body>
       </html>
