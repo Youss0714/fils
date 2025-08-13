@@ -782,16 +782,9 @@ export class DatabaseStorage implements IStorage {
           name: expenseCategories.name,
           isMajor: expenseCategories.isMajor,
         },
-        account: {
-          id: chartOfAccounts.id,
-          accountCode: chartOfAccounts.accountCode,
-          accountName: chartOfAccounts.accountName,
-          accountType: chartOfAccounts.accountType,
-        },
       })
       .from(expenses)
       .leftJoin(expenseCategories, eq(expenses.categoryId, expenseCategories.id))
-      .leftJoin(chartOfAccounts, eq(expenses.accountId, chartOfAccounts.id))
       .where(eq(expenses.userId, userId))
       .orderBy(desc(expenses.createdAt));
   }
@@ -817,16 +810,9 @@ export class DatabaseStorage implements IStorage {
           name: expenseCategories.name,
           isMajor: expenseCategories.isMajor,
         },
-        account: {
-          id: chartOfAccounts.id,
-          accountCode: chartOfAccounts.accountCode,
-          accountName: chartOfAccounts.accountName,
-          accountType: chartOfAccounts.accountType,
-        },
       })
       .from(expenses)
       .leftJoin(expenseCategories, eq(expenses.categoryId, expenseCategories.id))
-      .leftJoin(chartOfAccounts, eq(expenses.accountId, chartOfAccounts.id))
       .where(and(eq(expenses.id, id), eq(expenses.userId, userId)));
 
     return result;
@@ -1459,212 +1445,9 @@ export class DatabaseStorage implements IStorage {
     }
   }
 
-  // Chart of Accounts operations
-  async getChartOfAccounts(userId: string): Promise<ChartOfAccounts[]> {
-    return await db
-      .select()
-      .from(chartOfAccounts)
-      .where(and(eq(chartOfAccounts.userId, userId), eq(chartOfAccounts.isActive, true)))
-      .orderBy(chartOfAccounts.accountCode);
-  }
 
-  async getChartOfAccount(id: number, userId: string): Promise<ChartOfAccounts | undefined> {
-    const [account] = await db
-      .select()
-      .from(chartOfAccounts)
-      .where(and(eq(chartOfAccounts.id, id), eq(chartOfAccounts.userId, userId)));
-    return account;
-  }
 
-  async createChartOfAccount(data: InsertChartOfAccounts): Promise<ChartOfAccounts> {
-    const [account] = await db.insert(chartOfAccounts).values(data).returning();
-    return account;
-  }
 
-  async updateChartOfAccount(id: number, data: Partial<InsertChartOfAccounts>, userId: string): Promise<ChartOfAccounts> {
-    // Supprimer userId des données de mise à jour pour éviter les conflits
-    const { userId: _, ...updateData } = data;
-    
-    const [account] = await db
-      .update(chartOfAccounts)
-      .set({ ...updateData, updatedAt: new Date() })
-      .where(and(eq(chartOfAccounts.id, id), eq(chartOfAccounts.userId, userId)))
-      .returning();
-    return account;
-  }
-
-  async deleteChartOfAccount(id: number, userId: string): Promise<void> {
-    await db
-      .update(chartOfAccounts)
-      .set({ isActive: false, updatedAt: new Date() })
-      .where(and(eq(chartOfAccounts.id, id), eq(chartOfAccounts.userId, userId)));
-  }
-
-  // Trial Balance operations
-  async getTrialBalance(userId: string, periodStart: string, periodEnd: string): Promise<TrialBalance[]> {
-    return await db
-      .select({
-        id: trialBalance.id,
-        userId: trialBalance.userId,
-        periodStart: trialBalance.periodStart,
-        periodEnd: trialBalance.periodEnd,
-        accountId: trialBalance.accountId,
-        openingBalance: trialBalance.openingBalance,
-        debitTotal: trialBalance.debitTotal,
-        creditTotal: trialBalance.creditTotal,
-        closingBalance: trialBalance.closingBalance,
-        generatedAt: trialBalance.generatedAt,
-        createdAt: trialBalance.createdAt,
-        account: {
-          accountCode: chartOfAccounts.accountCode,
-          accountName: chartOfAccounts.accountName,
-          accountType: chartOfAccounts.accountType,
-          normalBalance: chartOfAccounts.normalBalance
-        }
-      })
-      .from(trialBalance)
-      .leftJoin(chartOfAccounts, eq(trialBalance.accountId, chartOfAccounts.id))
-      .where(and(
-        eq(trialBalance.userId, userId),
-        eq(trialBalance.periodStart, periodStart),
-        eq(trialBalance.periodEnd, periodEnd)
-      ))
-      .orderBy(trialBalance.accountId);
-  }
-
-  async generateTrialBalance(userId: string, periodStart: string, periodEnd: string): Promise<TrialBalance[]> {
-    // Delete existing trial balance for this period first
-    await db.delete(trialBalance)
-      .where(and(
-        eq(trialBalance.userId, userId),
-        eq(trialBalance.periodStart, periodStart),
-        eq(trialBalance.periodEnd, periodEnd)
-      ));
-
-    // COMPTE DE PRODUITS ET CHARGES FORMAT: Charges (expenses) and Produits (revenues)
-    
-    // Ensure we have chart of account entries for Charges and Produits
-    const chargesAccount = await db.select().from(chartOfAccounts)
-      .where(and(
-        eq(chartOfAccounts.userId, userId),
-        eq(chartOfAccounts.accountCode, "CHARGES")
-      )).limit(1);
-      
-    const produitsAccount = await db.select().from(chartOfAccounts)
-      .where(and(
-        eq(chartOfAccounts.userId, userId),
-        eq(chartOfAccounts.accountCode, "PRODUITS")
-      )).limit(1);
-
-    let chargesAccountId: number;
-    let produitsAccountId: number;
-
-    // Create Charges and Produits accounts if they don't exist
-    if (chargesAccount.length === 0) {
-      const [newChargesAccount] = await db.insert(chartOfAccounts).values({
-        userId,
-        accountCode: "CHARGES",
-        accountName: "Total des Charges",
-        accountType: "expense",
-        normalBalance: "debit",
-        isActive: true
-      }).returning();
-      chargesAccountId = newChargesAccount.id;
-    } else {
-      chargesAccountId = chargesAccount[0].id;
-    }
-
-    if (produitsAccount.length === 0) {
-      const [newProduitsAccount] = await db.insert(chartOfAccounts).values({
-        userId,
-        accountCode: "PRODUITS",
-        accountName: "Total des Produits",
-        accountType: "revenue",
-        normalBalance: "credit",
-        isActive: true
-      }).returning();
-      produitsAccountId = newProduitsAccount.id;
-    } else {
-      produitsAccountId = produitsAccount[0].id;
-    }
-    
-    // 1. Get all expenses for the period (regardless of account linkage)
-    const expensesResult = await db
-      .select({
-        totalAmount: sum(expenses.amount),
-        count: sql<number>`count(*)`
-      })
-      .from(expenses)
-      .where(and(
-        eq(expenses.userId, userId),
-        eq(expenses.status, 'approved'),
-        sql`${expenses.expenseDate} >= ${periodStart}`,
-        sql`${expenses.expenseDate} <= ${periodEnd}`
-      ));
-
-    // 2. Get all cash book income entries for the period
-    const revenuesResult = await db
-      .select({
-        totalAmount: sum(cashBookEntries.amount),
-        count: sql<number>`count(*)`
-      })
-      .from(cashBookEntries)
-      .where(and(
-        eq(cashBookEntries.userId, userId),
-        eq(cashBookEntries.type, 'income'),
-        sql`${cashBookEntries.date} >= ${periodStart}`,
-        sql`${cashBookEntries.date} <= ${periodEnd}`
-      ));
-
-    const totalExpenses = parseFloat(expensesResult[0]?.totalAmount || "0");
-    const totalRevenues = parseFloat(revenuesResult[0]?.totalAmount || "0");
-
-    const trialBalanceData: InsertTrialBalance[] = [];
-
-    // Create entry for CHARGES (expenses) - DEBIT side ONLY
-    if (totalExpenses > 0) {
-      trialBalanceData.push({
-        userId,
-        periodStart,
-        periodEnd,
-        accountId: chargesAccountId,
-        openingBalance: "0",
-        debitTotal: totalExpenses.toFixed(2),
-        creditTotal: "0",
-        closingBalance: totalExpenses.toFixed(2),
-      });
-    }
-
-    // Create entry for PRODUITS (revenues) - CREDIT side ONLY
-    if (totalRevenues > 0) {
-      trialBalanceData.push({
-        userId,
-        periodStart,
-        periodEnd,
-        accountId: produitsAccountId,
-        openingBalance: "0",
-        debitTotal: "0",
-        creditTotal: totalRevenues.toFixed(2),
-        closingBalance: (totalRevenues * -1).toFixed(2), // Negative for credit balance
-      });
-    }
-
-    // Insert new trial balance data
-    if (trialBalanceData.length > 0) {
-      await db.insert(trialBalance).values(trialBalanceData);
-    }
-
-    // Return the generated trial balance
-    return await this.getTrialBalance(userId, periodStart, periodEnd);
-  }
-
-  async getTrialBalanceEntry(id: number, userId: string): Promise<TrialBalance | undefined> {
-    const [entry] = await db
-      .select()
-      .from(trialBalance)
-      .where(and(eq(trialBalance.id, id), eq(trialBalance.userId, userId)));
-    return entry;
-  }
 }
 
 export const storage = new DatabaseStorage();
