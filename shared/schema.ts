@@ -734,5 +734,4 @@ export type InsertAccountingReport = z.infer<typeof insertAccountingReportSchema
 export type InsertCashBookEntry = z.infer<typeof insertCashBookEntrySchema>;
 export type InsertPettyCashEntry = z.infer<typeof insertPettyCashEntrySchema>;
 export type InsertTransactionJournal = z.infer<typeof insertTransactionJournalSchema>;
-export type InsertChartOfAccounts = z.infer<typeof insertChartOfAccountsSchema>;
-export type InsertTrialBalance = z.infer<typeof insertTrialBalanceSchema>;
+
