@@ -1506,8 +1506,27 @@ export class DatabaseStorage implements IStorage {
   // Trial Balance operations
   async getTrialBalance(userId: string, periodStart: string, periodEnd: string): Promise<TrialBalance[]> {
     return await db
-      .select()
+      .select({
+        id: trialBalance.id,
+        userId: trialBalance.userId,
+        periodStart: trialBalance.periodStart,
+        periodEnd: trialBalance.periodEnd,
+        accountId: trialBalance.accountId,
+        openingBalance: trialBalance.openingBalance,
+        debitTotal: trialBalance.debitTotal,
+        creditTotal: trialBalance.creditTotal,
+        closingBalance: trialBalance.closingBalance,
+        generatedAt: trialBalance.generatedAt,
+        createdAt: trialBalance.createdAt,
+        account: {
+          accountCode: chartOfAccounts.accountCode,
+          accountName: chartOfAccounts.accountName,
+          accountType: chartOfAccounts.accountType,
+          normalBalance: chartOfAccounts.normalBalance
+        }
+      })
       .from(trialBalance)
+      .leftJoin(chartOfAccounts, eq(trialBalance.accountId, chartOfAccounts.id))
       .where(and(
         eq(trialBalance.userId, userId),
         eq(trialBalance.periodStart, periodStart),
@@ -1548,7 +1567,7 @@ export class DatabaseStorage implements IStorage {
       const [newExpenseAccount] = await db.insert(chartOfAccounts).values({
         userId,
         accountCode: "EXPENSES",
-        accountName: "Compte inconnu",
+        accountName: "Total des Dépenses",
         accountType: "expense",
         normalBalance: "debit",
         isActive: true
@@ -1562,7 +1581,7 @@ export class DatabaseStorage implements IStorage {
       const [newRevenueAccount] = await db.insert(chartOfAccounts).values({
         userId,
         accountCode: "REVENUES",
-        accountName: "Compte inconnu",
+        accountName: "Total des Revenus",
         accountType: "revenue",
         normalBalance: "credit",
         isActive: true
@@ -1605,7 +1624,7 @@ export class DatabaseStorage implements IStorage {
 
     const trialBalanceData: InsertTrialBalance[] = [];
 
-    // Create a management account entry for expenses (DEBIT side)
+    // Create a management account entry for expenses (DEBIT side ONLY)
     if (totalExpenses > 0) {
       trialBalanceData.push({
         userId,
@@ -1619,7 +1638,7 @@ export class DatabaseStorage implements IStorage {
       });
     }
 
-    // Create a management account entry for revenues (CREDIT side)
+    // Create a management account entry for revenues (CREDIT side ONLY)
     if (totalRevenues > 0) {
       trialBalanceData.push({
         userId,
@@ -1629,7 +1648,7 @@ export class DatabaseStorage implements IStorage {
         openingBalance: "0",
         debitTotal: "0",
         creditTotal: totalRevenues.toFixed(2),
-        closingBalance: totalRevenues.toFixed(2),
+        closingBalance: (totalRevenues * -1).toFixed(2), // Negative for credit balance
       });
     }
 
