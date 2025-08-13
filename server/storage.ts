@@ -15,8 +15,7 @@ import {
   cashBookEntries,
   pettyCashEntries,
   transactionJournal,
-  chartOfAccounts,
-  trialBalance,
+
   type User,
   type UpsertUser,
   type Client,
@@ -34,8 +33,7 @@ import {
   type CashBookEntry,
   type PettyCashEntry,
   type TransactionJournal,
-  type ChartOfAccounts,
-  type TrialBalance,
+
   type InsertClient,
   type InsertProduct,
   type InsertCategory,
@@ -51,8 +49,7 @@ import {
   type InsertCashBookEntry,
   type InsertPettyCashEntry,
   type InsertTransactionJournal,
-  type InsertChartOfAccounts,
-  type InsertTrialBalance,
+
 } from "@shared/schema";
 import { db } from "./db";
 import { eq, desc, and, sum, count, sql, like, or, gte, lte } from "drizzle-orm";

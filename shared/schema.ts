@@ -143,7 +143,6 @@ export const expenses = pgTable("expenses", {
   description: text("description").notNull(),
   amount: decimal("amount", { precision: 10, scale: 2 }).notNull(),
   categoryId: integer("category_id").notNull().references(() => expenseCategories.id),
-  accountId: integer("account_id").references(() => chartOfAccounts.id), // Lien vers le plan comptable
   expenseDate: timestamp("expense_date").notNull(),
   paymentMethod: varchar("payment_method", { length: 50 }).notNull(), // cash, bank_transfer, check, card
   status: varchar("status", { length: 50 }).notNull().default("pending"), // pending, approved, paid, rejected
@@ -205,8 +204,7 @@ export const cashBookEntries = pgTable("cash_book_entries", {
   description: text("description").notNull(),
   type: varchar("type", { length: 20 }).notNull(), // 'income', 'expense', 'transfer'
   amount: decimal("amount", { precision: 12, scale: 2 }).notNull(),
-  accountId: integer("account_id").references(() => chartOfAccounts.id), // Lien vers le plan comptable
-  account: varchar("account", { length: 100 }).notNull(), // Compte concerné (legacy)
+  account: varchar("account", { length: 100 }).notNull(), // Compte concerné
   counterparty: varchar("counterparty", { length: 255 }), // Contrepartie
   category: varchar("category", { length: 100 }),
   paymentMethod: varchar("payment_method", { length: 50 }).notNull(),
@@ -255,36 +253,7 @@ export const transactionJournal = pgTable("transaction_journal", {
   createdBy: varchar("created_by").notNull().references(() => users.id),
 });
 
-// Chart of Accounts - Plan comptable
-export const chartOfAccounts = pgTable("chart_of_accounts", {
-  id: serial("id").primaryKey(),
-  userId: varchar("user_id").notNull().references(() => users.id),
-  accountCode: varchar("account_code", { length: 20 }).notNull(),
-  accountName: varchar("account_name", { length: 255 }).notNull(),
-  accountType: varchar("account_type", { length: 50 }).notNull(), // 'asset', 'liability', 'equity', 'revenue', 'expense'
-  parentAccountId: integer("parent_account_id").references((): any => chartOfAccounts.id),
-  isActive: boolean("is_active").default(true),
-  description: text("description"),
-  normalBalance: varchar("normal_balance", { length: 10 }).notNull(), // 'debit' ou 'credit'
-  level: integer("level").notNull().default(1), // Niveau hiérarchique
-  createdAt: timestamp("created_at").defaultNow(),
-  updatedAt: timestamp("updated_at").defaultNow(),
-});
 
-// Trial Balance - Balance de vérification
-export const trialBalance = pgTable("trial_balance", {
-  id: serial("id").primaryKey(),
-  userId: varchar("user_id").notNull().references(() => users.id),
-  periodStart: date("period_start").notNull(),
-  periodEnd: date("period_end").notNull(),
-  accountId: integer("account_id").notNull().references(() => chartOfAccounts.id),
-  openingBalance: decimal("opening_balance", { precision: 12, scale: 2 }).default("0"),
-  debitTotal: decimal("debit_total", { precision: 12, scale: 2 }).default("0"),
-  creditTotal: decimal("credit_total", { precision: 12, scale: 2 }).default("0"),
-  closingBalance: decimal("closing_balance", { precision: 12, scale: 2 }).default("0"),
-  generatedAt: timestamp("generated_at").defaultNow(),
-  createdAt: timestamp("created_at").defaultNow(),
-});
 
 // Relations
 export const usersRelations = relations(users, ({ many }) => ({
@@ -301,8 +270,7 @@ export const usersRelations = relations(users, ({ many }) => ({
   cashBookEntries: many(cashBookEntries),
   pettyCashEntries: many(pettyCashEntries),
   transactionJournal: many(transactionJournal),
-  chartOfAccounts: many(chartOfAccounts),
-  trialBalance: many(trialBalance),
+
 }));
 
 export const licensesRelations = relations(licenses, ({ }) => ({}));
@@ -393,10 +361,7 @@ export const expensesRelations = relations(expenses, ({ one }) => ({
     fields: [expenses.categoryId],
     references: [expenseCategories.id],
   }),
-  account: one(chartOfAccounts, {
-    fields: [expenses.accountId],
-    references: [chartOfAccounts.id],
-  }),
+
   imprestFund: one(imprestFunds, {
     fields: [expenses.imprestId],
     references: [imprestFunds.id],
@@ -446,10 +411,7 @@ export const cashBookEntriesRelations = relations(cashBookEntries, ({ one }) => 
     fields: [cashBookEntries.userId],
     references: [users.id],
   }),
-  account: one(chartOfAccounts, {
-    fields: [cashBookEntries.accountId],
-    references: [chartOfAccounts.id],
-  }),
+
 }));
 
 export const pettyCashEntriesRelations = relations(pettyCashEntries, ({ one }) => ({
@@ -474,31 +436,7 @@ export const transactionJournalRelations = relations(transactionJournal, ({ one 
   }),
 }));
 
-export const chartOfAccountsRelations = relations(chartOfAccounts, ({ one, many }) => ({
-  user: one(users, {
-    fields: [chartOfAccounts.userId],
-    references: [users.id],
-  }),
-  parentAccount: one(chartOfAccounts, {
-    fields: [chartOfAccounts.parentAccountId],
-    references: [chartOfAccounts.id],
-  }) as any,
-  subAccounts: many(chartOfAccounts),
-  expenses: many(expenses),
-  cashBookEntries: many(cashBookEntries),
-  trialBalanceEntries: many(trialBalance),
-}));
 
-export const trialBalanceRelations = relations(trialBalance, ({ one }) => ({
-  user: one(users, {
-    fields: [trialBalance.userId],
-    references: [users.id],
-  }),
-  account: one(chartOfAccounts, {
-    fields: [trialBalance.accountId],
-    references: [chartOfAccounts.id],
-  }),
-}));
 
 // Tax rates available for invoices
 export const TAX_RATES = [
@@ -755,20 +693,7 @@ export const insertTransactionJournalSchema = createInsertSchema(transactionJour
   ),
 });
 
-export const insertChartOfAccountsSchema = createInsertSchema(chartOfAccounts).omit({
-  id: true,
-  createdAt: true,
-  updatedAt: true,
-});
 
-export const insertTrialBalanceSchema = createInsertSchema(trialBalance).omit({
-  id: true,
-  generatedAt: true,
-  createdAt: true,
-}).extend({
-  periodStart: z.string().transform(val => new Date(val)),
-  periodEnd: z.string().transform(val => new Date(val)),
-});
 
 // Types
 export type UpsertUser = typeof users.$inferInsert;
@@ -790,8 +715,7 @@ export type AccountingReport = typeof accountingReports.$inferSelect;
 export type CashBookEntry = typeof cashBookEntries.$inferSelect;
 export type PettyCashEntry = typeof pettyCashEntries.$inferSelect;
 export type TransactionJournal = typeof transactionJournal.$inferSelect;
-export type ChartOfAccounts = typeof chartOfAccounts.$inferSelect;
-export type TrialBalance = typeof trialBalance.$inferSelect;
+
 
 export type InsertCategory = z.infer<typeof insertCategorySchema>;
 export type InsertClient = z.infer<typeof insertClientSchema>;

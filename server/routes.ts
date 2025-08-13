@@ -17,7 +17,7 @@ import {
   insertCashBookEntrySchema,
   insertPettyCashEntrySchema,
   insertTransactionJournalSchema,
-  insertChartOfAccountsSchema,
+
 } from "@shared/schema";
 import { z } from "zod";
 
