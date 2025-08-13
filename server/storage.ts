@@ -1544,51 +1544,51 @@ export class DatabaseStorage implements IStorage {
         eq(trialBalance.periodEnd, periodEnd)
       ));
 
-    // MANAGEMENT ACCOUNT FORMAT: All expenses as debits, all revenues as credits
+    // COMPTE DE PRODUITS ET CHARGES FORMAT: Charges (expenses) and Produits (revenues)
     
-    // Ensure we have a default chart of account entry for virtual accounts
-    const defaultExpenseAccount = await db.select().from(chartOfAccounts)
+    // Ensure we have chart of account entries for Charges and Produits
+    const chargesAccount = await db.select().from(chartOfAccounts)
       .where(and(
         eq(chartOfAccounts.userId, userId),
-        eq(chartOfAccounts.accountCode, "EXPENSES")
+        eq(chartOfAccounts.accountCode, "CHARGES")
       )).limit(1);
       
-    const defaultRevenueAccount = await db.select().from(chartOfAccounts)
+    const produitsAccount = await db.select().from(chartOfAccounts)
       .where(and(
         eq(chartOfAccounts.userId, userId),
-        eq(chartOfAccounts.accountCode, "REVENUES")
+        eq(chartOfAccounts.accountCode, "PRODUITS")
       )).limit(1);
 
-    let expenseAccountId: number;
-    let revenueAccountId: number;
+    let chargesAccountId: number;
+    let produitsAccountId: number;
 
-    // Create default management accounts if they don't exist
-    if (defaultExpenseAccount.length === 0) {
-      const [newExpenseAccount] = await db.insert(chartOfAccounts).values({
+    // Create Charges and Produits accounts if they don't exist
+    if (chargesAccount.length === 0) {
+      const [newChargesAccount] = await db.insert(chartOfAccounts).values({
         userId,
-        accountCode: "EXPENSES",
-        accountName: "Total des Dépenses",
+        accountCode: "CHARGES",
+        accountName: "Total des Charges",
         accountType: "expense",
         normalBalance: "debit",
         isActive: true
       }).returning();
-      expenseAccountId = newExpenseAccount.id;
+      chargesAccountId = newChargesAccount.id;
     } else {
-      expenseAccountId = defaultExpenseAccount[0].id;
+      chargesAccountId = chargesAccount[0].id;
     }
 
-    if (defaultRevenueAccount.length === 0) {
-      const [newRevenueAccount] = await db.insert(chartOfAccounts).values({
+    if (produitsAccount.length === 0) {
+      const [newProduitsAccount] = await db.insert(chartOfAccounts).values({
         userId,
-        accountCode: "REVENUES",
-        accountName: "Total des Revenus",
+        accountCode: "PRODUITS",
+        accountName: "Total des Produits",
         accountType: "revenue",
         normalBalance: "credit",
         isActive: true
       }).returning();
-      revenueAccountId = newRevenueAccount.id;
+      produitsAccountId = newProduitsAccount.id;
     } else {
-      revenueAccountId = defaultRevenueAccount[0].id;
+      produitsAccountId = produitsAccount[0].id;
     }
     
     // 1. Get all expenses for the period (regardless of account linkage)
@@ -1624,13 +1624,13 @@ export class DatabaseStorage implements IStorage {
 
     const trialBalanceData: InsertTrialBalance[] = [];
 
-    // Create a management account entry for expenses (DEBIT side ONLY)
+    // Create entry for CHARGES (expenses) - DEBIT side ONLY
     if (totalExpenses > 0) {
       trialBalanceData.push({
         userId,
         periodStart,
         periodEnd,
-        accountId: expenseAccountId,
+        accountId: chargesAccountId,
         openingBalance: "0",
         debitTotal: totalExpenses.toFixed(2),
         creditTotal: "0",
@@ -1638,13 +1638,13 @@ export class DatabaseStorage implements IStorage {
       });
     }
 
-    // Create a management account entry for revenues (CREDIT side ONLY)
+    // Create entry for PRODUITS (revenues) - CREDIT side ONLY
     if (totalRevenues > 0) {
       trialBalanceData.push({
         userId,
         periodStart,
         periodEnd,
-        accountId: revenueAccountId,
+        accountId: produitsAccountId,
         openingBalance: "0",
         debitTotal: "0",
         creditTotal: totalRevenues.toFixed(2),

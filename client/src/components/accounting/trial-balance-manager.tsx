@@ -111,7 +111,7 @@ export function TrialBalanceManager() {
     printWindow.document.write(`
       <html>
         <head>
-          <title>Balance de Vérification</title>
+          <title>Compte de Produits et Charges</title>
           <style>
             body { font-family: Arial, sans-serif; margin: 20px; }
             .header { text-align: center; margin-bottom: 30px; }
@@ -126,7 +126,7 @@ export function TrialBalanceManager() {
         </head>
         <body>
           <div class="header">
-            <h1>Balance de Vérification</h1>
+            <h1>Compte de Produits et Charges</h1>
           </div>
           <div class="period">
             Période: ${format(new Date(selectedPeriod.start), 'dd MMMM yyyy', { locale: fr })} - ${format(new Date(selectedPeriod.end), 'dd MMMM yyyy', { locale: fr })}
@@ -165,7 +165,7 @@ export function TrialBalanceManager() {
             </tbody>
           </table>
           <div class="footer">
-            <p>Balance de vérification générée le ${format(new Date(), 'dd MMMM yyyy à HH:mm', { locale: fr })}</p>
+            <p>Compte de Produits et Charges généré le ${format(new Date(), 'dd MMMM yyyy à HH:mm', { locale: fr })}</p>
           </div>
         </body>
       </html>
@@ -238,7 +238,7 @@ export function TrialBalanceManager() {
               <div>
                 <CardTitle className="flex items-center gap-2">
                   <FileText className="h-5 w-5" />
-                  Balance de Vérification
+                  Compte de Produits et Charges
                 </CardTitle>
                 <CardDescription>
                   Période: {format(new Date(selectedPeriod.start), 'dd MMMM yyyy', { locale: fr })} - {format(new Date(selectedPeriod.end), 'dd MMMM yyyy', { locale: fr })}
