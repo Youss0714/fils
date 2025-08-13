@@ -17,6 +17,8 @@ import {
   insertCashBookEntrySchema,
   insertPettyCashEntrySchema,
   insertTransactionJournalSchema,
+  insertRevenueCategorySchema,
+  insertRevenueSchema,
 
 } from "@shared/schema";
 import { z } from "zod";
@@ -1072,6 +1074,108 @@ export async function registerRoutes(app: Express): Promise<Server> {
     } catch (error) {
       console.error("Error fetching financial dashboard data:", error);
       res.status(500).json({ message: "Erreur lors de la récupération des données du tableau de bord financier" });
+    }
+  });
+
+  // ==========================================
+  // REVENUE ROUTES
+  // ==========================================
+  
+  // Revenue Categories routes
+  app.get("/api/accounting/revenue-categories", isAuthenticated, async (req: any, res) => {
+    try {
+      const userId = req.user.id;
+      const categories = await storage.getRevenueCategories(userId);
+      res.json(categories);
+    } catch (error) {
+      console.error("Error fetching revenue categories:", error);
+      res.status(500).json({ message: "Erreur lors de la récupération des catégories de revenus" });
+    }
+  });
+
+  app.post("/api/accounting/revenue-categories", isAuthenticated, async (req: any, res) => {
+    try {
+      const userId = req.user.id;
+      const categoryData = insertRevenueCategorySchema.parse({ ...req.body, userId });
+      const category = await storage.createRevenueCategory(categoryData);
+      res.json(category);
+    } catch (error) {
+      console.error("Error creating revenue category:", error);
+      res.status(400).json({ message: "Erreur lors de la création de la catégorie de revenus" });
+    }
+  });
+
+  app.put("/api/accounting/revenue-categories/:id", isAuthenticated, async (req: any, res) => {
+    try {
+      const userId = req.user.id;
+      const id = parseInt(req.params.id);
+      const categoryData = insertRevenueCategorySchema.partial().parse(req.body);
+      const category = await storage.updateRevenueCategory(id, categoryData, userId);
+      res.json(category);
+    } catch (error) {
+      console.error("Error updating revenue category:", error);
+      res.status(400).json({ message: "Erreur lors de la mise à jour de la catégorie de revenus" });
+    }
+  });
+
+  app.delete("/api/accounting/revenue-categories/:id", isAuthenticated, async (req: any, res) => {
+    try {
+      const userId = req.user.id;
+      const id = parseInt(req.params.id);
+      await storage.deleteRevenueCategory(id, userId);
+      res.json({ message: "Catégorie de revenus supprimée avec succès" });
+    } catch (error) {
+      console.error("Error deleting revenue category:", error);
+      res.status(500).json({ message: "Erreur lors de la suppression de la catégorie de revenus" });
+    }
+  });
+
+  // Revenues routes
+  app.get("/api/accounting/revenues", isAuthenticated, async (req: any, res) => {
+    try {
+      const userId = req.user.id;
+      const revenues = await storage.getRevenues(userId);
+      res.json(revenues);
+    } catch (error) {
+      console.error("Error fetching revenues:", error);
+      res.status(500).json({ message: "Erreur lors de la récupération des revenus" });
+    }
+  });
+
+  app.post("/api/accounting/revenues", isAuthenticated, async (req: any, res) => {
+    try {
+      const userId = req.user.id;
+      const revenueData = insertRevenueSchema.parse({ ...req.body, userId });
+      const revenue = await storage.createRevenue(revenueData);
+      res.json(revenue);
+    } catch (error) {
+      console.error("Error creating revenue:", error);
+      res.status(400).json({ message: "Erreur lors de la création du revenu" });
+    }
+  });
+
+  app.put("/api/accounting/revenues/:id", isAuthenticated, async (req: any, res) => {
+    try {
+      const userId = req.user.id;
+      const id = parseInt(req.params.id);
+      const revenueData = insertRevenueSchema.partial().parse(req.body);
+      const revenue = await storage.updateRevenue(id, revenueData, userId);
+      res.json(revenue);
+    } catch (error) {
+      console.error("Error updating revenue:", error);
+      res.status(400).json({ message: "Erreur lors de la mise à jour du revenu" });
+    }
+  });
+
+  app.delete("/api/accounting/revenues/:id", isAuthenticated, async (req: any, res) => {
+    try {
+      const userId = req.user.id;
+      const id = parseInt(req.params.id);
+      await storage.deleteRevenue(id, userId);
+      res.json({ message: "Revenu supprimé avec succès" });
+    } catch (error) {
+      console.error("Error deleting revenue:", error);
+      res.status(500).json({ message: "Erreur lors de la suppression du revenu" });
     }
   });
 

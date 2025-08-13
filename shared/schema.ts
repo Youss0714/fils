@@ -253,7 +253,30 @@ export const transactionJournal = pgTable("transaction_journal", {
   createdBy: varchar("created_by").notNull().references(() => users.id),
 });
 
+// Revenue Categories - Catégories de revenus
+export const revenueCategories = pgTable("revenue_categories", {
+  id: serial("id").primaryKey(),
+  name: varchar("name", { length: 255 }).notNull(),
+  description: text("description"),
+  userId: varchar("user_id").notNull().references(() => users.id),
+  createdAt: timestamp("created_at").defaultNow(),
+});
 
+// Revenues - Enregistrement des revenus
+export const revenues = pgTable("revenues", {
+  id: serial("id").primaryKey(),
+  reference: varchar("reference", { length: 100 }).notNull(),
+  description: text("description").notNull(),
+  amount: decimal("amount", { precision: 10, scale: 2 }).notNull(),
+  categoryId: integer("category_id").notNull().references(() => revenueCategories.id),
+  revenueDate: timestamp("revenue_date").notNull(),
+  paymentMethod: varchar("payment_method", { length: 50 }).notNull(), // cash, bank_transfer, check, card
+  source: varchar("source", { length: 255 }), // Source du revenu (client, vente, service, etc.)
+  receiptUrl: varchar("receipt_url", { length: 500 }),
+  notes: text("notes"),
+  userId: varchar("user_id").notNull().references(() => users.id),
+  createdAt: timestamp("created_at").defaultNow(),
+});
 
 // Relations
 export const usersRelations = relations(users, ({ many }) => ({
@@ -270,7 +293,8 @@ export const usersRelations = relations(users, ({ many }) => ({
   cashBookEntries: many(cashBookEntries),
   pettyCashEntries: many(pettyCashEntries),
   transactionJournal: many(transactionJournal),
-
+  revenueCategories: many(revenueCategories),
+  revenues: many(revenues),
 }));
 
 export const licensesRelations = relations(licenses, ({ }) => ({}));
@@ -433,6 +457,26 @@ export const transactionJournalRelations = relations(transactionJournal, ({ one 
   creator: one(users, {
     fields: [transactionJournal.createdBy],
     references: [users.id],
+  }),
+}));
+
+// Revenue relations
+export const revenueCategoriesRelations = relations(revenueCategories, ({ one, many }) => ({
+  user: one(users, {
+    fields: [revenueCategories.userId],
+    references: [users.id],
+  }),
+  revenues: many(revenues),
+}));
+
+export const revenuesRelations = relations(revenues, ({ one }) => ({
+  user: one(users, {
+    fields: [revenues.userId],
+    references: [users.id],
+  }),
+  category: one(revenueCategories, {
+    fields: [revenues.categoryId],
+    references: [revenueCategories.id],
   }),
 }));
 
@@ -693,7 +737,26 @@ export const insertTransactionJournalSchema = createInsertSchema(transactionJour
   ),
 });
 
+// Revenue insert schemas
+export const insertRevenueCategorySchema = createInsertSchema(revenueCategories).omit({
+  id: true,
+  createdAt: true,
+});
 
+export const insertRevenueSchema = createInsertSchema(revenues).omit({
+  id: true,
+  reference: true,
+  createdAt: true,
+}).extend({
+  amount: z.string().refine(
+    (val) => {
+      const amount = parseFloat(val);
+      return !isNaN(amount) && amount > 0;
+    },
+    { message: "Le montant doit être supérieur à 0" }
+  ),
+  revenueDate: z.string().transform(val => new Date(val)),
+});
 
 // Types
 export type UpsertUser = typeof users.$inferInsert;
@@ -715,6 +778,8 @@ export type AccountingReport = typeof accountingReports.$inferSelect;
 export type CashBookEntry = typeof cashBookEntries.$inferSelect;
 export type PettyCashEntry = typeof pettyCashEntries.$inferSelect;
 export type TransactionJournal = typeof transactionJournal.$inferSelect;
+export type RevenueCategory = typeof revenueCategories.$inferSelect;
+export type Revenue = typeof revenues.$inferSelect;
 
 
 export type InsertCategory = z.infer<typeof insertCategorySchema>;
@@ -734,4 +799,6 @@ export type InsertAccountingReport = z.infer<typeof insertAccountingReportSchema
 export type InsertCashBookEntry = z.infer<typeof insertCashBookEntrySchema>;
 export type InsertPettyCashEntry = z.infer<typeof insertPettyCashEntrySchema>;
 export type InsertTransactionJournal = z.infer<typeof insertTransactionJournalSchema>;
+export type InsertRevenueCategory = z.infer<typeof insertRevenueCategorySchema>;
+export type InsertRevenue = z.infer<typeof insertRevenueSchema>;
 

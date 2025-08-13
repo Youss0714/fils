@@ -15,6 +15,8 @@ import {
   cashBookEntries,
   pettyCashEntries,
   transactionJournal,
+  revenueCategories,
+  revenues,
 
   type User,
   type UpsertUser,
@@ -33,6 +35,8 @@ import {
   type CashBookEntry,
   type PettyCashEntry,
   type TransactionJournal,
+  type RevenueCategory,
+  type Revenue,
 
   type InsertClient,
   type InsertProduct,
@@ -49,6 +53,8 @@ import {
   type InsertCashBookEntry,
   type InsertPettyCashEntry,
   type InsertTransactionJournal,
+  type InsertRevenueCategory,
+  type InsertRevenue,
 
 } from "@shared/schema";
 import { db } from "./db";
@@ -188,17 +194,18 @@ export interface IStorage {
   // Financial Dashboard
   getFinancialDashboardData(userId: string): Promise<any>;
 
-  // Chart of Accounts operations
-  getChartOfAccounts(userId: string): Promise<ChartOfAccounts[]>;
-  getChartOfAccount(id: number, userId: string): Promise<ChartOfAccounts | undefined>;
-  createChartOfAccount(data: InsertChartOfAccounts): Promise<ChartOfAccounts>;
-  updateChartOfAccount(id: number, data: Partial<InsertChartOfAccounts>, userId: string): Promise<ChartOfAccounts>;
-  deleteChartOfAccount(id: number, userId: string): Promise<void>;
+  // Revenue operations
+  getRevenueCategories(userId: string): Promise<RevenueCategory[]>;
+  getRevenueCategory(id: number, userId: string): Promise<RevenueCategory | undefined>;
+  createRevenueCategory(category: InsertRevenueCategory): Promise<RevenueCategory>;
+  updateRevenueCategory(id: number, category: Partial<InsertRevenueCategory>, userId: string): Promise<RevenueCategory>;
+  deleteRevenueCategory(id: number, userId: string): Promise<void>;
 
-  // Trial Balance operations
-  getTrialBalance(userId: string, periodStart: string, periodEnd: string): Promise<TrialBalance[]>;
-  generateTrialBalance(userId: string, periodStart: string, periodEnd: string): Promise<TrialBalance[]>;
-  getTrialBalanceEntry(id: number, userId: string): Promise<TrialBalance | undefined>;
+  getRevenues(userId: string): Promise<(Revenue & { category: RevenueCategory })[]>;
+  getRevenue(id: number, userId: string): Promise<Revenue | undefined>;
+  createRevenue(revenue: InsertRevenue): Promise<Revenue>;
+  updateRevenue(id: number, revenue: Partial<InsertRevenue>, userId: string): Promise<Revenue>;
+  deleteRevenue(id: number, userId: string): Promise<void>;
 }
 
 export class DatabaseStorage implements IStorage {
@@ -891,25 +898,7 @@ export class DatabaseStorage implements IStorage {
         });
       }
 
-      // Add to transaction journal for trial balance integration
-      if (expense.accountId) {
-        const account = await tx.select().from(chartOfAccounts).where(eq(chartOfAccounts.id, expense.accountId)).limit(1);
-        if (account.length > 0) {
-          await tx.insert(transactionJournal).values({
-            userId: expense.userId,
-            transactionDate: new Date(expense.expenseDate),
-            reference: expense.reference,
-            description: `Dépense approuvée: ${expense.description}`,
-            sourceModule: 'expenses',
-            sourceId: expense.id,
-            debitAccount: account[0].accountCode,
-            creditAccount: 'cash', // Compte de trésorerie
-            debitAmount: expense.amount,
-            creditAmount: expense.amount,
-            createdBy: approvedBy,
-          });
-        }
-      }
+      // Note: Transaction journal integration removed for now
 
       return updatedExpense;
     });
@@ -1445,8 +1434,112 @@ export class DatabaseStorage implements IStorage {
     }
   }
 
+  // ==========================================
+  // REVENUE OPERATIONS
+  // ==========================================
 
+  async getRevenueCategories(userId: string): Promise<RevenueCategory[]> {
+    return await db
+      .select()
+      .from(revenueCategories)
+      .where(eq(revenueCategories.userId, userId))
+      .orderBy(desc(revenueCategories.createdAt));
+  }
 
+  async getRevenueCategory(id: number, userId: string): Promise<RevenueCategory | undefined> {
+    const [category] = await db
+      .select()
+      .from(revenueCategories)
+      .where(and(eq(revenueCategories.id, id), eq(revenueCategories.userId, userId)));
+    return category;
+  }
+
+  async createRevenueCategory(categoryData: InsertRevenueCategory): Promise<RevenueCategory> {
+    const [category] = await db
+      .insert(revenueCategories)
+      .values(categoryData)
+      .returning();
+    return category;
+  }
+
+  async updateRevenueCategory(id: number, categoryData: Partial<InsertRevenueCategory>, userId: string): Promise<RevenueCategory> {
+    const [category] = await db
+      .update(revenueCategories)
+      .set(categoryData)
+      .where(and(eq(revenueCategories.id, id), eq(revenueCategories.userId, userId)))
+      .returning();
+    return category;
+  }
+
+  async deleteRevenueCategory(id: number, userId: string): Promise<void> {
+    await db
+      .delete(revenueCategories)
+      .where(and(eq(revenueCategories.id, id), eq(revenueCategories.userId, userId)));
+  }
+
+  async getRevenues(userId: string): Promise<(Revenue & { category: RevenueCategory })[]> {
+    return await db
+      .select({
+        id: revenues.id,
+        reference: revenues.reference,
+        description: revenues.description,
+        amount: revenues.amount,
+        categoryId: revenues.categoryId,
+        revenueDate: revenues.revenueDate,
+        paymentMethod: revenues.paymentMethod,
+        source: revenues.source,
+        receiptUrl: revenues.receiptUrl,
+        notes: revenues.notes,
+        userId: revenues.userId,
+        createdAt: revenues.createdAt,
+        category: {
+          id: revenueCategories.id,
+          name: revenueCategories.name,
+          description: revenueCategories.description,
+          userId: revenueCategories.userId,
+          createdAt: revenueCategories.createdAt,
+        },
+      })
+      .from(revenues)
+      .leftJoin(revenueCategories, eq(revenues.categoryId, revenueCategories.id))
+      .where(eq(revenues.userId, userId))
+      .orderBy(desc(revenues.createdAt)) as (Revenue & { category: RevenueCategory })[];
+  }
+
+  async getRevenue(id: number, userId: string): Promise<Revenue | undefined> {
+    const [revenue] = await db
+      .select()
+      .from(revenues)
+      .where(and(eq(revenues.id, id), eq(revenues.userId, userId)));
+    return revenue;
+  }
+
+  async createRevenue(revenueData: InsertRevenue): Promise<Revenue> {
+    const reference = `REV-${Date.now()}`;
+    const [revenue] = await db
+      .insert(revenues)
+      .values({
+        ...revenueData,
+        reference,
+      })
+      .returning();
+    return revenue;
+  }
+
+  async updateRevenue(id: number, revenueData: Partial<InsertRevenue>, userId: string): Promise<Revenue> {
+    const [revenue] = await db
+      .update(revenues)
+      .set(revenueData)
+      .where(and(eq(revenues.id, id), eq(revenues.userId, userId)))
+      .returning();
+    return revenue;
+  }
+
+  async deleteRevenue(id: number, userId: string): Promise<void> {
+    await db
+      .delete(revenues)
+      .where(and(eq(revenues.id, id), eq(revenues.userId, userId)));
+  }
 
 }
 

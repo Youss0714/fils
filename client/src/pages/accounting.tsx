@@ -9,6 +9,7 @@ import { PlusCircle, TrendingUp, TrendingDown, DollarSign, FileText, Wallet, Cre
 import { ExpenseManager } from "../components/accounting/expense-manager";
 import { ImprestManager } from "../components/accounting/imprest-manager";
 import { ReportsManager } from "../components/accounting/reports-manager";
+import { RevenueManager } from "../components/accounting/revenue-manager";
 
 import { EXPENSE_STATUS, PAYMENT_METHODS, IMPREST_STATUS } from "@shared/schema";
 
@@ -192,8 +193,15 @@ export default function AccountingPage() {
             </TabsTrigger>
 
             <TabsTrigger 
-              value="reports" 
+              value="revenues" 
               className="flex items-center justify-start gap-3 w-full sm:w-auto px-6 py-3 text-sm font-medium rounded-md transition-all hover:bg-green-50 dark:hover:bg-green-900/20 data-[state=active]:bg-green-500 data-[state=active]:text-white data-[state=active]:shadow-md hover:shadow-sm"
+            >
+              <TrendingUp className="h-5 w-5" />
+              <span className="whitespace-nowrap">Revenus</span>
+            </TabsTrigger>
+            <TabsTrigger 
+              value="reports" 
+              className="flex items-center justify-start gap-3 w-full sm:w-auto px-6 py-3 text-sm font-medium rounded-md transition-all hover:bg-purple-50 dark:hover:bg-purple-900/20 data-[state=active]:bg-purple-500 data-[state=active]:text-white data-[state=active]:shadow-md hover:shadow-sm"
             >
               <FileText className="h-5 w-5" />
               <span className="whitespace-nowrap">Rapports</span>
@@ -209,7 +217,9 @@ export default function AccountingPage() {
           <ImprestManager />
         </TabsContent>
 
-
+        <TabsContent value="revenues">
+          <RevenueManager />
+        </TabsContent>
 
         <TabsContent value="reports">
           <ReportsManager />
