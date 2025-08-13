@@ -1517,83 +1517,121 @@ export class DatabaseStorage implements IStorage {
   }
 
   async generateTrialBalance(userId: string, periodStart: string, periodEnd: string): Promise<TrialBalance[]> {
-    // Get all active accounts for the user
-    const accounts = await this.getChartOfAccounts(userId);
-
-    const trialBalanceData: InsertTrialBalance[] = [];
-
-    for (const account of accounts) {
-      // Calculate opening balance (transactions before period start)
-      const openingBalanceResult = await db
-        .select({ 
-          debitTotal: sum(transactionJournal.debitAmount),
-          creditTotal: sum(transactionJournal.creditAmount)
-        })
-        .from(transactionJournal)
-        .where(and(
-          eq(transactionJournal.userId, userId),
-          or(
-            eq(transactionJournal.debitAccount, account.accountCode),
-            eq(transactionJournal.creditAccount, account.accountCode)
-          ),
-          sql`${transactionJournal.transactionDate} < ${periodStart}`
-        ));
-
-      // Calculate period totals
-      const periodTotalsResult = await db
-        .select({ 
-          debitTotal: sum(transactionJournal.debitAmount),
-          creditTotal: sum(transactionJournal.creditAmount)
-        })
-        .from(transactionJournal)
-        .where(and(
-          eq(transactionJournal.userId, userId),
-          or(
-            eq(transactionJournal.debitAccount, account.accountCode),
-            eq(transactionJournal.creditAccount, account.accountCode)
-          ),
-          sql`${transactionJournal.transactionDate} >= ${periodStart}`,
-          sql`${transactionJournal.transactionDate} <= ${periodEnd}`
-        ));
-
-      const openingDebit = parseFloat(openingBalanceResult[0]?.debitTotal || "0");
-      const openingCredit = parseFloat(openingBalanceResult[0]?.creditTotal || "0");
-      const periodDebit = parseFloat(periodTotalsResult[0]?.debitTotal || "0");
-      const periodCredit = parseFloat(periodTotalsResult[0]?.creditTotal || "0");
-
-      let openingBalance = 0;
-      if (account.normalBalance === "debit") {
-        openingBalance = openingDebit - openingCredit;
-      } else {
-        openingBalance = openingCredit - openingDebit;
-      }
-
-      let closingBalance = openingBalance;
-      if (account.normalBalance === "debit") {
-        closingBalance = openingBalance + periodDebit - periodCredit;
-      } else {
-        closingBalance = openingBalance + periodCredit - periodDebit;
-      }
-
-      trialBalanceData.push({
-        userId,
-        periodStart,
-        periodEnd,
-        accountId: account.id,
-        openingBalance: openingBalance.toFixed(2),
-        debitTotal: periodDebit.toFixed(2),
-        creditTotal: periodCredit.toFixed(2),
-        closingBalance: closingBalance.toFixed(2),
-      });
-    }
-
-    // Delete existing trial balance for this period
+    // Delete existing trial balance for this period first
     await db.delete(trialBalance)
       .where(and(
         eq(trialBalance.userId, userId),
         eq(trialBalance.periodStart, periodStart),
         eq(trialBalance.periodEnd, periodEnd)
       ));
+
+    // MANAGEMENT ACCOUNT FORMAT: All expenses as debits, all revenues as credits
+    
+    // Ensure we have a default chart of account entry for virtual accounts
+    const defaultExpenseAccount = await db.select().from(chartOfAccounts)
+      .where(and(
+        eq(chartOfAccounts.userId, userId),
+        eq(chartOfAccounts.accountCode, "EXPENSES")
+      )).limit(1);
+      
+    const defaultRevenueAccount = await db.select().from(chartOfAccounts)
+      .where(and(
+        eq(chartOfAccounts.userId, userId),
+        eq(chartOfAccounts.accountCode, "REVENUES")
+      )).limit(1);
+
+    let expenseAccountId: number;
+    let revenueAccountId: number;
+
+    // Create default management accounts if they don't exist
+    if (defaultExpenseAccount.length === 0) {
+      const [newExpenseAccount] = await db.insert(chartOfAccounts).values({
+        userId,
+        accountCode: "EXPENSES",
+        accountName: "Compte inconnu",
+        accountType: "expense",
+        normalBalance: "debit",
+        isActive: true
+      }).returning();
+      expenseAccountId = newExpenseAccount.id;
+    } else {
+      expenseAccountId = defaultExpenseAccount[0].id;
+    }
+
+    if (defaultRevenueAccount.length === 0) {
+      const [newRevenueAccount] = await db.insert(chartOfAccounts).values({
+        userId,
+        accountCode: "REVENUES",
+        accountName: "Compte inconnu",
+        accountType: "revenue",
+        normalBalance: "credit",
+        isActive: true
+      }).returning();
+      revenueAccountId = newRevenueAccount.id;
+    } else {
+      revenueAccountId = defaultRevenueAccount[0].id;
+    }
+    
+    // 1. Get all expenses for the period (regardless of account linkage)
+    const expensesResult = await db
+      .select({
+        totalAmount: sum(expenses.amount),
+        count: sql<number>`count(*)`
+      })
+      .from(expenses)
+      .where(and(
+        eq(expenses.userId, userId),
+        eq(expenses.status, 'approved'),
+        sql`${expenses.expenseDate} >= ${periodStart}`,
+        sql`${expenses.expenseDate} <= ${periodEnd}`
+      ));
+
+    // 2. Get all cash book income entries for the period
+    const revenuesResult = await db
+      .select({
+        totalAmount: sum(cashBookEntries.amount),
+        count: sql<number>`count(*)`
+      })
+      .from(cashBookEntries)
+      .where(and(
+        eq(cashBookEntries.userId, userId),
+        eq(cashBookEntries.type, 'income'),
+        sql`${cashBookEntries.date} >= ${periodStart}`,
+        sql`${cashBookEntries.date} <= ${periodEnd}`
+      ));
+
+    const totalExpenses = parseFloat(expensesResult[0]?.totalAmount || "0");
+    const totalRevenues = parseFloat(revenuesResult[0]?.totalAmount || "0");
+
+    const trialBalanceData: InsertTrialBalance[] = [];
+
+    // Create a management account entry for expenses (DEBIT side)
+    if (totalExpenses > 0) {
+      trialBalanceData.push({
+        userId,
+        periodStart,
+        periodEnd,
+        accountId: expenseAccountId,
+        openingBalance: "0",
+        debitTotal: totalExpenses.toFixed(2),
+        creditTotal: "0",
+        closingBalance: totalExpenses.toFixed(2),
+      });
+    }
+
+    // Create a management account entry for revenues (CREDIT side)
+    if (totalRevenues > 0) {
+      trialBalanceData.push({
+        userId,
+        periodStart,
+        periodEnd,
+        accountId: revenueAccountId,
+        openingBalance: "0",
+        debitTotal: "0",
+        creditTotal: totalRevenues.toFixed(2),
+        closingBalance: totalRevenues.toFixed(2),
+      });
+    }
 
     // Insert new trial balance data
     if (trialBalanceData.length > 0) {
