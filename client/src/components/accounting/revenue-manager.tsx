@@ -354,14 +354,14 @@ export function RevenueManager() {
                   Nouveau Revenu
                 </Button>
               </DialogTrigger>
-              <DialogContent className="max-w-md">
+              <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
                 <DialogHeader>
                   <DialogTitle>
-                    {editingRevenue ? 'Modifier le Revenu' : 'Nouveau Revenu'}
+                    {editingRevenu ? 'Modifier le Revenu' : 'Nouveau Revenu'}
                   </DialogTitle>
                 </DialogHeader>
                 <Form {...revenueForm}>
-                  <form onSubmit={revenueForm.handleSubmit(onRevenueSubmit)} className="space-y-4">
+                  <form onSubmit={revenueForm.handleSubmit(onRevenueSubmit)} className="space-y-6 p-4">
                     <FormField
                       control={revenueForm.control}
                       name="description"
