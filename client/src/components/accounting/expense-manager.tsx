@@ -123,6 +123,7 @@ export function ExpenseManager() {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["/api/accounting/expenses"] });
       queryClient.invalidateQueries({ queryKey: ["/api/accounting/stats"] });
+      queryClient.invalidateQueries({ queryKey: ["/api/accounting/imprest-funds"] });
       toast({ title: "Dépense approuvée avec succès" });
     },
     onError: (error: any) => {
@@ -139,6 +140,7 @@ export function ExpenseManager() {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["/api/accounting/expenses"] });
       queryClient.invalidateQueries({ queryKey: ["/api/accounting/stats"] });
+      queryClient.invalidateQueries({ queryKey: ["/api/accounting/imprest-funds"] });
       toast({ title: "Dépense rejetée" });
     },
     onError: (error: any) => {
