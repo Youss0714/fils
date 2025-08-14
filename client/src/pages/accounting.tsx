@@ -13,8 +13,21 @@ import { RevenueManager } from "../components/accounting/revenue-manager";
 
 import { EXPENSE_STATUS, PAYMENT_METHODS, IMPREST_STATUS } from "@shared/schema";
 
+interface AccountingStats {
+  totalExpenses: number;
+  pendingExpenses: number;
+  approvedExpenses: number;
+  totalImprestFunds: number;
+  activeImprestFunds: number;
+  totalRevenues: number;
+  monthlyRevenues: number;
+  recentRevenues: number;
+  monthlyExpensesByCategory: { category: string; amount: number }[];
+  recentExpenses: any[];
+}
+
 export default function AccountingPage() {
-  const { data: stats, isLoading: statsLoading } = useQuery({
+  const { data: stats, isLoading: statsLoading } = useQuery<AccountingStats>({
     queryKey: ["/api/accounting/stats"],
   });
 
