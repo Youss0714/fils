@@ -63,6 +63,7 @@ Preferred communication style: Simple, everyday language.
 ✓ **Chart of Accounts**: Complete integration with missing chartOfAccounts table and schema
 ✓ **Migration Verification**: User registration, login, dashboard, and all accounting modules working properly
 ✓ **Revenue Integration**: Added totalRevenues, monthlyRevenues, and recentRevenues to accounting statistics API
+✓ **Auto-Update Fix**: Revenue totals now update automatically like expense totals - fixed cache invalidation for real-time statistics
 
 ## Previous Migration (August 12, 2025)
 ✓ **Migration Status**: Successfully completed fresh migration from Replit Agent to standard Replit environment
