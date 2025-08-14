@@ -143,7 +143,7 @@ export default function AccountingPage() {
           </CardHeader>
           <CardContent>
             <div className="space-y-4">
-              {stats.recentExpenses.slice(0, 5).map((expense: any) => {
+              {stats.recentExpenses.slice(0, 3).map((expense: any) => {
                 const status = EXPENSE_STATUS.find(s => s.value === expense.status);
                 const paymentMethod = PAYMENT_METHODS.find(p => p.value === expense.paymentMethod);
                 
