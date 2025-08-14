@@ -642,7 +642,16 @@ export function RevenueManager() {
                   </DialogTitle>
                 </DialogHeader>
                 <Form {...categoryForm}>
-                  <form onSubmit={categoryForm.handleSubmit(onCategorySubmit)} className="space-y-4">
+                  <form onSubmit={(e) => {
+                    e.preventDefault();
+                    console.log("Revenue category form submitted");
+                    const values = categoryForm.getValues();
+                    console.log("Form values:", values);
+                    console.log("Form errors:", categoryForm.formState.errors);
+                    if (values.name) {
+                      onCategorySubmit(values);
+                    }
+                  }} className="space-y-4">
                     <FormField
                       control={categoryForm.control}
                       name="name"
@@ -688,6 +697,7 @@ export function RevenueManager() {
                         type="submit" 
                         disabled={categoryMutation.isPending}
                         data-testid="button-save-category"
+                        onClick={() => console.log("Revenue category button clicked directly")}
                       >
                         {categoryMutation.isPending ? 'Sauvegarde...' : (editingCategory ? 'Modifier' : 'Créer')}
                       </Button>
