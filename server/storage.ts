@@ -1118,18 +1118,19 @@ export class DatabaseStorage implements IStorage {
       ))
       .groupBy(expenseCategories.name, expenseCategories.id);
 
-    // Get imprest fund allocations for each category
+    // Get imprest fund allocations for each category based on total expenses linked to imprest funds
     const imprestAllocationByCategory = await db
       .select({
         categoryId: expenseCategories.id,
         category: expenseCategories.name,
-        allocatedAmount: sum(imprestFunds.initialAmount),
+        allocatedAmount: sum(expenses.amount),
       })
-      .from(imprestFunds)
-      .leftJoin(expenses, eq(expenses.imprestId, imprestFunds.id))
+      .from(expenses)
       .leftJoin(expenseCategories, eq(expenses.categoryId, expenseCategories.id))
+      .leftJoin(imprestFunds, eq(expenses.imprestId, imprestFunds.id))
       .where(and(
-        eq(imprestFunds.userId, userId),
+        eq(expenses.userId, userId),
+        sql`${expenses.imprestId} IS NOT NULL`,
         eq(imprestFunds.status, "active")
       ))
       .groupBy(expenseCategories.id, expenseCategories.name);
