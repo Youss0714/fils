@@ -1247,7 +1247,7 @@ export class DatabaseStorage implements IStorage {
   }
 
   async updateCashBookEntry(id: number, data: Partial<InsertCashBookEntry>, userId: string): Promise<CashBookEntry> {
-    const updateData = { ...data };
+    const updateData: any = { ...data };
     if (updateData.date instanceof Date) {
       updateData.date = updateData.date.toISOString().split('T')[0];
     }
@@ -1314,7 +1314,7 @@ export class DatabaseStorage implements IStorage {
   }
 
   async updatePettyCashEntry(id: number, data: Partial<InsertPettyCashEntry>, userId: string): Promise<PettyCashEntry> {
-    const updateData = { ...data };
+    const updateData: any = { ...data };
     if (updateData.date instanceof Date) {
       updateData.date = updateData.date.toISOString().split('T')[0];
     }

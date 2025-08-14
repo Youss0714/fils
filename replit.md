@@ -67,6 +67,7 @@ Preferred communication style: Simple, everyday language.
 ✓ **Recent Expenses Optimization**: Limited recent expenses display to 3 items per page to avoid long lists
 ✓ **Fresh Migration Completed (August 14, 2025)**: Successfully re-migrated YGestion with optimized recent expenses display
 ✓ **Percentage Calculation Fix**: Corrected expense category percentage calculation to be based on imprest fund allocations instead of expense totals
+✓ **PostgreSQL Query Fix**: Fixed syntax error in accounting stats query by replacing SQL template with isNotNull function
 
 ## Previous Migration (August 12, 2025)
 ✓ **Migration Status**: Successfully completed fresh migration from Replit Agent to standard Replit environment
