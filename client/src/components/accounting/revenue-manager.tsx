@@ -71,6 +71,12 @@ export function RevenueManager() {
     queryKey: ['/api/accounting/revenues'],
   });
 
+  // Calculs de pagination
+  const totalPages = Math.ceil(revenues.length / itemsPerPage);
+  const startIndex = (currentPage - 1) * itemsPerPage;
+  const endIndex = startIndex + itemsPerPage;
+  const paginatedRevenues = revenues.slice(startIndex, endIndex);
+
   // Formulaire pour les catégories
   const categoryForm = useForm<z.infer<typeof insertRevenueCategorySchema>>({
     resolver: zodResolver(insertRevenueCategorySchema),
@@ -337,12 +343,7 @@ export function RevenueManager() {
     }, 250);
   };
 
-  // Pagination pour les revenus
-  const totalPages = Math.ceil(revenues.length / itemsPerPage);
-  const paginatedRevenues = revenues.slice(
-    (currentPage - 1) * itemsPerPage,
-    currentPage * itemsPerPage
-  );
+
 
 
 
@@ -557,7 +558,7 @@ export function RevenueManager() {
 
           {revenuesLoading ? (
             <div className="text-center py-8">Chargement des revenus...</div>
-          ) : paginatedRevenues.length === 0 ? (
+          ) : revenues.length === 0 ? (
             <Card>
               <CardContent className="text-center py-8">
                 <DollarSign className="w-16 h-16 mx-auto text-gray-400 mb-4" />
