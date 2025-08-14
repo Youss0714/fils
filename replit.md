@@ -66,6 +66,7 @@ Preferred communication style: Simple, everyday language.
 ✓ **Auto-Update Fix**: Revenue totals now update automatically like expense totals - fixed cache invalidation for real-time statistics
 ✓ **Recent Expenses Optimization**: Limited recent expenses display to 3 items per page to avoid long lists
 ✓ **Fresh Migration Completed (August 14, 2025)**: Successfully re-migrated YGestion with optimized recent expenses display
+✓ **Percentage Calculation Fix**: Corrected expense category percentage calculation to be based on imprest fund allocations instead of expense totals
 
 ## Previous Migration (August 12, 2025)
 ✓ **Migration Status**: Successfully completed fresh migration from Replit Agent to standard Replit environment

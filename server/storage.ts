@@ -1118,12 +1118,12 @@ export class DatabaseStorage implements IStorage {
       ))
       .groupBy(expenseCategories.name, expenseCategories.id);
 
-    // Get imprest fund allocations for each category based on total expenses linked to imprest funds
+    // Get imprest fund allocations for each category based on expenses linked to imprest funds
     const imprestAllocationByCategory = await db
       .select({
         categoryId: expenseCategories.id,
         category: expenseCategories.name,
-        allocatedAmount: sum(expenses.amount),
+        allocatedAmount: sum(imprestFunds.initialAmount),
       })
       .from(expenses)
       .leftJoin(expenseCategories, eq(expenses.categoryId, expenseCategories.id))
@@ -1225,7 +1225,7 @@ export class DatabaseStorage implements IStorage {
     const [newEntry] = await db.insert(cashBookEntries).values({
       ...data,
       reference,
-      date: data.date,
+      date: typeof data.date === 'string' ? data.date : data.date.toISOString().split('T')[0],
     }).returning();
 
     // Add to transaction journal
@@ -1256,7 +1256,7 @@ export class DatabaseStorage implements IStorage {
       .update(cashBookEntries)
       .set({
         ...updateData,
-        updatedAt: new Date(),
+        updatedAt: new Date().toISOString(),
       })
       .where(and(eq(cashBookEntries.id, id), eq(cashBookEntries.userId, userId)))
       .returning();
@@ -1307,7 +1307,7 @@ export class DatabaseStorage implements IStorage {
 
     const [newEntry] = await db.insert(pettyCashEntries).values({
       ...data,
-      date: data.date,
+      date: typeof data.date === 'string' ? data.date : data.date.toISOString().split('T')[0],
     }).returning();
 
     return newEntry;
@@ -1323,7 +1323,7 @@ export class DatabaseStorage implements IStorage {
       .update(pettyCashEntries)
       .set({
         ...updateData,
-        updatedAt: new Date(),
+        updatedAt: new Date().toISOString(),
       })
       .where(and(eq(pettyCashEntries.id, id), eq(pettyCashEntries.userId, userId)))
       .returning();
@@ -1382,31 +1382,23 @@ export class DatabaseStorage implements IStorage {
   // ==========================================
   
   async getTransactionJournal(userId: string, filters?: any): Promise<TransactionJournal[]> {
-    let query = db
-      .select()
-      .from(transactionJournal)
-      .where(eq(transactionJournal.userId, userId));
+    const conditions = [eq(transactionJournal.userId, userId)];
 
     if (filters?.startDate) {
-      query = query.where(and(
-        eq(transactionJournal.userId, userId),
-        gte(transactionJournal.transactionDate, new Date(filters.startDate))
-      ));
+      conditions.push(gte(transactionJournal.transactionDate, new Date(filters.startDate)));
     }
     if (filters?.endDate) {
-      query = query.where(and(
-        eq(transactionJournal.userId, userId),
-        lte(transactionJournal.transactionDate, new Date(filters.endDate))
-      ));
+      conditions.push(lte(transactionJournal.transactionDate, new Date(filters.endDate)));
     }
     if (filters?.sourceModule) {
-      query = query.where(and(
-        eq(transactionJournal.userId, userId),
-        eq(transactionJournal.sourceModule, filters.sourceModule)
-      ));
+      conditions.push(eq(transactionJournal.sourceModule, filters.sourceModule));
     }
 
-    return await query.orderBy(desc(transactionJournal.entryDate));
+    return await db
+      .select()
+      .from(transactionJournal)
+      .where(and(...conditions))
+      .orderBy(desc(transactionJournal.entryDate));
   }
 
   async addToTransactionJournal(data: InsertTransactionJournal): Promise<TransactionJournal> {
