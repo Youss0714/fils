@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { Plus, Trash2, Edit, Eye, Calendar, DollarSign, FileText, Building2, CreditCard } from 'lucide-react';
+import { Plus, Trash2, Edit, Eye, Calendar, DollarSign, FileText, Building2, CreditCard, Printer } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -239,6 +239,102 @@ export function RevenueManager() {
     revenueMutation.mutate(data);
   };
 
+  // Fonction d'impression PDF d'un revenu
+  const printRevenue = (revenue: Revenue & { category?: RevenueCategory }) => {
+    const printWindow = window.open('', '_blank');
+    if (!printWindow) return;
+
+    const html = `
+      <!DOCTYPE html>
+      <html>
+        <head>
+          <title>Reçu de Revenu - ${revenue.reference}</title>
+          <style>
+            @media print {
+              * { margin: 0; padding: 0; box-sizing: border-box; }
+              body { font-family: Arial, sans-serif; font-size: 12px; line-height: 1.4; color: #000; }
+              .print-container { max-width: 210mm; margin: 0 auto; padding: 20px; }
+              .header { text-align: center; margin-bottom: 30px; border-bottom: 2px solid #333; padding-bottom: 15px; }
+              .company-name { font-size: 24px; font-weight: bold; color: #2563eb; margin-bottom: 5px; }
+              .document-title { font-size: 18px; font-weight: bold; margin-top: 15px; }
+              .info-section { margin: 20px 0; }
+              .info-row { display: flex; justify-content: space-between; margin: 8px 0; }
+              .label { font-weight: bold; color: #374151; }
+              .value { color: #000; }
+              .amount-section { background: #f8f9fa; padding: 15px; border-radius: 8px; margin: 20px 0; text-align: center; }
+              .amount { font-size: 24px; font-weight: bold; color: #059669; }
+              .footer { margin-top: 40px; text-align: center; font-size: 10px; color: #6b7280; }
+            }
+            @page { margin: 15mm; }
+          </style>
+        </head>
+        <body>
+          <div class="print-container">
+            <div class="header">
+              <div class="company-name">YGestion</div>
+              <div>Système de Gestion d'Entreprise</div>
+              <div class="document-title">REÇU DE REVENU</div>
+            </div>
+            
+            <div class="info-section">
+              <div class="info-row">
+                <span class="label">Référence:</span>
+                <span class="value">${revenue.reference}</span>
+              </div>
+              <div class="info-row">
+                <span class="label">Date:</span>
+                <span class="value">${format(new Date(revenue.revenueDate), 'dd/MM/yyyy', { locale: fr })}</span>
+              </div>
+              <div class="info-row">
+                <span class="label">Description:</span>
+                <span class="value">${revenue.description}</span>
+              </div>
+              <div class="info-row">
+                <span class="label">Catégorie:</span>
+                <span class="value">${revenue.category?.name || 'Sans catégorie'}</span>
+              </div>
+              <div class="info-row">
+                <span class="label">Mode de paiement:</span>
+                <span class="value">${revenue.paymentMethod.replace('_', ' ')}</span>
+              </div>
+              ${revenue.source ? `
+                <div class="info-row">
+                  <span class="label">Source:</span>
+                  <span class="value">${revenue.source}</span>
+                </div>
+              ` : ''}
+              ${revenue.notes ? `
+                <div class="info-row">
+                  <span class="label">Notes:</span>
+                  <span class="value">${revenue.notes}</span>
+                </div>
+              ` : ''}
+            </div>
+            
+            <div class="amount-section">
+              <div class="label">MONTANT</div>
+              <div class="amount">${parseFloat(revenue.amount).toLocaleString('fr-FR')} FCFA</div>
+            </div>
+            
+            <div class="footer">
+              <p>Document généré le ${format(new Date(), 'dd/MM/yyyy à HH:mm', { locale: fr })}</p>
+              <p>YGestion - Gestion d'entreprise simplifiée</p>
+            </div>
+          </div>
+        </body>
+      </html>
+    `;
+
+    printWindow.document.write(html);
+    printWindow.document.close();
+    printWindow.focus();
+    
+    setTimeout(() => {
+      printWindow.print();
+      printWindow.close();
+    }, 250);
+  };
+
   // Pagination pour les revenus
   const totalPages = Math.ceil(revenues.length / itemsPerPage);
   const paginatedRevenues = revenues.slice(
@@ -246,72 +342,7 @@ export function RevenueManager() {
     currentPage * itemsPerPage
   );
 
-  // Fonction pour imprimer un revenu
-  const printRevenue = (revenue: Revenue & { category: RevenueCategory }) => {
-    const printWindow = window.open('', '_blank');
-    const printContent = `
-      <!DOCTYPE html>
-      <html>
-      <head>
-        <title>Détails du Revenu - ${revenue.reference}</title>
-        <style>
-          @media print {
-            body { margin: 0; padding: 20px; font-family: Arial, sans-serif; }
-            .header { text-align: center; margin-bottom: 30px; border-bottom: 2px solid #333; padding-bottom: 10px; }
-            .detail-row { margin: 10px 0; display: flex; justify-content: space-between; }
-            .label { font-weight: bold; }
-          }
-        </style>
-      </head>
-      <body>
-        <div class="header">
-          <h1>DÉTAILS DU REVENU</h1>
-          <h2>${revenue.reference}</h2>
-        </div>
-        <div class="detail-row">
-          <span class="label">Description:</span>
-          <span>${revenue.description}</span>
-        </div>
-        <div class="detail-row">
-          <span class="label">Montant:</span>
-          <span>${revenue.amount} FCFA</span>
-        </div>
-        <div class="detail-row">
-          <span class="label">Date:</span>
-          <span>${format(new Date(revenue.revenueDate), 'dd/MM/yyyy')}</span>
-        </div>
-        <div class="detail-row">
-          <span class="label">Catégorie:</span>
-          <span>${revenue.category?.name || 'N/A'}</span>
-        </div>
-        <div class="detail-row">
-          <span class="label">Mode de paiement:</span>
-          <span>${revenue.paymentMethod}</span>
-        </div>
-        <div class="detail-row">
-          <span class="label">Source:</span>
-          <span>${revenue.source || 'N/A'}</span>
-        </div>
-        ${revenue.notes ? `
-        <div class="detail-row">
-          <span class="label">Notes:</span>
-          <span>${revenue.notes}</span>
-        </div>
-        ` : ''}
-      </body>
-      </html>
-    `;
-    
-    if (printWindow) {
-      printWindow.document.write(printContent);
-      printWindow.document.close();
-      printWindow.focus();
-      setTimeout(() => {
-        printWindow.print();
-        printWindow.close();
-      }, 500);
-    }
-  };
+
 
   return (
     <div className="space-y-6">
@@ -534,68 +565,99 @@ export function RevenueManager() {
             </Card>
           ) : (
             <>
-              <div className="space-y-3">
-                {paginatedRevenues.map((revenue) => (
-                  <Card key={revenue.id}>
-                    <CardContent className="p-4">
-                      <div className="flex justify-between items-start">
-                        <div className="flex-1">
-                          <div className="flex items-center space-x-3 mb-2">
-                            <h4 className="font-medium text-lg">{revenue.description}</h4>
-                            <span className="text-2xl font-bold text-green-600">
+              <Card>
+                <CardContent className="p-0">
+                  <div className="overflow-x-auto">
+                    <table className="w-full">
+                      <thead className="bg-gray-50 dark:bg-gray-800">
+                        <tr>
+                          <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                            Référence
+                          </th>
+                          <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                            Description
+                          </th>
+                          <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                            Montant
+                          </th>
+                          <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                            Catégorie
+                          </th>
+                          <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                            Date
+                          </th>
+                          <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                            Paiement
+                          </th>
+                          <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                            Actions
+                          </th>
+                        </tr>
+                      </thead>
+                      <tbody className="bg-white dark:bg-gray-900 divide-y divide-gray-200 dark:divide-gray-700">
+                        {paginatedRevenues.map((revenue) => (
+                          <tr key={revenue.id} className="hover:bg-gray-50 dark:hover:bg-gray-800">
+                            <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900 dark:text-gray-100">
+                              {revenue.reference}
+                            </td>
+                            <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-gray-100">
+                              {revenue.description}
+                            </td>
+                            <td className="px-6 py-4 whitespace-nowrap text-sm font-bold text-green-600 dark:text-green-400">
                               {parseFloat(revenue.amount).toLocaleString('fr-FR')} FCFA
-                            </span>
-                          </div>
-                          <div className="grid grid-cols-2 gap-4 text-sm text-gray-600 dark:text-gray-400">
-                            <div className="flex items-center space-x-2">
-                              <FileText className="w-4 h-4" />
-                              <span>{revenue.reference}</span>
-                            </div>
-                            <div className="flex items-center space-x-2">
-                              <Calendar className="w-4 h-4" />
-                              <span>{format(new Date(revenue.revenueDate), 'dd/MM/yyyy', { locale: fr })}</span>
-                            </div>
-                            <div className="flex items-center space-x-2">
-                              <Building2 className="w-4 h-4" />
-                              <span>{revenue.category?.name || 'Sans catégorie'}</span>
-                            </div>
-                            <div className="flex items-center space-x-2">
-                              <CreditCard className="w-4 h-4" />
-                              <span className="capitalize">{revenue.paymentMethod.replace('_', ' ')}</span>
-                            </div>
-                          </div>
-                        </div>
-                        <div className="flex space-x-2 ml-4">
-                          <Button
-                            variant="outline"
-                            size="sm"
-                            onClick={() => handleViewRevenue(revenue)}
-                            data-testid={`button-view-revenue-${revenue.id}`}
-                          >
-                            <Eye className="w-4 h-4" />
-                          </Button>
-                          <Button
-                            variant="outline"
-                            size="sm"
-                            onClick={() => handleEditRevenue(revenue)}
-                            data-testid={`button-edit-revenue-${revenue.id}`}
-                          >
-                            <Edit className="w-4 h-4" />
-                          </Button>
-                          <Button
-                            variant="destructive"
-                            size="sm"
-                            onClick={() => deleteRevenueMutation.mutate(revenue.id)}
-                            data-testid={`button-delete-revenue-${revenue.id}`}
-                          >
-                            <Trash2 className="w-4 h-4" />
-                          </Button>
-                        </div>
-                      </div>
-                    </CardContent>
-                  </Card>
-                ))}
-              </div>
+                            </td>
+                            <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400">
+                              {revenue.category?.name || 'Sans catégorie'}
+                            </td>
+                            <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400">
+                              {format(new Date(revenue.revenueDate), 'dd/MM/yyyy', { locale: fr })}
+                            </td>
+                            <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400 capitalize">
+                              {revenue.paymentMethod.replace('_', ' ')}
+                            </td>
+                            <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
+                              <div className="flex space-x-2">
+                                <Button
+                                  variant="outline"
+                                  size="sm"
+                                  onClick={() => handleViewRevenue(revenue)}
+                                  data-testid={`button-view-revenue-${revenue.id}`}
+                                >
+                                  <Eye className="w-4 h-4" />
+                                </Button>
+                                <Button
+                                  variant="outline"
+                                  size="sm"
+                                  onClick={() => handleEditRevenue(revenue)}
+                                  data-testid={`button-edit-revenue-${revenue.id}`}
+                                >
+                                  <Edit className="w-4 h-4" />
+                                </Button>
+                                <Button
+                                  variant="outline"
+                                  size="sm"
+                                  onClick={() => printRevenue(revenue)}
+                                  data-testid={`button-print-revenue-${revenue.id}`}
+                                >
+                                  <Printer className="w-4 h-4" />
+                                </Button>
+                                <Button
+                                  variant="destructive"
+                                  size="sm"
+                                  onClick={() => deleteRevenueMutation.mutate(revenue.id)}
+                                  data-testid={`button-delete-revenue-${revenue.id}`}
+                                >
+                                  <Trash2 className="w-4 h-4" />
+                                </Button>
+                              </div>
+                            </td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                  </div>
+                </CardContent>
+              </Card>
 
               {/* Pagination */}
               {totalPages > 1 && (
