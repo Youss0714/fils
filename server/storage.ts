@@ -1054,6 +1054,9 @@ export class DatabaseStorage implements IStorage {
     approvedExpenses: number;
     totalImprestFunds: number;
     activeImprestFunds: number;
+    totalRevenues: number;
+    monthlyRevenues: number;
+    recentRevenues: number;
     monthlyExpensesByCategory: { category: string; amount: number }[];
     recentExpenses: (Expense & { category: ExpenseCategory })[];
   }> {
@@ -1133,12 +1136,46 @@ export class DatabaseStorage implements IStorage {
       category: row.expense_categories!,
     }));
 
+    // Total revenues amount
+    const totalRevenuesResult = await db
+      .select({ total: sum(revenues.amount) })
+      .from(revenues)
+      .where(eq(revenues.userId, userId));
+    
+    const totalRevenues = parseFloat(totalRevenuesResult[0]?.total || "0");
+
+    // Monthly revenues (current month)
+    const monthlyRevenuesResult = await db
+      .select({ total: sum(revenues.amount) })
+      .from(revenues)
+      .where(and(
+        eq(revenues.userId, userId),
+        sql`${revenues.revenueDate} >= ${thisMonth.toISOString()}`
+      ));
+    
+    const monthlyRevenues = parseFloat(monthlyRevenuesResult[0]?.total || "0");
+
+    // Recent revenues count (last 30 days)
+    const lastMonth = new Date(now.getTime() - 30 * 24 * 60 * 60 * 1000);
+    const recentRevenuesResult = await db
+      .select({ count: count() })
+      .from(revenues)
+      .where(and(
+        eq(revenues.userId, userId),
+        sql`${revenues.revenueDate} >= ${lastMonth.toISOString()}`
+      ));
+    
+    const recentRevenues = recentRevenuesResult[0]?.count || 0;
+
     return {
       totalExpenses,
       pendingExpenses,
       approvedExpenses,
       totalImprestFunds,
       activeImprestFunds,
+      totalRevenues,
+      monthlyRevenues,
+      recentRevenues,
       monthlyExpensesByCategory: monthlyExpensesByCategoryFormatted,
       recentExpenses,
     };
