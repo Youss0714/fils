@@ -1118,12 +1118,12 @@ export class DatabaseStorage implements IStorage {
       ))
       .groupBy(expenseCategories.name, expenseCategories.id);
 
-    // Get imprest fund allocations for each category based on expenses linked to imprest funds
+    // Get imprest fund allocations for each category - using MAX to avoid counting the same fund multiple times
     const imprestAllocationByCategory = await db
       .select({
         categoryId: expenseCategories.id,
         category: expenseCategories.name,
-        allocatedAmount: sum(imprestFunds.initialAmount),
+        allocatedAmount: sql<string>`MAX(${imprestFunds.initialAmount})`,
       })
       .from(expenses)
       .leftJoin(expenseCategories, eq(expenses.categoryId, expenseCategories.id))
@@ -1133,7 +1133,7 @@ export class DatabaseStorage implements IStorage {
         isNotNull(expenses.imprestId),
         eq(imprestFunds.status, "active")
       ))
-      .groupBy(expenseCategories.id, expenseCategories.name);
+      .groupBy(expenseCategories.id, expenseCategories.name, imprestFunds.id);
 
     const monthlyExpensesByCategoryFormatted = monthlyExpensesByCategory.map(row => {
       const allocation = imprestAllocationByCategory.find(alloc => 
