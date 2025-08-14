@@ -357,7 +357,7 @@ export function RevenueManager() {
               <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
                 <DialogHeader>
                   <DialogTitle>
-                    {editingRevenu ? 'Modifier le Revenu' : 'Nouveau Revenu'}
+                    {editingRevenue ? 'Modifier le Revenu' : 'Nouveau Revenu'}
                   </DialogTitle>
                 </DialogHeader>
                 <Form {...revenueForm}>
