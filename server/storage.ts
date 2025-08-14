@@ -58,7 +58,7 @@ import {
 
 } from "@shared/schema";
 import { db } from "./db";
-import { eq, desc, and, sum, count, sql, like, or, gte, lte, isNotNull } from "drizzle-orm";
+import { eq, desc, and, sum, count, sql, like, or, gte, lte, isNotNull, ne } from "drizzle-orm";
 
 export interface IStorage {
   // User operations
@@ -1068,11 +1068,14 @@ export class DatabaseStorage implements IStorage {
     const now = new Date();
     const thisMonth = new Date(now.getFullYear(), now.getMonth(), 1);
     
-    // Total expenses amount
+    // Total expenses amount (excluding rejected expenses)
     const totalExpensesResult = await db
       .select({ total: sum(expenses.amount) })
       .from(expenses)
-      .where(eq(expenses.userId, userId));
+      .where(and(
+        eq(expenses.userId, userId),
+        ne(expenses.status, "rejected")
+      ));
     
     const totalExpenses = parseFloat(totalExpensesResult[0]?.total || "0");
 
@@ -1119,7 +1122,8 @@ export class DatabaseStorage implements IStorage {
       .leftJoin(expenseCategories, eq(expenses.categoryId, expenseCategories.id))
       .where(and(
         eq(expenses.userId, userId),
-        sql`${expenses.expenseDate} >= ${thisMonth.toISOString()}`
+        sql`${expenses.expenseDate} >= ${thisMonth.toISOString()}`,
+        ne(expenses.status, "rejected")
       ))
       .groupBy(expenseCategories.name, expenseCategories.id);
 
