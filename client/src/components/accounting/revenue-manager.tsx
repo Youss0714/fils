@@ -164,6 +164,7 @@ export function RevenueManager() {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['/api/accounting/revenues'] });
+      queryClient.invalidateQueries({ queryKey: ['/api/accounting/stats'] });
       setIsRevenueDialogOpen(false);
       revenueForm.reset();
       setEditingRevenue(null);
@@ -187,6 +188,7 @@ export function RevenueManager() {
     mutationFn: (id: number) => apiRequest('DELETE', `/api/accounting/revenues/${id}`),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['/api/accounting/revenues'] });
+      queryClient.invalidateQueries({ queryKey: ['/api/accounting/stats'] });
       toast({
         title: 'Revenu supprimé',
         description: 'Le revenu a été supprimé avec succès.',
