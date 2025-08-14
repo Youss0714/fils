@@ -395,7 +395,7 @@ export function RevenueManager() {
                         <FormItem>
                           <FormLabel>Montant (FCFA)</FormLabel>
                           <FormControl>
-                            <Input {...field} type="number" step="0.01" data-testid="input-revenue-amount" />
+                            <Input {...field} type="number" step="0.01" min="0" data-testid="input-revenue-amount" />
                           </FormControl>
                           <FormMessage />
                         </FormItem>

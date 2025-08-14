@@ -190,7 +190,7 @@ export function ImprestManager() {
                     <FormItem>
                       <FormLabel>Montant initial (FCFA)</FormLabel>
                       <FormControl>
-                        <Input type="number" placeholder="100000" {...field} />
+                        <Input type="number" min="0" step="0.01" placeholder="100000" {...field} />
                       </FormControl>
                       <FormMessage />
                     </FormItem>
@@ -410,7 +410,7 @@ export function ImprestManager() {
                             <FormItem>
                               <FormLabel>Montant (FCFA)</FormLabel>
                               <FormControl>
-                                <Input type="number" placeholder="25000" {...field} />
+                                <Input type="number" min="0" step="0.01" placeholder="25000" {...field} />
                               </FormControl>
                               <FormMessage />
                             </FormItem>
