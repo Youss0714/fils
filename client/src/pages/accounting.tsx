@@ -22,6 +22,7 @@ interface AccountingStats {
   totalRevenues: number;
   monthlyRevenues: number;
   recentRevenues: number;
+  netResult: number; // Résultat net (Revenus - Dépenses)
   monthlyExpensesByCategory: { category: string; amount: number; allocatedAmount: number }[];
   recentExpenses: any[];
 }
@@ -59,7 +60,7 @@ export default function AccountingPage() {
       </div>
 
       {/* Statistics Cards */}
-      <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-5">
+      <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-6">
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
             <CardTitle className="text-sm font-medium">Revenus totaux</CardTitle>
@@ -127,6 +128,25 @@ export default function AccountingPage() {
             </div>
             <p className="text-xs text-muted-foreground">
               {stats?.activeImprestFunds || 0} fonds actifs
+            </p>
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+            <CardTitle className="text-sm font-medium">Résultat Net</CardTitle>
+            {(stats?.netResult || 0) >= 0 ? (
+              <TrendingUp className="h-4 w-4 text-green-600" />
+            ) : (
+              <TrendingDown className="h-4 w-4 text-red-600" />
+            )}
+          </CardHeader>
+          <CardContent>
+            <div className={`text-2xl font-bold ${(stats?.netResult || 0) >= 0 ? 'text-green-600' : 'text-red-600'}`}>
+              {stats?.netResult?.toLocaleString('fr-FR')} FCFA
+            </div>
+            <p className="text-xs text-muted-foreground">
+              {(stats?.netResult || 0) >= 0 ? 'Bénéfice' : 'Perte'} (Revenus - Dépenses)
             </p>
           </CardContent>
         </Card>

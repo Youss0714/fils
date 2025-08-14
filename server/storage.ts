@@ -165,7 +165,11 @@ export interface IStorage {
     approvedExpenses: number;
     totalImprestFunds: number;
     activeImprestFunds: number;
-    monthlyExpensesByCategory: { category: string; amount: number }[];
+    totalRevenues: number;
+    monthlyRevenues: number;
+    recentRevenues: number;
+    netResult: number;
+    monthlyExpensesByCategory: { category: string; amount: number; allocatedAmount: number }[];
     recentExpenses: (Expense & { category: ExpenseCategory })[];
   }>;
 
@@ -1057,7 +1061,8 @@ export class DatabaseStorage implements IStorage {
     totalRevenues: number;
     monthlyRevenues: number;
     recentRevenues: number;
-    monthlyExpensesByCategory: { category: string; amount: number }[];
+    netResult: number;
+    monthlyExpensesByCategory: { category: string; amount: number; allocatedAmount: number }[];
     recentExpenses: (Expense & { category: ExpenseCategory })[];
   }> {
     const now = new Date();
@@ -1191,6 +1196,9 @@ export class DatabaseStorage implements IStorage {
     
     const recentRevenues = recentRevenuesResult[0]?.count || 0;
 
+    // Calculate net result (Revenues - Expenses)
+    const netResult = totalRevenues - totalExpenses;
+
     return {
       totalExpenses,
       pendingExpenses,
@@ -1200,6 +1208,7 @@ export class DatabaseStorage implements IStorage {
       totalRevenues,
       monthlyRevenues,
       recentRevenues,
+      netResult,
       monthlyExpensesByCategory: monthlyExpensesByCategoryFormatted,
       recentExpenses,
     };

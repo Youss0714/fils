@@ -27,7 +27,13 @@ export function ReportsManager() {
     queryKey: ["/api/accounting/reports"],
   });
 
-  const { data: stats } = useQuery({
+  const { data: stats } = useQuery<{
+    totalExpenses: number;
+    totalRevenues: number;
+    netResult: number;
+    monthlyRevenues: number;
+    monthlyExpensesByCategory: Array<{category: string; amount: number}>;
+  }>({
     queryKey: ["/api/accounting/stats"],
   });
 
@@ -154,6 +160,43 @@ export function ReportsManager() {
 
   return (
     <div className="space-y-6">
+      {/* Résultat Net Card */}
+      <Card className="border-2">
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2">
+            <BarChart3 className="h-5 w-5" />
+            Résultat Net de l'Entreprise
+          </CardTitle>
+          <CardDescription>
+            Différence entre les revenus totaux et les dépenses totales
+          </CardDescription>
+        </CardHeader>
+        <CardContent>
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+            <div className="text-center p-4 bg-green-50 dark:bg-green-900/20 rounded-lg">
+              <div className="text-sm text-green-600 dark:text-green-400 font-medium mb-1">Revenus Totaux</div>
+              <div className="text-2xl font-bold text-green-700 dark:text-green-300">
+                {stats?.totalRevenues?.toLocaleString('fr-FR') || '0'} FCFA
+              </div>
+            </div>
+            <div className="text-center p-4 bg-red-50 dark:bg-red-900/20 rounded-lg">
+              <div className="text-sm text-red-600 dark:text-red-400 font-medium mb-1">Dépenses Totales</div>
+              <div className="text-2xl font-bold text-red-700 dark:text-red-300">
+                {stats?.totalExpenses?.toLocaleString('fr-FR') || '0'} FCFA
+              </div>
+            </div>
+            <div className={`text-center p-4 rounded-lg ${(stats?.netResult || 0) >= 0 ? 'bg-blue-50 dark:bg-blue-900/20' : 'bg-orange-50 dark:bg-orange-900/20'}`}>
+              <div className={`text-sm font-medium mb-1 ${(stats?.netResult || 0) >= 0 ? 'text-blue-600 dark:text-blue-400' : 'text-orange-600 dark:text-orange-400'}`}>
+                {(stats?.netResult || 0) >= 0 ? 'Bénéfice Net' : 'Perte Nette'}
+              </div>
+              <div className={`text-2xl font-bold ${(stats?.netResult || 0) >= 0 ? 'text-blue-700 dark:text-blue-300' : 'text-orange-700 dark:text-orange-300'}`}>
+                {Math.abs(stats?.netResult || 0)?.toLocaleString('fr-FR')} FCFA
+              </div>
+            </div>
+          </div>
+        </CardContent>
+      </Card>
+
       <div className="flex items-center justify-between">
         <div>
           <h2 className="text-2xl font-bold tracking-tight">Rapports comptables</h2>
