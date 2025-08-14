@@ -58,7 +58,7 @@ import {
 
 } from "@shared/schema";
 import { db } from "./db";
-import { eq, desc, and, sum, count, sql, like, or, gte, lte } from "drizzle-orm";
+import { eq, desc, and, sum, count, sql, like, or, gte, lte, isNotNull } from "drizzle-orm";
 
 export interface IStorage {
   // User operations
@@ -1130,7 +1130,7 @@ export class DatabaseStorage implements IStorage {
       .leftJoin(imprestFunds, eq(expenses.imprestId, imprestFunds.id))
       .where(and(
         eq(expenses.userId, userId),
-        sql`${expenses.imprestId} IS NOT NULL`,
+        isNotNull(expenses.imprestId),
         eq(imprestFunds.status, "active")
       ))
       .groupBy(expenseCategories.id, expenseCategories.name);
@@ -1256,7 +1256,7 @@ export class DatabaseStorage implements IStorage {
       .update(cashBookEntries)
       .set({
         ...updateData,
-        updatedAt: new Date().toISOString(),
+        updatedAt: new Date(),
       })
       .where(and(eq(cashBookEntries.id, id), eq(cashBookEntries.userId, userId)))
       .returning();
@@ -1323,7 +1323,7 @@ export class DatabaseStorage implements IStorage {
       .update(pettyCashEntries)
       .set({
         ...updateData,
-        updatedAt: new Date().toISOString(),
+        updatedAt: new Date(),
       })
       .where(and(eq(pettyCashEntries.id, id), eq(pettyCashEntries.userId, userId)))
       .returning();
