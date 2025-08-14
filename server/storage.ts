@@ -1103,11 +1103,12 @@ export class DatabaseStorage implements IStorage {
     
     const activeImprestFunds = activeImprestResult[0]?.count || 0;
 
-    // Monthly expenses by category
+    // Monthly expenses by category with imprest fund allocation
     const monthlyExpensesByCategory = await db
       .select({
         category: expenseCategories.name,
-        amount: sum(expenses.amount),
+        categoryId: expenseCategories.id,
+        expenseAmount: sum(expenses.amount),
       })
       .from(expenses)
       .leftJoin(expenseCategories, eq(expenses.categoryId, expenseCategories.id))
@@ -1115,12 +1116,34 @@ export class DatabaseStorage implements IStorage {
         eq(expenses.userId, userId),
         sql`${expenses.expenseDate} >= ${thisMonth.toISOString()}`
       ))
-      .groupBy(expenseCategories.name);
+      .groupBy(expenseCategories.name, expenseCategories.id);
 
-    const monthlyExpensesByCategoryFormatted = monthlyExpensesByCategory.map(row => ({
-      category: row.category || 'Sans catégorie',
-      amount: parseFloat(row.amount || "0"),
-    }));
+    // Get imprest fund allocations for each category
+    const imprestAllocationByCategory = await db
+      .select({
+        categoryId: expenseCategories.id,
+        category: expenseCategories.name,
+        allocatedAmount: sum(imprestFunds.initialAmount),
+      })
+      .from(imprestFunds)
+      .leftJoin(expenses, eq(expenses.imprestId, imprestFunds.id))
+      .leftJoin(expenseCategories, eq(expenses.categoryId, expenseCategories.id))
+      .where(and(
+        eq(imprestFunds.userId, userId),
+        eq(imprestFunds.status, "active")
+      ))
+      .groupBy(expenseCategories.id, expenseCategories.name);
+
+    const monthlyExpensesByCategoryFormatted = monthlyExpensesByCategory.map(row => {
+      const allocation = imprestAllocationByCategory.find(alloc => 
+        alloc.categoryId === row.categoryId
+      );
+      return {
+        category: row.category || 'Sans catégorie',
+        amount: parseFloat(row.expenseAmount || "0"),
+        allocatedAmount: parseFloat(allocation?.allocatedAmount || "0"),
+      };
+    });
 
     // Recent expenses
     const recentExpensesResult = await db

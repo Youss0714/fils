@@ -377,15 +377,14 @@ export function ReportsManager() {
           <CardContent>
             <div className="space-y-3">
               {stats.monthlyExpensesByCategory.map((category: any, index: number) => {
-                const total = stats.monthlyExpensesByCategory.reduce((sum: number, cat: any) => sum + cat.amount, 0);
-                const percentage = total > 0 ? (category.amount / total) * 100 : 0;
+                const percentage = category.allocatedAmount > 0 ? (category.amount / category.allocatedAmount) * 100 : 0;
                 
                 return (
                   <div key={index} className="space-y-2">
                     <div className="flex justify-between text-sm">
                       <span className="font-medium">{category.category}</span>
                       <span className="text-muted-foreground">
-                        {category.amount.toLocaleString('fr-FR')} FCFA ({percentage.toFixed(1)}%)
+                        {category.amount.toLocaleString('fr-FR')} FCFA / {category.allocatedAmount.toLocaleString('fr-FR')} FCFA ({percentage.toFixed(1)}%)
                       </span>
                     </div>
                     <div className="w-full bg-muted rounded-full h-2">
