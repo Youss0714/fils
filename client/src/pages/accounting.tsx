@@ -178,24 +178,34 @@ export default function AccountingPage() {
       {stats?.monthlyExpensesByCategory && stats.monthlyExpensesByCategory.length > 0 && (
         <Card>
           <CardHeader>
-            <CardTitle>Dépenses par catégorie (ce mois)</CardTitle>
+            <CardTitle>Aperçu des dépenses par catégorie</CardTitle>
             <CardDescription>
-              Répartition de vos dépenses mensuelles
+              Répartition des dépenses du mois en cours
             </CardDescription>
           </CardHeader>
           <CardContent>
             <div className="space-y-4">
-              {stats.monthlyExpensesByCategory.map((item: any, index: number) => (
-                <div key={index} className="flex items-center justify-between">
-                  <div className="flex items-center space-x-2">
-                    <div className="w-3 h-3 rounded-full bg-primary"></div>
-                    <span className="text-sm font-medium">{item.category}</span>
+              {stats.monthlyExpensesByCategory.map((item: any, index: number) => {
+                const total = stats.monthlyExpensesByCategory.reduce((sum: number, cat: any) => sum + cat.amount, 0);
+                const percentage = total > 0 ? (item.amount / total) * 100 : 0;
+                
+                return (
+                  <div key={index} className="space-y-2">
+                    <div className="flex justify-between text-sm">
+                      <span className="font-medium">{item.category}</span>
+                      <span className="text-muted-foreground">
+                        {item.amount.toLocaleString('fr-FR')} FCFA ({percentage.toFixed(1)}%)
+                      </span>
+                    </div>
+                    <div className="w-full bg-muted rounded-full h-2">
+                      <div 
+                        className="bg-primary h-2 rounded-full transition-all" 
+                        style={{ width: `${percentage}%` }}
+                      />
+                    </div>
                   </div>
-                  <span className="text-sm text-muted-foreground">
-                    {item.amount.toLocaleString('fr-FR')} FCFA
-                  </span>
-                </div>
-              ))}
+                );
+              })}
             </div>
           </CardContent>
         </Card>
