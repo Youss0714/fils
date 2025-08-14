@@ -40,7 +40,7 @@ Preferred communication style: Simple, everyday language.
 - **User Profile**: Comprehensive profile editing for personalized contact information on invoices.
 - **PDF Generation**: Utilizes jsPDF and html2canvas for robust PDF export.
 - **Print Functionality**: Includes print-only CSS styles.
-- **Extended Accounting System**: Complete accounting module with Main Cash Book, Petty Cash management, Transaction Journal, and comprehensive financial reporting, including "Résultat Net" calculation.
+- **Extended Accounting System**: Complete accounting module with Main Cash Book, Petty Cash management, Transaction Journal, comprehensive financial reporting, "Résultat Net" calculation, and proper exclusion of rejected expenses from totals.
 - **Advanced Financial Operations**: Automated transaction tracking, approval workflows, reconciliation features, and real-time financial dashboards.
 - **Licensing System**: Full license management with activation tracking, admin API, and web interfaces.
 - **Chart of Accounts**: Central accounting system integrated with expenses, ensuring proper financial transaction classification.
