@@ -143,6 +143,7 @@ export const expenses = pgTable("expenses", {
   description: text("description").notNull(),
   amount: decimal("amount", { precision: 10, scale: 2 }).notNull(),
   categoryId: integer("category_id").notNull().references(() => expenseCategories.id),
+  accountId: integer("account_id").references(() => chartOfAccounts.id), // Lien vers le plan comptable
   expenseDate: timestamp("expense_date").notNull(),
   paymentMethod: varchar("payment_method", { length: 50 }).notNull(), // cash, bank_transfer, check, card
   status: varchar("status", { length: 50 }).notNull().default("pending"), // pending, approved, paid, rejected
@@ -253,6 +254,20 @@ export const transactionJournal = pgTable("transaction_journal", {
   createdBy: varchar("created_by").notNull().references(() => users.id),
 });
 
+// Chart of Accounts - Plan comptable général  
+export const chartOfAccounts = pgTable("chart_of_accounts", {
+  id: serial("id").primaryKey(),
+  code: varchar("code", { length: 20 }).notNull(),
+  name: varchar("name", { length: 255 }).notNull(),
+  accountType: varchar("account_type", { length: 50 }).notNull(), // asset, liability, equity, revenue, expense
+  parentCode: varchar("parent_code", { length: 20 }),
+  isActive: boolean("is_active").default(true),
+  description: text("description"),
+  userId: varchar("user_id").notNull().references(() => users.id),
+  createdAt: timestamp("created_at").defaultNow(),
+  updatedAt: timestamp("updated_at").defaultNow(),
+});
+
 // Revenue Categories - Catégories de revenus
 export const revenueCategories = pgTable("revenue_categories", {
   id: serial("id").primaryKey(),
@@ -295,6 +310,7 @@ export const usersRelations = relations(users, ({ many }) => ({
   transactionJournal: many(transactionJournal),
   revenueCategories: many(revenueCategories),
   revenues: many(revenues),
+  chartOfAccounts: many(chartOfAccounts),
 }));
 
 export const licensesRelations = relations(licenses, ({ }) => ({}));
@@ -385,7 +401,10 @@ export const expensesRelations = relations(expenses, ({ one }) => ({
     fields: [expenses.categoryId],
     references: [expenseCategories.id],
   }),
-
+  account: one(chartOfAccounts, {
+    fields: [expenses.accountId],
+    references: [chartOfAccounts.id],
+  }),
   imprestFund: one(imprestFunds, {
     fields: [expenses.imprestId],
     references: [imprestFunds.id],
@@ -478,6 +497,15 @@ export const revenuesRelations = relations(revenues, ({ one }) => ({
     fields: [revenues.categoryId],
     references: [revenueCategories.id],
   }),
+}));
+
+// Chart of accounts relations
+export const chartOfAccountsRelations = relations(chartOfAccounts, ({ one, many }) => ({
+  user: one(users, {
+    fields: [chartOfAccounts.userId],
+    references: [users.id],
+  }),
+  expenses: many(expenses),
 }));
 
 
@@ -756,6 +784,13 @@ export const insertRevenueSchema = createInsertSchema(revenues).omit({
     { message: "Le montant doit être supérieur à 0" }
   ),
   revenueDate: z.string().transform(val => new Date(val)),
+});
+
+// Chart of accounts insert schema
+export const insertChartOfAccountsSchema = createInsertSchema(chartOfAccounts).omit({
+  id: true,
+  createdAt: true,
+  updatedAt: true,
 });
 
 // Types
