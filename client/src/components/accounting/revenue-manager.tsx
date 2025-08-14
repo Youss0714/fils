@@ -231,6 +231,8 @@ export function RevenueManager() {
   };
 
   const onCategorySubmit = (data: z.infer<typeof insertRevenueCategorySchema>) => {
+    console.log('Tentative de création de catégorie:', data);
+    console.log('Form errors:', categoryForm.formState.errors);
     categoryMutation.mutate(data);
   };
 
