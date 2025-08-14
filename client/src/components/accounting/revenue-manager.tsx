@@ -231,12 +231,11 @@ export function RevenueManager() {
   };
 
   const onCategorySubmit = (data: z.infer<typeof insertRevenueCategorySchema>) => {
-    console.log('Tentative de création de catégorie:', data);
-    console.log('Form errors:', categoryForm.formState.errors);
     categoryMutation.mutate(data);
   };
 
   const onRevenueSubmit = (data: z.infer<typeof revenueFormSchema>) => {
+    console.log('Tentative de création de revenu:', data);
     revenueMutation.mutate(data);
   };
 
@@ -363,7 +362,18 @@ export function RevenueManager() {
                   </DialogTitle>
                 </DialogHeader>
                 <Form {...revenueForm}>
-                  <form onSubmit={revenueForm.handleSubmit(onRevenueSubmit)} className="space-y-6 p-4">
+                  <form onSubmit={(e) => {
+                    e.preventDefault();
+                    console.log("Revenue form submitted");
+                    const values = revenueForm.getValues();
+                    console.log("Revenue form values:", values);
+                    console.log("Revenue form errors:", revenueForm.formState.errors);
+                    if (values.description && values.amount && values.categoryId) {
+                      onRevenueSubmit(values);
+                    } else {
+                      console.log("Validation failed - missing required fields");
+                    }
+                  }} className="space-y-6 p-4">
                     <FormField
                       control={revenueForm.control}
                       name="description"
@@ -501,6 +511,7 @@ export function RevenueManager() {
                         type="submit" 
                         disabled={revenueMutation.isPending}
                         data-testid="button-save-revenue"
+                        onClick={() => console.log("Revenue button clicked directly")}
                       >
                         {revenueMutation.isPending ? 'Sauvegarde...' : (editingRevenue ? 'Modifier' : 'Créer')}
                       </Button>
