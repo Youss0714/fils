@@ -13,7 +13,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Pagination, PaginationContent, PaginationItem, PaginationLink, PaginationNext, PaginationPrevious } from "@/components/ui/pagination";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { Plus, Edit, Trash2, Check, X, Eye, DollarSign, Printer, Download, Calendar, Filter } from "lucide-react";
+import { Plus, Edit, Trash2, Check, X, Eye, DollarSign, Printer, Download, Calendar, Filter, FileDown } from "lucide-react";
 import { ExpensePDF } from "./expense-pdf";
 import { useToast } from "@/hooks/use-toast";
 import { apiRequest } from "@/lib/queryClient";
@@ -387,6 +387,68 @@ export function ExpenseManager() {
     }
   };
 
+  // Télécharger toutes les dépenses en CSV
+  const handleDownloadCSV = () => {
+    if (expenses.length === 0) {
+      toast({
+        title: "Aucune dépense",
+        description: "Il n'y a aucune dépense à exporter.",
+        variant: "destructive"
+      });
+      return;
+    }
+
+    // En-têtes CSV
+    const headers = [
+      'Référence',
+      'Date',
+      'Description', 
+      'Catégorie',
+      'Mode de paiement',
+      'Montant (FCFA)',
+      'Statut',
+      'Notes'
+    ];
+
+    // Convertir les données en CSV
+    const csvData = expenses.map((expense: any) => {
+      const paymentMethod = PAYMENT_METHODS.find(p => p.value === expense.paymentMethod);
+      const status = EXPENSE_STATUS.find(s => s.value === expense.status);
+      return [
+        expense.reference || '',
+        new Date(expense.expenseDate).toLocaleDateString('fr-FR'),
+        expense.description || '',
+        expense.category?.name || 'Sans catégorie',
+        paymentMethod?.label || expense.paymentMethod,
+        parseFloat(expense.amount).toLocaleString('fr-FR'),
+        status?.label || expense.status,
+        expense.notes || ''
+      ];
+    });
+
+    // Créer le contenu CSV
+    const csvContent = [
+      headers.join(','),
+      ...csvData.map(row => row.map(field => `"${field}"`).join(','))
+    ].join('\n');
+
+    // Télécharger le fichier
+    const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+    const link = document.createElement('a');
+    const url = URL.createObjectURL(blob);
+    link.setAttribute('href', url);
+    link.setAttribute('download', `depenses_${new Date().toISOString().split('T')[0]}.csv`);
+    link.style.visibility = 'hidden';
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+
+    toast({
+      title: "Export réussi",
+      description: `${expenses.length} dépenses exportées en CSV.`
+    });
+  };
+
   if (expensesLoading) {
     return (
       <div className="flex items-center justify-center h-32">
@@ -412,6 +474,15 @@ export function ExpenseManager() {
           >
             <Filter className="mr-2 h-4 w-4" />
             Filtrer par période
+          </Button>
+          <Button 
+            variant="outline" 
+            onClick={handleDownloadCSV}
+            disabled={expenses.length === 0}
+            data-testid="button-download-expenses-csv"
+          >
+            <FileDown className="mr-2 h-4 w-4" />
+            Télécharger CSV
           </Button>
           <Dialog open={isCategoryDialogOpen} onOpenChange={setIsCategoryDialogOpen}>
             <DialogTrigger asChild>

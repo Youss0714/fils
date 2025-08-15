@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { Plus, Trash2, Edit, Eye, Calendar, DollarSign, FileText, Building2, CreditCard, Printer, Filter } from 'lucide-react';
+import { Plus, Trash2, Edit, Eye, Calendar, DollarSign, FileText, Building2, CreditCard, Printer, Filter, FileDown } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -360,6 +360,66 @@ export function RevenueManager() {
 
 
 
+  // Télécharger tous les revenus en CSV
+  const handleDownloadCSV = () => {
+    if (revenues.length === 0) {
+      toast({
+        title: "Aucun revenu",
+        description: "Il n'y a aucun revenu à exporter.",
+        variant: "destructive"
+      });
+      return;
+    }
+
+    // En-têtes CSV
+    const headers = [
+      'Référence',
+      'Date',
+      'Description',
+      'Catégorie', 
+      'Mode de paiement',
+      'Montant (FCFA)',
+      'Source',
+      'Notes'
+    ];
+
+    // Convertir les données en CSV
+    const csvData = revenues.map((revenue: any) => {
+      return [
+        revenue.reference || '',
+        format(new Date(revenue.revenueDate), 'dd/MM/yyyy', { locale: fr }),
+        revenue.description || '',
+        revenue.category?.name || 'Sans catégorie',
+        revenue.paymentMethod.replace('_', ' '),
+        parseFloat(revenue.amount).toLocaleString('fr-FR'),
+        revenue.source || '',
+        revenue.notes || ''
+      ];
+    });
+
+    // Créer le contenu CSV
+    const csvContent = [
+      headers.join(','),
+      ...csvData.map(row => row.map(field => `"${field}"`).join(','))
+    ].join('\n');
+
+    // Télécharger le fichier
+    const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+    const link = document.createElement('a');
+    const url = URL.createObjectURL(blob);
+    link.setAttribute('href', url);
+    link.setAttribute('download', `revenus_${new Date().toISOString().split('T')[0]}.csv`);
+    link.style.visibility = 'hidden';
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+
+    toast({
+      title: "Export réussi",
+      description: `${revenues.length} revenus exportés en CSV.`
+    });
+  };
+
   return (
     <div className="space-y-6">
       {/* Navigation par onglets */}
@@ -403,6 +463,15 @@ export function RevenueManager() {
               >
                 <Filter className="mr-2 h-4 w-4" />
                 Filtrer par période
+              </Button>
+              <Button 
+                variant="outline" 
+                onClick={handleDownloadCSV}
+                disabled={revenues.length === 0}
+                data-testid="button-download-revenues-csv"
+              >
+                <FileDown className="mr-2 h-4 w-4" />
+                Télécharger CSV
               </Button>
               <Dialog open={isRevenueDialogOpen} onOpenChange={setIsRevenueDialogOpen}>
               <DialogTrigger asChild>
