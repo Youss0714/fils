@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { Plus, Trash2, Edit, Eye, Calendar, DollarSign, FileText, Building2, CreditCard, Printer } from 'lucide-react';
+import { Plus, Trash2, Edit, Eye, Calendar, DollarSign, FileText, Building2, CreditCard, Printer, Filter } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -57,6 +57,9 @@ export function RevenueManager() {
   const [editingRevenue, setEditingRevenue] = useState<Revenue | null>(null);
   const [selectedRevenue, setSelectedRevenue] = useState<Revenue | null>(null);
   const [currentPage, setCurrentPage] = useState(1);
+  const [startDate, setStartDate] = useState<string>("");
+  const [endDate, setEndDate] = useState<string>("");
+  const [showDateFilter, setShowDateFilter] = useState(false);
   const itemsPerPage = 5;
 
   const queryClient = useQueryClient();
@@ -68,7 +71,17 @@ export function RevenueManager() {
 
   // Récupérer les revenus
   const { data: revenues = [], isLoading: revenuesLoading } = useQuery<(Revenue & { category: RevenueCategory })[]>({
-    queryKey: ['/api/accounting/revenues'],
+    queryKey: ['/api/accounting/revenues', startDate, endDate],
+    queryFn: () => {
+      const params = new URLSearchParams();
+      if (startDate && endDate) {
+        params.append('startDate', startDate);
+        params.append('endDate', endDate);
+      }
+      return fetch(`/api/accounting/revenues?${params.toString()}`, {
+        credentials: 'include'
+      }).then(res => res.json());
+    },
   });
 
   // Calculs de pagination
@@ -382,7 +395,16 @@ export function RevenueManager() {
         <div className="space-y-4">
           <div className="flex justify-between items-center">
             <h3 className="text-lg font-semibold">Gestion des Revenus</h3>
-            <Dialog open={isRevenueDialogOpen} onOpenChange={setIsRevenueDialogOpen}>
+            <div className="flex gap-2">
+              <Button 
+                variant="outline" 
+                onClick={() => setShowDateFilter(!showDateFilter)}
+                data-testid="button-toggle-revenue-date-filter"
+              >
+                <Filter className="mr-2 h-4 w-4" />
+                Filtrer par période
+              </Button>
+              <Dialog open={isRevenueDialogOpen} onOpenChange={setIsRevenueDialogOpen}>
               <DialogTrigger asChild>
                 <Button data-testid="button-create-revenue">
                   <Plus className="w-4 h-4 mr-2" />
@@ -554,7 +576,56 @@ export function RevenueManager() {
                 </Form>
               </DialogContent>
             </Dialog>
+            </div>
           </div>
+
+          {/* Filtre par période pour les revenus */}
+          {showDateFilter && (
+            <Card>
+              <CardContent className="p-4">
+                <div className="flex items-center gap-4">
+                  <div className="flex items-center gap-2">
+                    <Calendar className="h-4 w-4" />
+                    <Label htmlFor="revenue-start-date">Du :</Label>
+                    <Input
+                      id="revenue-start-date"
+                      type="date"
+                      value={startDate}
+                      onChange={(e) => setStartDate(e.target.value)}
+                      className="w-auto"
+                      data-testid="input-revenue-start-date"
+                    />
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <Label htmlFor="revenue-end-date">Au :</Label>
+                    <Input
+                      id="revenue-end-date"
+                      type="date"
+                      value={endDate}
+                      onChange={(e) => setEndDate(e.target.value)}
+                      className="w-auto"
+                      data-testid="input-revenue-end-date"
+                    />
+                  </div>
+                  <Button 
+                    variant="outline" 
+                    onClick={() => {
+                      setStartDate("");
+                      setEndDate("");
+                    }}
+                    data-testid="button-clear-revenue-filter"
+                  >
+                    Effacer
+                  </Button>
+                </div>
+                {startDate && endDate && (
+                  <p className="text-sm text-muted-foreground mt-2">
+                    Affichage des revenus du {new Date(startDate).toLocaleDateString('fr-FR')} au {new Date(endDate).toLocaleDateString('fr-FR')}
+                  </p>
+                )}
+              </CardContent>
+            </Card>
+          )}
 
           {revenuesLoading ? (
             <div className="text-center py-8">Chargement des revenus...</div>

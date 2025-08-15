@@ -613,7 +613,15 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.get("/api/accounting/expenses", isAuthenticated, async (req: any, res) => {
     try {
       const userId = req.user.id;
-      const expenses = await storage.getExpenses(userId);
+      const { startDate, endDate } = req.query;
+      
+      let expenses;
+      if (startDate && endDate) {
+        expenses = await storage.getExpensesByPeriod(userId, new Date(startDate as string), new Date(endDate as string));
+      } else {
+        expenses = await storage.getExpenses(userId);
+      }
+      
       res.json(expenses);
     } catch (error) {
       console.error("Error fetching expenses:", error);
@@ -1133,7 +1141,15 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.get("/api/accounting/revenues", isAuthenticated, async (req: any, res) => {
     try {
       const userId = req.user.id;
-      const revenues = await storage.getRevenues(userId);
+      const { startDate, endDate } = req.query;
+      
+      let revenues;
+      if (startDate && endDate) {
+        revenues = await storage.getRevenuesByPeriod(userId, new Date(startDate as string), new Date(endDate as string));
+      } else {
+        revenues = await storage.getRevenues(userId);
+      }
+      
       res.json(revenues);
     } catch (error) {
       console.error("Error fetching revenues:", error);

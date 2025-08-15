@@ -135,6 +135,7 @@ export interface IStorage {
 
   // Expenses
   getExpenses(userId: string): Promise<(Expense & { category: ExpenseCategory })[]>;
+  getExpensesByPeriod(userId: string, startDate: Date, endDate: Date): Promise<(Expense & { category: ExpenseCategory })[]>;
   getExpense(id: number, userId: string): Promise<(Expense & { category: ExpenseCategory }) | undefined>;
   createExpense(expense: InsertExpense): Promise<Expense>;
   updateExpense(id: number, expense: Partial<InsertExpense>, userId: string): Promise<Expense>;
@@ -206,6 +207,7 @@ export interface IStorage {
   deleteRevenueCategory(id: number, userId: string): Promise<void>;
 
   getRevenues(userId: string): Promise<(Revenue & { category: RevenueCategory })[]>;
+  getRevenuesByPeriod(userId: string, startDate: Date, endDate: Date): Promise<(Revenue & { category: RevenueCategory })[]>;
   getRevenue(id: number, userId: string): Promise<Revenue | undefined>;
   createRevenue(revenue: InsertRevenue): Promise<Revenue>;
   updateRevenue(id: number, revenue: Partial<InsertRevenue>, userId: string): Promise<Revenue>;
@@ -797,6 +799,38 @@ export class DatabaseStorage implements IStorage {
       .from(expenses)
       .leftJoin(expenseCategories, eq(expenses.categoryId, expenseCategories.id))
       .where(eq(expenses.userId, userId))
+      .orderBy(desc(expenses.createdAt));
+  }
+
+  async getExpensesByPeriod(userId: string, startDate: Date, endDate: Date): Promise<any[]> {
+    return await db
+      .select({
+        id: expenses.id,
+        reference: expenses.reference,
+        description: expenses.description,
+        amount: expenses.amount,
+        expenseDate: expenses.expenseDate,
+        paymentMethod: expenses.paymentMethod,
+        status: expenses.status,
+        receiptUrl: expenses.receiptUrl,
+        notes: expenses.notes,
+        imprestId: expenses.imprestId,
+        approvedBy: expenses.approvedBy,
+        approvedAt: expenses.approvedAt,
+        createdAt: expenses.createdAt,
+        category: {
+          id: expenseCategories.id,
+          name: expenseCategories.name,
+          isMajor: expenseCategories.isMajor,
+        },
+      })
+      .from(expenses)
+      .leftJoin(expenseCategories, eq(expenses.categoryId, expenseCategories.id))
+      .where(and(
+        eq(expenses.userId, userId),
+        gte(expenses.expenseDate, startDate),
+        lte(expenses.expenseDate, endDate)
+      ))
       .orderBy(desc(expenses.createdAt));
   }
 
@@ -1569,6 +1603,39 @@ export class DatabaseStorage implements IStorage {
       .from(revenues)
       .leftJoin(revenueCategories, eq(revenues.categoryId, revenueCategories.id))
       .where(eq(revenues.userId, userId))
+      .orderBy(desc(revenues.createdAt)) as (Revenue & { category: RevenueCategory })[];
+  }
+
+  async getRevenuesByPeriod(userId: string, startDate: Date, endDate: Date): Promise<(Revenue & { category: RevenueCategory })[]> {
+    return await db
+      .select({
+        id: revenues.id,
+        reference: revenues.reference,
+        description: revenues.description,
+        amount: revenues.amount,
+        categoryId: revenues.categoryId,
+        revenueDate: revenues.revenueDate,
+        paymentMethod: revenues.paymentMethod,
+        source: revenues.source,
+        receiptUrl: revenues.receiptUrl,
+        notes: revenues.notes,
+        userId: revenues.userId,
+        createdAt: revenues.createdAt,
+        category: {
+          id: revenueCategories.id,
+          name: revenueCategories.name,
+          description: revenueCategories.description,
+          userId: revenueCategories.userId,
+          createdAt: revenueCategories.createdAt,
+        },
+      })
+      .from(revenues)
+      .leftJoin(revenueCategories, eq(revenues.categoryId, revenueCategories.id))
+      .where(and(
+        eq(revenues.userId, userId),
+        gte(revenues.revenueDate, startDate),
+        lte(revenues.revenueDate, endDate)
+      ))
       .orderBy(desc(revenues.createdAt)) as (Revenue & { category: RevenueCategory })[];
   }
 

@@ -13,7 +13,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Pagination, PaginationContent, PaginationItem, PaginationLink, PaginationNext, PaginationPrevious } from "@/components/ui/pagination";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { Plus, Edit, Trash2, Check, X, Eye, DollarSign, Printer, Download } from "lucide-react";
+import { Plus, Edit, Trash2, Check, X, Eye, DollarSign, Printer, Download, Calendar, Filter } from "lucide-react";
 import { ExpensePDF } from "./expense-pdf";
 import { useToast } from "@/hooks/use-toast";
 import { apiRequest } from "@/lib/queryClient";
@@ -32,12 +32,25 @@ export function ExpenseManager() {
   const [isCategoryDialogOpen, setIsCategoryDialogOpen] = useState(false);
   const [currentPage, setCurrentPage] = useState(1);
   const [itemsPerPage] = useState(3);
+  const [startDate, setStartDate] = useState<string>("");
+  const [endDate, setEndDate] = useState<string>("");
+  const [showDateFilter, setShowDateFilter] = useState(false);
   const queryClient = useQueryClient();
   const { toast } = useToast();
 
   // Queries
   const { data: expenses = [], isLoading: expensesLoading } = useQuery<any[]>({
-    queryKey: ["/api/accounting/expenses"],
+    queryKey: ["/api/accounting/expenses", startDate, endDate],
+    queryFn: () => {
+      const params = new URLSearchParams();
+      if (startDate && endDate) {
+        params.append('startDate', startDate);
+        params.append('endDate', endDate);
+      }
+      return fetch(`/api/accounting/expenses?${params.toString()}`, {
+        credentials: 'include'
+      }).then(res => res.json());
+    },
   });
 
   const { data: categories = [] } = useQuery<any[]>({
@@ -392,6 +405,14 @@ export function ExpenseManager() {
           </p>
         </div>
         <div className="flex gap-2">
+          <Button 
+            variant="outline" 
+            onClick={() => setShowDateFilter(!showDateFilter)}
+            data-testid="button-toggle-date-filter"
+          >
+            <Filter className="mr-2 h-4 w-4" />
+            Filtrer par période
+          </Button>
           <Dialog open={isCategoryDialogOpen} onOpenChange={setIsCategoryDialogOpen}>
             <DialogTrigger asChild>
               <Button variant="outline">
@@ -697,6 +718,54 @@ export function ExpenseManager() {
           </Dialog>
         </div>
       </div>
+
+      {/* Filtre par période */}
+      {showDateFilter && (
+        <Card>
+          <CardContent className="p-4">
+            <div className="flex items-center gap-4">
+              <div className="flex items-center gap-2">
+                <Calendar className="h-4 w-4" />
+                <Label htmlFor="start-date">Du :</Label>
+                <Input
+                  id="start-date"
+                  type="date"
+                  value={startDate}
+                  onChange={(e) => setStartDate(e.target.value)}
+                  className="w-auto"
+                  data-testid="input-start-date"
+                />
+              </div>
+              <div className="flex items-center gap-2">
+                <Label htmlFor="end-date">Au :</Label>
+                <Input
+                  id="end-date"
+                  type="date"
+                  value={endDate}
+                  onChange={(e) => setEndDate(e.target.value)}
+                  className="w-auto"
+                  data-testid="input-end-date"
+                />
+              </div>
+              <Button 
+                variant="outline" 
+                onClick={() => {
+                  setStartDate("");
+                  setEndDate("");
+                }}
+                data-testid="button-clear-filter"
+              >
+                Effacer
+              </Button>
+            </div>
+            {startDate && endDate && (
+              <p className="text-sm text-muted-foreground mt-2">
+                Affichage des dépenses du {new Date(startDate).toLocaleDateString('fr-FR')} au {new Date(endDate).toLocaleDateString('fr-FR')}
+              </p>
+            )}
+          </CardContent>
+        </Card>
+      )}
 
       {/* Expenses List */}
       <Card>
