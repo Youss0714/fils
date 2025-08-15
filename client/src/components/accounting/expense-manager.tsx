@@ -164,10 +164,13 @@ export function ExpenseManager() {
 
   // Bulk print/download functions
   const handleBulkPrint = () => {
-    if (!expenses || expenses.length === 0) {
+    // Filtrer seulement les dépenses approuvées
+    const approvedExpenses = expenses.filter((expense: any) => expense.status === 'approved');
+    
+    if (!approvedExpenses || approvedExpenses.length === 0) {
       toast({
-        title: "Aucune dépense",
-        description: "Il n'y a aucune dépense à imprimer",
+        title: "Aucune dépense approuvée",
+        description: "Il n'y a aucune dépense approuvée à imprimer",
         variant: "destructive"
       });
       return;
@@ -176,7 +179,7 @@ export function ExpenseManager() {
     const printWindow = window.open('', '_blank');
     if (!printWindow) return;
 
-    const totalAmount = expenses.reduce((sum: number, expense: any) => sum + parseFloat(expense.amount), 0);
+    const totalAmount = approvedExpenses.reduce((sum: number, expense: any) => sum + parseFloat(expense.amount), 0);
     
     printWindow.document.write(`
       <!DOCTYPE html>
@@ -210,7 +213,7 @@ export function ExpenseManager() {
         </head>
         <body>
           <div class="header">
-            <h1>LISTE DES DÉPENSES</h1>
+            <h1>LISTE DES DÉPENSES APPROUVÉES</h1>
             <p>Généré le ${new Date().toLocaleDateString('fr-FR')}</p>
           </div>
 
@@ -223,7 +226,7 @@ export function ExpenseManager() {
               </tr>
             </thead>
             <tbody>
-              ${expenses.map((expense: any) => `
+              ${approvedExpenses.map((expense: any) => `
                 <tr>
                   <td>${new Date(expense.expenseDate).toLocaleDateString('fr-FR')}</td>
                   <td>${expense.description}</td>
@@ -237,7 +240,7 @@ export function ExpenseManager() {
             <div class="total">
               <p>TOTAL: ${totalAmount.toLocaleString('fr-FR', { useGrouping: true }).replace(/\s/g, ' ')} FCFA</p>
             </div>
-            <p><em>Nombre total de dépenses: ${expenses.length}</em></p>
+            <p><em>Nombre de dépenses approuvées: ${approvedExpenses.length}</em></p>
           </div>
         </body>
       </html>
@@ -249,10 +252,13 @@ export function ExpenseManager() {
   };
 
   const handleBulkDownload = async () => {
-    if (!expenses || expenses.length === 0) {
+    // Filtrer seulement les dépenses approuvées
+    const approvedExpenses = expenses.filter((expense: any) => expense.status === 'approved');
+    
+    if (!approvedExpenses || approvedExpenses.length === 0) {
       toast({
-        title: "Aucune dépense",
-        description: "Il n'y a aucune dépense à télécharger",
+        title: "Aucune dépense approuvée",
+        description: "Il n'y a aucune dépense approuvée à télécharger",
         variant: "destructive"
       });
       return;
@@ -266,12 +272,12 @@ export function ExpenseManager() {
       const pageWidth = pdf.internal.pageSize.getWidth();
       const pageHeight = pdf.internal.pageSize.getHeight();
       const margin = 20;
-      const totalAmount = expenses.reduce((sum: number, expense: any) => sum + parseFloat(expense.amount), 0);
+      const totalAmount = approvedExpenses.reduce((sum: number, expense: any) => sum + parseFloat(expense.amount), 0);
 
       // Header
       pdf.setFontSize(18);
       pdf.setFont('helvetica', 'bold');
-      pdf.text('RAPPORT DE DÉPENSES - AUDIT', pageWidth / 2, 30, { align: 'center' });
+      pdf.text('RAPPORT DE DÉPENSES APPROUVÉES - AUDIT', pageWidth / 2, 30, { align: 'center' });
       
       pdf.setFontSize(12);
       pdf.setFont('helvetica', 'normal');
@@ -296,13 +302,13 @@ export function ExpenseManager() {
       yPos += 20;
       pdf.setFontSize(14);
       pdf.setFont('helvetica', 'bold');
-      pdf.text(`Détail des dépenses (${expenses.length} dépense(s))`, margin, yPos);
+      pdf.text(`Détail des dépenses approuvées (${approvedExpenses.length} dépense(s))`, margin, yPos);
 
       yPos += 15;
       pdf.setFontSize(10);
       pdf.setFont('helvetica', 'normal');
 
-      for (const expense of expenses) {
+      for (const expense of approvedExpenses) {
         if (yPos > pageHeight - 40) {
           pdf.addPage();
           yPos = 30;
