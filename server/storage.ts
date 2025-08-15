@@ -173,6 +173,19 @@ export interface IStorage {
     monthlyExpensesByCategory: { category: string; amount: number; allocatedAmount: number }[];
     recentExpenses: (Expense & { category: ExpenseCategory })[];
   }>;
+  getAccountingStatsByPeriod(userId: string, startDate: Date, endDate: Date): Promise<{
+    totalExpenses: number;
+    pendingExpenses: number;
+    approvedExpenses: number;
+    totalImprestFunds: number;
+    activeImprestFunds: number;
+    totalRevenues: number;
+    monthlyRevenues: number;
+    recentRevenues: number;
+    netResult: number;
+    monthlyExpensesByCategory: { category: string; amount: number; allocatedAmount: number }[];
+    recentExpenses: (Expense & { category: ExpenseCategory })[];
+  }>;
 
   // Cash Book operations
   getCashBookEntries(userId: string): Promise<CashBookEntry[]>;
@@ -1249,6 +1262,167 @@ export class DatabaseStorage implements IStorage {
       netResult,
       monthlyExpensesByCategory: monthlyExpensesByCategoryFormatted,
       recentExpenses,
+    };
+  }
+
+  async getAccountingStatsByPeriod(userId: string, startDate: Date, endDate: Date): Promise<{
+    totalExpenses: number;
+    pendingExpenses: number;
+    approvedExpenses: number;
+    totalImprestFunds: number;
+    activeImprestFunds: number;
+    totalRevenues: number;
+    monthlyRevenues: number;
+    recentRevenues: number;
+    netResult: number;
+    monthlyExpensesByCategory: { category: string; amount: number; allocatedAmount: number }[];
+    recentExpenses: (Expense & { category: ExpenseCategory })[];
+  }> {
+    // Total expenses amount (excluding rejected expenses) for the period
+    const totalExpensesResult = await db
+      .select({ total: sum(expenses.amount) })
+      .from(expenses)
+      .where(and(
+        eq(expenses.userId, userId),
+        ne(expenses.status, "rejected"),
+        gte(expenses.expenseDate, startDate),
+        lte(expenses.expenseDate, endDate)
+      ));
+    
+    const totalExpenses = parseFloat(totalExpensesResult[0]?.total || "0");
+
+    // Pending expenses count for the period
+    const pendingExpensesResult = await db
+      .select({ count: count() })
+      .from(expenses)
+      .where(and(
+        eq(expenses.userId, userId), 
+        eq(expenses.status, "pending"),
+        gte(expenses.expenseDate, startDate),
+        lte(expenses.expenseDate, endDate)
+      ));
+    
+    const pendingExpenses = pendingExpensesResult[0]?.count || 0;
+
+    // Approved expenses count for the period
+    const approvedExpensesResult = await db
+      .select({ count: count() })
+      .from(expenses)
+      .where(and(
+        eq(expenses.userId, userId), 
+        eq(expenses.status, "approved"),
+        gte(expenses.expenseDate, startDate),
+        lte(expenses.expenseDate, endDate)
+      ));
+    
+    const approvedExpenses = approvedExpensesResult[0]?.count || 0;
+
+    // Total imprest funds amount (not filtered by period)
+    const totalImprestResult = await db
+      .select({ total: sum(imprestFunds.currentBalance) })
+      .from(imprestFunds)
+      .where(eq(imprestFunds.userId, userId));
+    
+    const totalImprestFunds = parseFloat(totalImprestResult[0]?.total || "0");
+
+    // Active imprest funds count (not filtered by period)
+    const activeImprestResult = await db
+      .select({ count: count() })
+      .from(imprestFunds)
+      .where(and(
+        eq(imprestFunds.userId, userId),
+        eq(imprestFunds.status, "active")
+      ));
+    
+    const activeImprestFunds = activeImprestResult[0]?.count || 0;
+
+    // Total revenues for the period
+    const totalRevenuesResult = await db
+      .select({ total: sum(revenues.amount) })
+      .from(revenues)
+      .where(and(
+        eq(revenues.userId, userId),
+        gte(revenues.revenueDate, startDate),
+        lte(revenues.revenueDate, endDate)
+      ));
+    
+    const totalRevenues = parseFloat(totalRevenuesResult[0]?.total || "0");
+
+    // Monthly revenues for the period
+    const monthlyRevenues = totalRevenues;
+
+    // Recent revenues for the period
+    const recentRevenues = totalRevenues;
+
+    // Monthly expenses by category for the period
+    const monthlyExpensesByCategoryResult = await db
+      .select({
+        category: expenseCategories.name,
+        amount: sum(expenses.amount),
+      })
+      .from(expenses)
+      .leftJoin(expenseCategories, eq(expenses.categoryId, expenseCategories.id))
+      .where(and(
+        eq(expenses.userId, userId),
+        ne(expenses.status, "rejected"),
+        gte(expenses.expenseDate, startDate),
+        lte(expenses.expenseDate, endDate)
+      ))
+      .groupBy(expenseCategories.name);
+
+    const monthlyExpensesByCategoryFormatted = monthlyExpensesByCategoryResult.map(row => ({
+      category: row.category || "Sans catégorie",
+      amount: parseFloat(row.amount || "0"),
+      allocatedAmount: 0,
+    }));
+
+    // Recent expenses for the period (limit to 5)
+    const recentExpensesResult = await db
+      .select({
+        id: expenses.id,
+        reference: expenses.reference,
+        description: expenses.description,
+        amount: expenses.amount,
+        expenseDate: expenses.expenseDate,
+        paymentMethod: expenses.paymentMethod,
+        status: expenses.status,
+        receiptUrl: expenses.receiptUrl,
+        notes: expenses.notes,
+        imprestId: expenses.imprestId,
+        approvedBy: expenses.approvedBy,
+        approvedAt: expenses.approvedAt,
+        createdAt: expenses.createdAt,
+        category: {
+          id: expenseCategories.id,
+          name: expenseCategories.name,
+          isMajor: expenseCategories.isMajor,
+        },
+      })
+      .from(expenses)
+      .leftJoin(expenseCategories, eq(expenses.categoryId, expenseCategories.id))
+      .where(and(
+        eq(expenses.userId, userId),
+        gte(expenses.expenseDate, startDate),
+        lte(expenses.expenseDate, endDate)
+      ))
+      .orderBy(desc(expenses.createdAt))
+      .limit(5) as (Expense & { category: ExpenseCategory })[];
+
+    // Calculate net result for the period
+    const netResult = totalRevenues - totalExpenses;
+
+    return {
+      totalExpenses,
+      pendingExpenses,
+      approvedExpenses,
+      totalImprestFunds,
+      activeImprestFunds,
+      totalRevenues,
+      monthlyRevenues,
+      recentRevenues,
+      netResult,
+      monthlyExpensesByCategory: monthlyExpensesByCategoryFormatted,
+      recentExpenses: recentExpensesResult,
     };
   }
 

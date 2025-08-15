@@ -839,7 +839,15 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.get("/api/accounting/stats", isAuthenticated, async (req: any, res) => {
     try {
       const userId = req.user.id;
-      const stats = await storage.getAccountingStats(userId);
+      const { startDate, endDate } = req.query;
+      
+      let stats;
+      if (startDate && endDate) {
+        stats = await storage.getAccountingStatsByPeriod(userId, new Date(startDate as string), new Date(endDate as string));
+      } else {
+        stats = await storage.getAccountingStats(userId);
+      }
+      
       res.json(stats);
     } catch (error) {
       console.error("Error fetching accounting stats:", error);

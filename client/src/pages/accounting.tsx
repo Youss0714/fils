@@ -3,9 +3,11 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
 import { Separator } from "@/components/ui/separator";
 import { useQuery } from "@tanstack/react-query";
-import { PlusCircle, TrendingUp, TrendingDown, DollarSign, FileText, Wallet, CreditCard } from "lucide-react";
+import { PlusCircle, TrendingUp, TrendingDown, DollarSign, FileText, Wallet, CreditCard, Calendar, Filter } from "lucide-react";
 import { ExpenseManager } from "../components/accounting/expense-manager";
 import { ImprestManager } from "../components/accounting/imprest-manager";
 import { ReportsManager } from "../components/accounting/reports-manager";
@@ -28,8 +30,22 @@ interface AccountingStats {
 }
 
 export default function AccountingPage() {
+  const [startDate, setStartDate] = useState<string>("");
+  const [endDate, setEndDate] = useState<string>("");
+  const [showDateFilter, setShowDateFilter] = useState(false);
+
   const { data: stats, isLoading: statsLoading } = useQuery<AccountingStats>({
-    queryKey: ["/api/accounting/stats"],
+    queryKey: ["/api/accounting/stats", startDate, endDate],
+    queryFn: () => {
+      const params = new URLSearchParams();
+      if (startDate && endDate) {
+        params.append('startDate', startDate);
+        params.append('endDate', endDate);
+      }
+      return fetch(`/api/accounting/stats?${params.toString()}`, {
+        credentials: 'include'
+      }).then(res => res.json());
+    },
   });
 
   const { data: expenses } = useQuery({
@@ -57,7 +73,63 @@ export default function AccountingPage() {
             Gérez vos finances, dépenses et avances en toute sécurité
           </p>
         </div>
+        <Button 
+          variant="outline" 
+          onClick={() => setShowDateFilter(!showDateFilter)}
+          data-testid="button-toggle-stats-date-filter"
+        >
+          <Filter className="mr-2 h-4 w-4" />
+          Filtrer par période
+        </Button>
       </div>
+
+      {/* Filtre par période pour les statistiques */}
+      {showDateFilter && (
+        <Card>
+          <CardContent className="p-4">
+            <div className="flex items-center gap-4">
+              <div className="flex items-center gap-2">
+                <Calendar className="h-4 w-4" />
+                <Label htmlFor="stats-start-date">Du :</Label>
+                <Input
+                  id="stats-start-date"
+                  type="date"
+                  value={startDate}
+                  onChange={(e) => setStartDate(e.target.value)}
+                  className="w-auto"
+                  data-testid="input-stats-start-date"
+                />
+              </div>
+              <div className="flex items-center gap-2">
+                <Label htmlFor="stats-end-date">Au :</Label>
+                <Input
+                  id="stats-end-date"
+                  type="date"
+                  value={endDate}
+                  onChange={(e) => setEndDate(e.target.value)}
+                  className="w-auto"
+                  data-testid="input-stats-end-date"
+                />
+              </div>
+              <Button 
+                variant="outline" 
+                onClick={() => {
+                  setStartDate("");
+                  setEndDate("");
+                }}
+                data-testid="button-clear-stats-filter"
+              >
+                Effacer
+              </Button>
+            </div>
+            {startDate && endDate && (
+              <p className="text-sm text-muted-foreground mt-2">
+                Affichage des statistiques du {new Date(startDate).toLocaleDateString('fr-FR')} au {new Date(endDate).toLocaleDateString('fr-FR')}
+              </p>
+            )}
+          </CardContent>
+        </Card>
+      )}
 
       {/* Statistics Cards */}
       <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-6">
@@ -134,7 +206,9 @@ export default function AccountingPage() {
 
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Résultat Net</CardTitle>
+            <CardTitle className="text-sm font-medium">
+              Résultat Net {startDate && endDate && '(Période sélectionnée)'}
+            </CardTitle>
             {(stats?.netResult || 0) >= 0 ? (
               <TrendingUp className="h-4 w-4 text-green-600" />
             ) : (
@@ -147,6 +221,9 @@ export default function AccountingPage() {
             </div>
             <p className="text-xs text-muted-foreground">
               {(stats?.netResult || 0) >= 0 ? 'Bénéfice' : 'Perte'} (Revenus - Dépenses)
+              {startDate && endDate && (
+                <><br />Période : {new Date(startDate).toLocaleDateString('fr-FR')} au {new Date(endDate).toLocaleDateString('fr-FR')}</>
+              )}
             </p>
           </CardContent>
         </Card>
