@@ -15,9 +15,10 @@ import {
   Edit, 
   Trash2, 
   Plus,
-  Search
+  Search,
+  Package
 } from "lucide-react";
-import { insertCategorySchema, type Category, type InsertCategory } from "@shared/schema";
+import { insertCategorySchema, insertProductSchema, type Category, type InsertCategory, type InsertProduct } from "@shared/schema";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
@@ -28,6 +29,8 @@ export default function Categories() {
   const [searchTerm, setSearchTerm] = useState("");
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [editingCategory, setEditingCategory] = useState<Category | null>(null);
+  const [isProductDialogOpen, setIsProductDialogOpen] = useState(false);
+  const [selectedCategoryForProduct, setSelectedCategoryForProduct] = useState<Category | null>(null);
 
   // Redirect to home if not authenticated
   useEffect(() => {
@@ -54,6 +57,18 @@ export default function Categories() {
     defaultValues: {
       name: "",
       description: "",
+    },
+  });
+
+  const productForm = useForm<InsertProduct>({
+    resolver: zodResolver(insertProductSchema.omit({ userId: true })),
+    defaultValues: {
+      name: "",
+      description: "",
+      priceHT: "",
+      stock: 0,
+      alertStock: 10,
+      categoryId: undefined,
     },
   });
 
@@ -156,6 +171,40 @@ export default function Categories() {
     },
   });
 
+  const createProductMutation = useMutation({
+    mutationFn: async (data: InsertProduct) => {
+      await apiRequest("POST", "/api/products", data);
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["/api/products"] });
+      toast({
+        title: "Produit créé",
+        description: "Le produit a été créé avec succès dans cette catégorie.",
+      });
+      setIsProductDialogOpen(false);
+      setSelectedCategoryForProduct(null);
+      productForm.reset();
+    },
+    onError: (error) => {
+      if (isUnauthorizedError(error)) {
+        toast({
+          title: "Non autorisé",
+          description: "Vous êtes déconnecté. Reconnexion...",
+          variant: "destructive",
+        });
+        setTimeout(() => {
+          window.location.href = "/api/login";
+        }, 500);
+        return;
+      }
+      toast({
+        title: "Erreur",
+        description: "Impossible de créer le produit.",
+        variant: "destructive",
+      });
+    },
+  });
+
   const handleOpenDialog = (category?: Category) => {
     if (category) {
       setEditingCategory(category);
@@ -170,6 +219,19 @@ export default function Categories() {
     setIsDialogOpen(true);
   };
 
+  const handleOpenProductDialog = (category: Category) => {
+    setSelectedCategoryForProduct(category);
+    productForm.reset({
+      name: "",
+      description: "",
+      priceHT: "",
+      stock: 0,
+      alertStock: 10,
+      categoryId: category.id,
+    });
+    setIsProductDialogOpen(true);
+  };
+
   const onSubmit = (data: InsertCategory) => {
     if (editingCategory) {
       updateMutation.mutate(data);
@@ -178,7 +240,11 @@ export default function Categories() {
     }
   };
 
-  const filteredCategories = categories.filter((category: Category) =>
+  const onProductSubmit = (data: InsertProduct) => {
+    createProductMutation.mutate(data);
+  };
+
+  const filteredCategories = (categories as Category[]).filter((category: Category) =>
     category.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
     category.description?.toLowerCase().includes(searchTerm.toLowerCase())
   );
@@ -282,8 +348,20 @@ export default function Categories() {
                       {category.description}
                     </p>
                   )}
-                  <div className="pt-2 text-xs text-gray-500">
-                    Créée le {category.createdAt && new Date(category.createdAt).toLocaleDateString('fr-FR')}
+                  <div className="flex justify-between items-center pt-2">
+                    <div className="text-xs text-gray-500">
+                      Créée le {category.createdAt && new Date(category.createdAt).toLocaleDateString('fr-FR')}
+                    </div>
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={() => handleOpenProductDialog(category)}
+                      className="text-xs"
+                      data-testid={`button-add-product-${category.id}`}
+                    >
+                      <Package className="w-3 h-3 mr-1" />
+                      Ajouter Produit
+                    </Button>
                   </div>
                 </CardContent>
               </Card>
@@ -325,7 +403,8 @@ export default function Categories() {
                         <Textarea 
                           placeholder="Description de la catégorie"
                           rows={4}
-                          {...field} 
+                          {...field}
+                          value={field.value || ""}
                         />
                       </FormControl>
                       <FormMessage />
@@ -346,6 +425,134 @@ export default function Categories() {
                     disabled={createMutation.isPending || updateMutation.isPending}
                   >
                     {editingCategory ? "Modifier" : "Créer"}
+                  </Button>
+                </div>
+              </form>
+            </Form>
+          </DialogContent>
+        </Dialog>
+
+        {/* Create Product Dialog */}
+        <Dialog open={isProductDialogOpen} onOpenChange={setIsProductDialogOpen}>
+          <DialogContent className="sm:max-w-[600px]">
+            <DialogHeader>
+              <DialogTitle>
+                Nouveau Produit - {selectedCategoryForProduct?.name}
+              </DialogTitle>
+            </DialogHeader>
+            <Form {...productForm}>
+              <form onSubmit={productForm.handleSubmit(onProductSubmit)} className="space-y-4">
+                <FormField
+                  control={productForm.control}
+                  name="name"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Nom du produit *</FormLabel>
+                      <FormControl>
+                        <Input placeholder="iPhone 15" {...field} data-testid="input-product-name" />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+
+                <FormField
+                  control={productForm.control}
+                  name="description"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Description</FormLabel>
+                      <FormControl>
+                        <Textarea 
+                          placeholder="Description du produit"
+                          rows={3}
+                          {...field}
+                          value={field.value || ""}
+                          data-testid="input-product-description"
+                        />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+
+                <div className="grid grid-cols-2 gap-4">
+                  <FormField
+                    control={productForm.control}
+                    name="priceHT"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Prix HT *</FormLabel>
+                        <FormControl>
+                          <Input 
+                            type="number" 
+                            step="0.01"
+                            placeholder="500000"
+                            {...field}
+                            data-testid="input-product-price"
+                          />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+
+                  <FormField
+                    control={productForm.control}
+                    name="stock"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Stock initial</FormLabel>
+                        <FormControl>
+                          <Input 
+                            type="number"
+                            placeholder="10"
+                            {...field}
+                            onChange={(e) => field.onChange(parseInt(e.target.value) || 0)}
+                            data-testid="input-product-stock"
+                          />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                </div>
+
+                <FormField
+                  control={productForm.control}
+                  name="alertStock"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Seuil d'alerte stock</FormLabel>
+                      <FormControl>
+                        <Input 
+                          type="number"
+                          placeholder="5"
+                          {...field}
+                          onChange={(e) => field.onChange(parseInt(e.target.value) || 0)}
+                          data-testid="input-product-alert-stock"
+                        />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+
+                <div className="flex justify-end space-x-4 pt-4">
+                  <Button 
+                    type="button" 
+                    variant="outline" 
+                    onClick={() => setIsProductDialogOpen(false)}
+                    data-testid="button-cancel-product"
+                  >
+                    Annuler
+                  </Button>
+                  <Button 
+                    type="submit" 
+                    disabled={createProductMutation.isPending}
+                    data-testid="button-create-product"
+                  >
+                    Créer le Produit
                   </Button>
                 </div>
               </form>
