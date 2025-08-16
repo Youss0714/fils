@@ -360,6 +360,7 @@ export default function Invoices() {
   }, [searchTerm, statusFilter]);
 
   const watchedItems = form.watch("items");
+  const watchedStatus = form.watch("status");
   
   // Tax rates for the selector (use the one from shared schema)
   // TAX_RATES is already imported from shared/schema.ts
@@ -961,19 +962,22 @@ export default function Invoices() {
                     )}
                   />
 
-                  <FormField
-                    control={form.control}
-                    name="dueDate"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel>Date d'échéance</FormLabel>
-                        <FormControl>
-                          <Input type="date" {...field} />
-                        </FormControl>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
+                  {/* Afficher le champ de date d'échéance seulement si le statut est "en attente" */}
+                  {watchedStatus === "en_attente" && (
+                    <FormField
+                      control={form.control}
+                      name="dueDate"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>Date d'échéance</FormLabel>
+                          <FormControl>
+                            <Input type="date" {...field} />
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+                  )}
                 </div>
 
                 {/* Items */}
