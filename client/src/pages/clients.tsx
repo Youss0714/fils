@@ -27,6 +27,7 @@ import { insertClientSchema, type Client, type InsertClient } from "@shared/sche
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
+import { Users as UsersIcon } from "lucide-react";
 
 export default function Clients() {
   const { toast } = useToast();

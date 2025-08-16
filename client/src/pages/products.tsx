@@ -27,6 +27,7 @@ import { useSettings } from "@/hooks/useSettings";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
+import { Package as PackageIcon } from "lucide-react";
 
 export default function Products() {
   const { toast } = useToast();

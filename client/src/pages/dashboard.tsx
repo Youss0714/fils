@@ -153,6 +153,7 @@ export default function Dashboard() {
       <Header 
         title={t('dashboard')}
         subtitle={settings?.language === 'en' ? "Overview of your business activity" : "Vue d'ensemble de votre activité commerciale"}
+        showBreadcrumbs={false}
         action={{
           label: t('newInvoice'),
           onClick: () => setLocation("/invoices")
