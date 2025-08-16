@@ -361,15 +361,8 @@ export default function Invoices() {
 
   const watchedItems = form.watch("items");
   
-  // Tax rates for the selector
-  const TAX_RATES = [
-    { value: "3.00", label: "3%" },
-    { value: "5.00", label: "5%" },
-    { value: "10.00", label: "10%" },
-    { value: "15.00", label: "15%" },
-    { value: "18.00", label: "18%" },
-    { value: "21.00", label: "21%" },
-  ];
+  // Tax rates for the selector (use the one from shared schema)
+  // TAX_RATES is already imported from shared/schema.ts
   const watchedTvaRate = form.watch("tvaRate");
   const subtotal = watchedItems.reduce((sum, item) => 
     sum + (item.quantity * parseFloat(item.priceHT || "0")), 0
