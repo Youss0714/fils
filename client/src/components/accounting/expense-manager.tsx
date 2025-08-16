@@ -420,7 +420,7 @@ export function ExpenseManager() {
         expense.description || '',
         expense.category?.name || 'Sans catégorie',
         paymentMethod?.label || expense.paymentMethod,
-        parseFloat(expense.amount).toLocaleString('fr-FR'),
+        parseFloat(expense.amount).toFixed(0).replace(/\B(?=(\d{3})+(?!\d))/g, ' '),
         status?.label || expense.status,
         expense.notes || ''
       ];

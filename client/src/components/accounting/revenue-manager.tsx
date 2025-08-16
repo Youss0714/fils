@@ -391,7 +391,7 @@ export function RevenueManager() {
         revenue.description || '',
         revenue.category?.name || 'Sans catégorie',
         revenue.paymentMethod.replace('_', ' '),
-        parseFloat(revenue.amount).toLocaleString('fr-FR'),
+        parseFloat(revenue.amount).toFixed(0).replace(/\B(?=(\d{3})+(?!\d))/g, ' '),
         revenue.source || '',
         revenue.notes || ''
       ];
