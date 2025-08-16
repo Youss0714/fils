@@ -176,6 +176,17 @@ export default function InvoiceDetail() {
     return new Date(date).toLocaleDateString('fr-FR');
   };
 
+  const getPaymentMethodLabel = (paymentMethod: string) => {
+    const methods = {
+      cash: "💰 Espèces",
+      bank_transfer: "🏦 Virement bancaire", 
+      check: "💳 Chèque",
+      card: "💳 Carte bancaire",
+      mobile_money: "📱 Mobile Money"
+    };
+    return methods[paymentMethod as keyof typeof methods] || paymentMethod;
+  };
+
   const handleDownloadPDF = async () => {
     try {
       // Dynamically import jsPDF and html2canvas to avoid SSR issues
@@ -360,6 +371,12 @@ export default function InvoiceDetail() {
               <p className="text-sm text-gray-500">Date d'échéance</p>
               <p className="text-sm">{invoice.dueDate ? formatDate(invoice.dueDate) : 'Non définie'}</p>
             </div>
+            {invoice.paymentMethod && (
+              <div>
+                <p className="text-sm text-gray-500">Moyen de paiement</p>
+                <p className="text-sm font-medium">{getPaymentMethodLabel(invoice.paymentMethod)}</p>
+              </div>
+            )}
           </div>
 
           <div className="flex items-center space-x-2">

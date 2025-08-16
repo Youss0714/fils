@@ -301,6 +301,11 @@ export default function Invoices() {
     return client?.name || 'Client inconnu';
   };
 
+  const getPaymentMethodLabel = (paymentMethod: string) => {
+    const method = PAYMENT_METHODS.find(m => m.value === paymentMethod);
+    return method ? method.label : paymentMethod || '-';
+  };
+
   const getProductPrice = (productId: number) => {
     const product = products.find((p: Product) => p.id === productId);
     return product?.priceHT || "0";
@@ -451,6 +456,9 @@ export default function Invoices() {
                         Échéance
                       </th>
                       <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                        Paiement
+                      </th>
+                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                         Actions
                       </th>
                     </tr>
@@ -489,6 +497,9 @@ export default function Invoices() {
                         </td>
                         <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
                           {invoice.dueDate ? formatDate(invoice.dueDate) : "-"}
+                        </td>
+                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                          {getPaymentMethodLabel(invoice.paymentMethod)}
                         </td>
                         <td className="px-6 py-4 whitespace-nowrap text-sm font-medium space-x-2">
                           <Button

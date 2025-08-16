@@ -29,6 +29,17 @@ export default function InvoicePDF({ invoice, user }: InvoicePDFProps) {
     return new Date(date).toLocaleDateString('fr-FR');
   };
 
+  const getPaymentMethodLabel = (paymentMethod: string) => {
+    const methods = {
+      cash: "💰 Espèces",
+      bank_transfer: "🏦 Virement bancaire", 
+      check: "💳 Chèque",
+      card: "💳 Carte bancaire",
+      mobile_money: "📱 Mobile Money"
+    };
+    return methods[paymentMethod as keyof typeof methods] || paymentMethod;
+  };
+
   const handlePrint = () => {
     // Store original title
     const originalTitle = document.title;
@@ -222,6 +233,14 @@ export default function InvoicePDF({ invoice, user }: InvoicePDFProps) {
                      'Statut inconnu'}
                   </span>
                 </div>
+                {invoice.paymentMethod && (
+                  <div className="flex justify-between">
+                    <span>Moyen de paiement :</span>
+                    <span className="font-medium text-gray-900">
+                      {getPaymentMethodLabel(invoice.paymentMethod)}
+                    </span>
+                  </div>
+                )}
               </div>
             </div>
           </div>
