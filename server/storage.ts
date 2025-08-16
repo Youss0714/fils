@@ -562,11 +562,11 @@ export class DatabaseStorage implements IStorage {
     const lastMonth = new Date(now.getFullYear(), now.getMonth() - 1, 1);
     const thisWeek = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000);
     const lastWeek = new Date(now.getTime() - 14 * 24 * 60 * 60 * 1000);
-    // Current revenue (sum of all paid invoices)
+    // Current revenue (sum of all invoices - representing total sales)
     const revenueResult = await db
       .select({ total: sum(invoices.totalTTC) })
       .from(invoices)
-      .where(and(eq(invoices.userId, userId), eq(invoices.status, "payee")));
+      .where(eq(invoices.userId, userId));
     
     const revenue = parseFloat(revenueResult[0]?.total || "0");
 
@@ -575,8 +575,7 @@ export class DatabaseStorage implements IStorage {
       .select({ total: sum(invoices.totalTTC) })
       .from(invoices)
       .where(and(
-        eq(invoices.userId, userId), 
-        eq(invoices.status, "payee"),
+        eq(invoices.userId, userId),
         sql`${invoices.createdAt} >= ${lastMonth.toISOString()}`,
         sql`${invoices.createdAt} < ${thisMonth.toISOString()}`
       ));
