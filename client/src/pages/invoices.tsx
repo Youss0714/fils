@@ -393,9 +393,11 @@ export default function Invoices() {
             </SelectTrigger>
             <SelectContent>
               <SelectItem value="all">Tous les statuts</SelectItem>
-              <SelectItem value="pending">En attente</SelectItem>
-              <SelectItem value="paid">Payée</SelectItem>
-              <SelectItem value="overdue">En retard</SelectItem>
+              {INVOICE_STATUS.map((status) => (
+                <SelectItem key={status.value} value={status.value}>
+                  {status.icon} {status.label}
+                </SelectItem>
+              ))}
             </SelectContent>
           </Select>
         </div>
