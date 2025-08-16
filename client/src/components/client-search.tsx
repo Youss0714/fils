@@ -90,6 +90,7 @@ export function ClientSearch({
     console.log("Client selection attempt:", clientId);
     
     if (clientId === "create-new" && onCreateNew && searchQuery.trim()) {
+      console.log("Creating new client with name:", searchQuery.trim());
       onCreateNew(searchQuery.trim());
       setOpen(false);
       setSearchQuery("");

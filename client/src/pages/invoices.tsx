@@ -260,11 +260,22 @@ export default function Invoices() {
   // Client creation mutation
   const createClientMutation = useMutation({
     mutationFn: async (name: string) => {
-      const clientData = insertClientSchema.parse({ name });
-      const response = await apiRequest("POST", "/api/clients", clientData);
-      return await response.json();
+      console.log("Creating client with name:", name);
+      try {
+        // Don't use insertClientSchema.parse here since server will add userId
+        const clientData = { name: name.trim() };
+        console.log("Client data to send:", clientData);
+        const response = await apiRequest("POST", "/api/clients", clientData);
+        const result = await response.json();
+        console.log("Client creation response:", result);
+        return result;
+      } catch (error) {
+        console.error("Client creation error:", error);
+        throw error;
+      }
     },
     onSuccess: (newClient: Client) => {
+      console.log("Client created successfully:", newClient);
       queryClient.invalidateQueries({ queryKey: ["/api/clients"] });
       form.setValue("clientId", newClient.id);
       toast({
@@ -273,9 +284,10 @@ export default function Invoices() {
       });
     },
     onError: (error) => {
+      console.error("Mutation error:", error);
       toast({
         title: "Erreur",
-        description: "Impossible de créer le client.",
+        description: `Impossible de créer le client: ${error.message || error}`,
         variant: "destructive",
       });
     },
