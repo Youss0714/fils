@@ -442,12 +442,13 @@ export class DatabaseStorage implements IStorage {
       }));
       await db.insert(invoiceItems).values(itemsWithInvoiceId);
 
-      // Update stock immediately after creating invoice
-      await this.updateStockAfterInvoiceCreation(itemsWithInvoiceId, invoice.userId);
+      // Always create sales records when an invoice is created (regardless of payment status)
+      // This ensures proper accounting - a sale is recorded when the invoice is generated
+      await this.createSalesFromInvoice(newInvoice.id, invoice.userId);
       
-      // If the invoice is created with 'payee' status, create sales records immediately
+      // Update stock only for paid invoices to avoid double deduction
       if (invoice.status === 'payee' || invoice.status === 'paid') {
-        await this.createSalesFromInvoice(newInvoice.id, invoice.userId);
+        await this.updateStockAfterInvoiceCreation(itemsWithInvoiceId, invoice.userId);
       }
     }
 
@@ -464,10 +465,14 @@ export class DatabaseStorage implements IStorage {
       .where(and(eq(invoices.id, id), eq(invoices.userId, userId)))
       .returning();
 
-    // If the status changed to 'payee' (or old 'paid'), create sales records
+    // If the status changed to 'payee' (or old 'paid'), update stock
     if ((invoice.status === 'payee' || invoice.status === 'paid') && 
         currentInvoice?.status !== 'payee' && currentInvoice?.status !== 'paid') {
-      await this.createSalesFromInvoice(id, userId);
+      // Get invoice items to update stock
+      const items = await db.select().from(invoiceItems).where(eq(invoiceItems.invoiceId, id));
+      if (items.length > 0) {
+        await this.updateStockAfterInvoiceCreation(items, userId);
+      }
     }
 
     return updatedInvoice;
@@ -494,7 +499,13 @@ export class DatabaseStorage implements IStorage {
     // Get invoice items
     const items = await db.select().from(invoiceItems).where(eq(invoiceItems.invoiceId, invoiceId));
     
-    // Create sales records for each item and update stock
+    // Check if sales already exist for this invoice to avoid duplicates
+    const existingSales = await db.select().from(sales).where(eq(sales.invoiceId, invoiceId));
+    if (existingSales.length > 0) {
+      return; // Sales already created for this invoice
+    }
+    
+    // Create sales records for each item
     const salesData = items
       .filter(item => item.productId) // Only create sales for items with productId
       .map(item => ({
@@ -509,19 +520,6 @@ export class DatabaseStorage implements IStorage {
     if (salesData.length > 0) {
       // Insert sales records
       await db.insert(sales).values(salesData);
-      
-      // Update stock for each product (prevent negative stock)
-      for (const item of items.filter(item => item.productId)) {
-        await db
-          .update(products)
-          .set({
-            stock: sql`GREATEST(0, ${products.stock} - ${item.quantity})`
-          })
-          .where(and(
-            eq(products.id, item.productId!),
-            eq(products.userId, userId)
-          ));
-      }
     }
   }
 

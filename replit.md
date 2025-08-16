@@ -13,6 +13,13 @@ Preferred communication style: Simple, everyday language.
   - Verified all authentication, dashboard, and core business features working
   - Application running stable on port 5000 with proper client/server separation
 
+## Recent Changes
+- **August 16, 2025**: Fixed invoice sales accounting logic
+  - Sales are now created immediately upon invoice creation regardless of payment status
+  - Stock is only deducted when invoices are marked as paid (payee/paid status)
+  - Added duplicate prevention for sales records
+  - Fixed accounting issue where unpaid invoices were not being counted as sales
+
 ## System Architecture
 ### Frontend Architecture
 - **Framework**: React 18 with TypeScript
