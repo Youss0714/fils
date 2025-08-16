@@ -562,9 +562,9 @@ export class DatabaseStorage implements IStorage {
     const lastMonth = new Date(now.getFullYear(), now.getMonth() - 1, 1);
     const thisWeek = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000);
     const lastWeek = new Date(now.getTime() - 14 * 24 * 60 * 60 * 1000);
-    // Current revenue (sum of all invoices - representing total sales)
+    // Current revenue (sum of all invoices HT - representing total sales)
     const revenueResult = await db
-      .select({ total: sum(invoices.totalTTC) })
+      .select({ total: sum(invoices.totalHT) })
       .from(invoices)
       .where(eq(invoices.userId, userId));
     
@@ -572,7 +572,7 @@ export class DatabaseStorage implements IStorage {
 
     // Previous month revenue for comparison
     const lastMonthRevenueResult = await db
-      .select({ total: sum(invoices.totalTTC) })
+      .select({ total: sum(invoices.totalHT) })
       .from(invoices)
       .where(and(
         eq(invoices.userId, userId),

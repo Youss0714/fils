@@ -19,6 +19,7 @@ Preferred communication style: Simple, everyday language.
   - Stock is only deducted when invoices are marked as paid (payee/paid status)
   - Added duplicate prevention for sales records
   - Fixed accounting issue where unpaid invoices were not being counted as sales
+  - Dashboard revenue now displays HT (excluding tax) amounts instead of TTC amounts
 
 ## System Architecture
 ### Frontend Architecture
