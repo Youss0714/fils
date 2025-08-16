@@ -21,6 +21,7 @@ Preferred communication style: Simple, everyday language.
   - Fixed accounting issue where unpaid invoices were not being counted as sales
   - Dashboard revenue now displays HT (excluding tax) amounts instead of TTC amounts
   - Stock management now reflects physical delivery rather than payment status
+  - Added "Aucune (0%)" TVA option for businesses that don't charge VAT
 
 ## System Architecture
 ### Frontend Architecture
@@ -48,7 +49,7 @@ Preferred communication style: Simple, everyday language.
 - **Data Models**: Comprehensive models for Users, Clients, Categories, Products, Invoices, and Sales.
 - **UI/UX**: Consistent design system using shadcn/ui, responsive layout, React Hook Form with Zod validation, optimistic updates, and toast notifications.
 - **Data Flow**: Authenticated client-server communication, Drizzle ORM for type-safe operations, Zod schemas for runtime validation.
-- **Invoice System**: Supports 6 configurable VAT rates, PDF export, and automatic sales creation upon payment.
+- **Invoice System**: Supports 7 configurable VAT rates (including 0% for no tax), PDF export, and automatic sales creation upon payment.
 - **Stock Management**: Automatic stock deduction on paid invoices, negative stock protection, and customizable alert thresholds.
 - **Multi-Currency Support**: Exclusive support for XOF and GHS.
 - **Multi-Language**: Full i18n for French and English with language persistence.

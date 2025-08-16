@@ -512,6 +512,7 @@ export const chartOfAccountsRelations = relations(chartOfAccounts, ({ one, many 
 
 // Tax rates available for invoices
 export const TAX_RATES = [
+  { value: "0.00", label: "Aucune (0%)" },
   { value: "3.00", label: "3%" },
   { value: "5.00", label: "5%" },
   { value: "10.00", label: "10%" },
