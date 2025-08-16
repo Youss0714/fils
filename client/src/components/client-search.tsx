@@ -87,10 +87,7 @@ export function ClientSearch({
   });
 
   const handleSelect = (clientId: string) => {
-    console.log("Client selection attempt:", clientId);
-    
     if (clientId === "create-new" && onCreateNew && searchQuery.trim()) {
-      console.log("Creating new client with name:", searchQuery.trim());
       onCreateNew(searchQuery.trim());
       setOpen(false);
       setSearchQuery("");
@@ -98,7 +95,6 @@ export function ClientSearch({
     }
 
     const id = parseInt(clientId);
-    console.log("Parsed client ID:", id);
     
     if (!isNaN(id)) {
       onChange(id);
@@ -169,10 +165,7 @@ export function ClientSearch({
                 {clients.map((client) => (
                   <div
                     key={client.id}
-                    onClick={() => {
-                      console.log("Client clicked:", client.id, client.name);
-                      handleSelect(client.id.toString());
-                    }}
+                    onClick={() => handleSelect(client.id.toString())}
                     className="flex items-center space-x-2 rounded-sm px-2 py-2 cursor-pointer hover:bg-accent hover:text-accent-foreground"
                   >
                     <Check
@@ -197,10 +190,7 @@ export function ClientSearch({
                   c.name.toLowerCase().includes(searchQuery.toLowerCase())
                 ) && (
                   <div
-                    onClick={() => {
-                      console.log("Create new clicked");
-                      handleSelect("create-new");
-                    }}
+                    onClick={() => handleSelect("create-new")}
                     className="flex items-center space-x-2 rounded-sm px-2 py-2 text-primary cursor-pointer hover:bg-accent hover:text-accent-foreground"
                   >
                     <Plus className="mr-2 h-4 w-4" />
