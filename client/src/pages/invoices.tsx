@@ -33,9 +33,9 @@ import {
   PaginationNext,
   PaginationPrevious,
 } from "@/components/ui/pagination";
-import { insertInvoiceSchema, insertInvoiceItemSchema, TAX_RATES, INVOICE_STATUS, type Invoice, type InsertInvoice, type Client, type Product, type User } from "@shared/schema";
+import { insertInvoiceSchema, insertInvoiceItemSchema, insertClientSchema, TAX_RATES, INVOICE_STATUS, type Invoice, type InsertInvoice, type Client, type Product, type User } from "@shared/schema";
 import { SimpleProductSelect } from "@/components/simple-product-select";
-import { SimpleClientSelect } from "@/components/simple-client-select";
+import { ClientSearch } from "@/components/client-search";
 import { SimpleProductSelectV2 } from "@/components/simple-product-select-v2";
 import { useForm, useFieldArray } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -252,6 +252,30 @@ export default function Invoices() {
       toast({
         title: "Erreur",
         description: "Impossible de supprimer la facture.",
+        variant: "destructive",
+      });
+    },
+  });
+
+  // Client creation mutation
+  const createClientMutation = useMutation({
+    mutationFn: async (name: string) => {
+      const clientData = insertClientSchema.parse({ name });
+      const response = await apiRequest("POST", "/api/clients", clientData);
+      return response.json();
+    },
+    onSuccess: (newClient: Client) => {
+      queryClient.invalidateQueries({ queryKey: ["/api/clients"] });
+      form.setValue("clientId", newClient.id);
+      toast({
+        title: "Client créé",
+        description: `Le client "${newClient.name}" a été créé avec succès.`,
+      });
+    },
+    onError: (error) => {
+      toast({
+        title: "Erreur",
+        description: "Impossible de créer le client.",
         variant: "destructive",
       });
     },
@@ -846,10 +870,11 @@ export default function Invoices() {
                       <FormItem>
                         <FormLabel>Client *</FormLabel>
                         <FormControl>
-                          <SimpleClientSelect
+                          <ClientSearch
                             value={field.value}
                             onChange={field.onChange}
                             placeholder="Rechercher ou créer un client..."
+                            onCreateNew={(name) => createClientMutation.mutate(name)}
                           />
                         </FormControl>
                         <FormMessage />
