@@ -87,6 +87,7 @@ export const invoices = pgTable("invoices", {
   tvaRate: decimal("tva_rate", { precision: 5, scale: 2 }).notNull(), // Taux TVA choisi (3%, 5%, 10%, 15%, 18%, 21%)
   totalTVA: decimal("total_tva", { precision: 10, scale: 2 }).notNull(), // Montant TVA calculé
   totalTTC: decimal("total_ttc", { precision: 10, scale: 2 }).notNull(), // Total TTC final
+  paymentMethod: varchar("payment_method", { length: 50 }).notNull().default("cash"), // cash, bank_transfer, check, card, mobile_money
   dueDate: timestamp("due_date"),
   notes: text("notes"),
   userId: varchar("user_id").notNull().references(() => users.id),

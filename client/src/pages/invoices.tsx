@@ -43,10 +43,20 @@ import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "
 import { z } from "zod";
 import InvoicePDF from "@/components/invoice-pdf";
 
+// Payment method options
+const PAYMENT_METHODS = [
+  { value: "cash", label: "💰 Espèces", icon: "💰" },
+  { value: "bank_transfer", label: "🏦 Virement bancaire", icon: "🏦" },
+  { value: "check", label: "💳 Chèque", icon: "💳" },
+  { value: "card", label: "💳 Carte bancaire", icon: "💳" },
+  { value: "mobile_money", label: "📱 Mobile Money", icon: "📱" },
+];
+
 const createInvoiceFormSchema = z.object({
   clientId: z.number().min(1, "Veuillez sélectionner un client"),
   status: z.string().min(1, "Veuillez sélectionner un statut"),
   tvaRate: z.string().min(1, "Veuillez sélectionner un taux de TVA"),
+  paymentMethod: z.string().min(1, "Veuillez sélectionner un moyen de paiement"),
   dueDate: z.string().optional(),
   notes: z.string().optional(),
   items: z.array(z.object({
@@ -121,6 +131,7 @@ export default function Invoices() {
       clientId: undefined as any,
       status: "en_attente",
       tvaRate: "18.00",
+      paymentMethod: "cash",
       dueDate: "",
       notes: "",
       items: [{ productId: undefined, productName: "", quantity: 1, priceHT: "" }],
@@ -157,6 +168,7 @@ export default function Invoices() {
         tvaRate: data.tvaRate,
         totalTVA: totalTVA.toFixed(2),
         totalTTC: totalTTC.toFixed(2),
+        paymentMethod: data.paymentMethod,
         dueDate: data.dueDate ? new Date(data.dueDate) : null,
         notes: data.notes,
         userId: "", // Will be set by backend
@@ -879,6 +891,36 @@ export default function Invoices() {
                             {TAX_RATES.map((rate) => (
                               <SelectItem key={rate.value} value={rate.value}>
                                 {rate.label}
+                              </SelectItem>
+                            ))}
+                          </SelectContent>
+                        </Select>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                </div>
+
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                  <FormField
+                    control={form.control}
+                    name="paymentMethod"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Moyen de paiement *</FormLabel>
+                        <Select 
+                          onValueChange={field.onChange}
+                          value={field.value || "cash"}
+                        >
+                          <FormControl>
+                            <SelectTrigger>
+                              <SelectValue placeholder="Sélectionner le moyen de paiement" />
+                            </SelectTrigger>
+                          </FormControl>
+                          <SelectContent>
+                            {PAYMENT_METHODS.map((method) => (
+                              <SelectItem key={method.value} value={method.value}>
+                                {method.label}
                               </SelectItem>
                             ))}
                           </SelectContent>
