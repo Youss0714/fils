@@ -16,6 +16,7 @@ Preferred communication style: Simple, everyday language.
   - Added pagination system to invoice list (10 items per page)
   - Added pagination system to sales list in "Ventes récentes" section (10 items per page)
   - Enhanced pagination with "First page" and "Last page" navigation buttons
+  - Added payment method selection field to invoice creation form with 5 options
 
 ## Recent Changes
 - **August 16, 2025**: Fixed invoice sales accounting logic
