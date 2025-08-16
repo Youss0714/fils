@@ -962,8 +962,8 @@ export default function Invoices() {
                     )}
                   />
 
-                  {/* Afficher le champ de date d'échéance seulement si le statut est "en attente" */}
-                  {watchedStatus === "en_attente" && (
+                  {/* Afficher le champ de date d'échéance pour "en attente" et "partiellement réglée" */}
+                  {(watchedStatus === "en_attente" || watchedStatus === "partiellement_reglee") && (
                     <FormField
                       control={form.control}
                       name="dueDate"
