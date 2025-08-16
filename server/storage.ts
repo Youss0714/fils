@@ -653,7 +653,7 @@ export class DatabaseStorage implements IStorage {
       .leftJoin(clients, eq(invoices.clientId, clients.id))
       .where(eq(invoices.userId, userId))
       .orderBy(desc(invoices.createdAt))
-      .limit(5);
+      .limit(4);
 
     const recentInvoicesFormatted = recentInvoices.map(row => ({
       ...row.invoices,
