@@ -167,14 +167,13 @@ export function ClientSearch({
             ) : (
               <CommandGroup>
                 {clients.map((client) => (
-                  <CommandItem
+                  <div
                     key={client.id}
-                    value={client.id.toString()}
-                    onSelect={(currentValue) => {
-                      console.log("CommandItem onSelect called with:", currentValue);
-                      handleSelect(currentValue);
+                    onClick={() => {
+                      console.log("Client clicked:", client.id, client.name);
+                      handleSelect(client.id.toString());
                     }}
-                    className="cursor-pointer hover:bg-gray-100 data-[selected=true]:bg-accent"
+                    className="flex items-center space-x-2 rounded-sm px-2 py-2 cursor-pointer hover:bg-accent hover:text-accent-foreground"
                   >
                     <Check
                       className={cn(
@@ -192,22 +191,21 @@ export function ClientSearch({
                         {client.email}
                       </div>
                     </div>
-                  </CommandItem>
+                  </div>
                 ))}
                 {searchQuery.trim() && onCreateNew && !clients.some(c => 
                   c.name.toLowerCase().includes(searchQuery.toLowerCase())
                 ) && (
-                  <CommandItem
-                    value="create-new"
-                    onSelect={(currentValue) => {
-                      console.log("Create new onSelect called with:", currentValue);
-                      handleSelect(currentValue);
+                  <div
+                    onClick={() => {
+                      console.log("Create new clicked");
+                      handleSelect("create-new");
                     }}
-                    className="text-primary cursor-pointer hover:bg-gray-100"
+                    className="flex items-center space-x-2 rounded-sm px-2 py-2 text-primary cursor-pointer hover:bg-accent hover:text-accent-foreground"
                   >
                     <Plus className="mr-2 h-4 w-4" />
                     Créer "{searchQuery.trim()}"
-                  </CommandItem>
+                  </div>
                 )}
               </CommandGroup>
             )}
