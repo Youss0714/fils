@@ -6,6 +6,13 @@ YGestion is a comprehensive business management application for the African mark
 ## User Preferences
 Preferred communication style: Simple, everyday language.
 
+## Migration History
+- **August 16, 2025**: Successfully migrated from Replit Agent to Replit environment
+  - Installed all required Node.js dependencies (tsx, express, drizzle-orm, etc.)
+  - Created PostgreSQL database with complete schema deployment
+  - Verified all authentication, dashboard, and core business features working
+  - Application running stable on port 5000 with proper client/server separation
+
 ## System Architecture
 ### Frontend Architecture
 - **Framework**: React 18 with TypeScript
