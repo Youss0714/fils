@@ -1,4 +1,4 @@
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { useAuth } from "@/hooks/useAuth";
 import { useToast } from "@/hooks/use-toast";
@@ -9,15 +9,25 @@ import {
   TrendingUp, 
   Calendar,
   Package,
-
   Users,
   BarChart3
 } from "lucide-react";
+import {
+  Pagination,
+  PaginationContent,
+  PaginationEllipsis,
+  PaginationItem,
+  PaginationLink,
+  PaginationNext,
+  PaginationPrevious,
+} from "@/components/ui/pagination";
 import { type Sale } from "@shared/schema";
 
 export default function Sales() {
   const { toast } = useToast();
   const { isAuthenticated, isLoading } = useAuth();
+  const [currentPage, setCurrentPage] = useState(1);
+  const itemsPerPage = 10;
 
   // Redirect to home if not authenticated
   useEffect(() => {
@@ -71,6 +81,13 @@ export default function Sales() {
   const formatDate = (date: string | Date) => {
     return new Date(date).toLocaleDateString('fr-FR');
   };
+
+  // Pagination calculations
+  const totalItems = sales.length;
+  const totalPages = Math.ceil(totalItems / itemsPerPage);
+  const startIndex = (currentPage - 1) * itemsPerPage;
+  const endIndex = startIndex + itemsPerPage;
+  const paginatedSales = sales.slice(startIndex, endIndex);
 
   // Calculate sales statistics
   const totalSales = sales.reduce((sum: number, sale: Sale) => sum + parseFloat(sale.total), 0);
@@ -292,7 +309,7 @@ export default function Sales() {
                     </tr>
                   </thead>
                   <tbody className="bg-white divide-y divide-gray-200">
-                    {sales.slice(0, 10).map((sale: Sale) => (
+                    {paginatedSales.map((sale: Sale) => (
                       <tr key={sale.id} className="hover:bg-gray-50">
                         <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
                           {sale.createdAt && formatDate(sale.createdAt)}
@@ -313,6 +330,60 @@ export default function Sales() {
                     ))}
                   </tbody>
                 </table>
+              </div>
+            )}
+            
+            {/* Pagination */}
+            {totalPages > 1 && (
+              <div className="mt-6 flex items-center justify-between">
+                <div className="text-sm text-gray-500">
+                  Affichage de {startIndex + 1} à {Math.min(endIndex, totalItems)} sur {totalItems} ventes
+                </div>
+                <Pagination>
+                  <PaginationContent>
+                    <PaginationItem>
+                      <PaginationPrevious 
+                        href="#"
+                        onClick={(e) => {
+                          e.preventDefault();
+                          if (currentPage > 1) {
+                            setCurrentPage(currentPage - 1);
+                          }
+                        }}
+                        className={currentPage <= 1 ? "pointer-events-none opacity-50" : ""}
+                      />
+                    </PaginationItem>
+                    
+                    {/* Page numbers */}
+                    {Array.from({ length: totalPages }, (_, i) => i + 1).map((page) => (
+                      <PaginationItem key={page}>
+                        <PaginationLink
+                          href="#"
+                          onClick={(e) => {
+                            e.preventDefault();
+                            setCurrentPage(page);
+                          }}
+                          isActive={currentPage === page}
+                        >
+                          {page}
+                        </PaginationLink>
+                      </PaginationItem>
+                    ))}
+                    
+                    <PaginationItem>
+                      <PaginationNext 
+                        href="#"
+                        onClick={(e) => {
+                          e.preventDefault();
+                          if (currentPage < totalPages) {
+                            setCurrentPage(currentPage + 1);
+                          }
+                        }}
+                        className={currentPage >= totalPages ? "pointer-events-none opacity-50" : ""}
+                      />
+                    </PaginationItem>
+                  </PaginationContent>
+                </Pagination>
               </div>
             )}
           </CardContent>
