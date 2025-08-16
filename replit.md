@@ -15,6 +15,7 @@ Preferred communication style: Simple, everyday language.
   - Fixed dashboard recent invoices to display only 4 most recent instead of 5
   - Added pagination system to invoice list (10 items per page)
   - Added pagination system to sales list in "Ventes récentes" section (10 items per page)
+  - Enhanced pagination with "First page" and "Last page" navigation buttons
 
 ## Recent Changes
 - **August 16, 2025**: Fixed invoice sales accounting logic

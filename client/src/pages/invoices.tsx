@@ -727,6 +727,21 @@ export default function Invoices() {
                 </div>
                 <Pagination>
                   <PaginationContent>
+                    {/* Première page */}
+                    <PaginationItem>
+                      <PaginationLink
+                        href="#"
+                        onClick={(e) => {
+                          e.preventDefault();
+                          setCurrentPage(1);
+                        }}
+                        className={currentPage <= 1 ? "pointer-events-none opacity-50" : ""}
+                        size="sm"
+                      >
+                        ««
+                      </PaginationLink>
+                    </PaginationItem>
+                    
                     <PaginationItem>
                       <PaginationPrevious 
                         href="#"
@@ -767,6 +782,21 @@ export default function Invoices() {
                         }}
                         className={currentPage >= totalPages ? "pointer-events-none opacity-50" : ""}
                       />
+                    </PaginationItem>
+                    
+                    {/* Dernière page */}
+                    <PaginationItem>
+                      <PaginationLink
+                        href="#"
+                        onClick={(e) => {
+                          e.preventDefault();
+                          setCurrentPage(totalPages);
+                        }}
+                        className={currentPage >= totalPages ? "pointer-events-none opacity-50" : ""}
+                        size="sm"
+                      >
+                        »»
+                      </PaginationLink>
                     </PaginationItem>
                   </PaginationContent>
                 </Pagination>
