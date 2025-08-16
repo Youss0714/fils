@@ -57,11 +57,11 @@ export function ClientSearch({
 
   // Fetch clients with search
   const { data: clients = [], isLoading } = useQuery<Client[]>({
-    queryKey: ["/api/clients", debouncedQuery ? { search: debouncedQuery } : {}],
+    queryKey: ["/api/clients", debouncedQuery || "all"],
     queryFn: async () => {
       const params = new URLSearchParams();
-      if (debouncedQuery) {
-        params.append('search', debouncedQuery);
+      if (debouncedQuery.trim()) {
+        params.append('search', debouncedQuery.trim());
       }
       const response = await fetch(`/api/clients?${params.toString()}`, {
         credentials: 'include'
@@ -89,8 +89,8 @@ export function ClientSearch({
   const handleSelect = (clientId: string) => {
     console.log("Client selection attempt:", clientId);
     
-    if (clientId === "create-new" && onCreateNew && searchQuery) {
-      onCreateNew(searchQuery);
+    if (clientId === "create-new" && onCreateNew && searchQuery.trim()) {
+      onCreateNew(searchQuery.trim());
       setOpen(false);
       setSearchQuery("");
       return;
@@ -191,7 +191,7 @@ export function ClientSearch({
                     </div>
                   </CommandItem>
                 ))}
-                {searchQuery && onCreateNew && !clients.some(c => 
+                {searchQuery.trim() && onCreateNew && !clients.some(c => 
                   c.name.toLowerCase().includes(searchQuery.toLowerCase())
                 ) && (
                   <CommandItem
@@ -200,7 +200,7 @@ export function ClientSearch({
                     className="text-primary cursor-pointer"
                   >
                     <Plus className="mr-2 h-4 w-4" />
-                    Créer "{searchQuery}"
+                    Créer "{searchQuery.trim()}"
                   </CommandItem>
                 )}
               </CommandGroup>

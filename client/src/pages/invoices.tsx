@@ -262,7 +262,7 @@ export default function Invoices() {
     mutationFn: async (name: string) => {
       const clientData = insertClientSchema.parse({ name });
       const response = await apiRequest("POST", "/api/clients", clientData);
-      return response.json();
+      return await response.json();
     },
     onSuccess: (newClient: Client) => {
       queryClient.invalidateQueries({ queryKey: ["/api/clients"] });
