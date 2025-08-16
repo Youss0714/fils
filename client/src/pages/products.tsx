@@ -478,7 +478,7 @@ export default function Products() {
                             placeholder="0" 
                             {...field}
                             value={field.value || 0}
-                            onChange={(e) => field.onChange(parseInt(e.target.value) || 0)}
+                            onChange={(e) => field.onChange(Math.max(0, parseInt(e.target.value) || 0))}
                           />
                         </FormControl>
                         <FormMessage />
@@ -499,7 +499,7 @@ export default function Products() {
                             placeholder="10" 
                             {...field}
                             value={field.value || 10}
-                            onChange={(e) => field.onChange(parseInt(e.target.value) || 10)}
+                            onChange={(e) => field.onChange(Math.max(1, parseInt(e.target.value) || 10))}
                           />
                         </FormControl>
                         <FormMessage />

@@ -487,6 +487,7 @@ export default function Categories() {
                           <Input 
                             type="number" 
                             step="0.01"
+                            min="0.01"
                             placeholder="500000"
                             {...field}
                             data-testid="input-product-price"
@@ -506,9 +507,10 @@ export default function Categories() {
                         <FormControl>
                           <Input 
                             type="number"
+                            min="0"
                             placeholder="10"
                             {...field}
-                            onChange={(e) => field.onChange(parseInt(e.target.value) || 0)}
+                            onChange={(e) => field.onChange(Math.max(0, parseInt(e.target.value) || 0))}
                             data-testid="input-product-stock"
                           />
                         </FormControl>
@@ -527,9 +529,10 @@ export default function Categories() {
                       <FormControl>
                         <Input 
                           type="number"
+                          min="1"
                           placeholder="5"
                           {...field}
-                          onChange={(e) => field.onChange(parseInt(e.target.value) || 0)}
+                          onChange={(e) => field.onChange(Math.max(1, parseInt(e.target.value) || 1))}
                           data-testid="input-product-alert-stock"
                         />
                       </FormControl>
