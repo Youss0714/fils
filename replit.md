@@ -16,10 +16,11 @@ Preferred communication style: Simple, everyday language.
 ## Recent Changes
 - **August 16, 2025**: Fixed invoice sales accounting logic
   - Sales are now created immediately upon invoice creation regardless of payment status
-  - Stock is only deducted when invoices are marked as paid (payee/paid status)
+  - Stock is deducted immediately upon invoice creation regardless of payment status
   - Added duplicate prevention for sales records
   - Fixed accounting issue where unpaid invoices were not being counted as sales
   - Dashboard revenue now displays HT (excluding tax) amounts instead of TTC amounts
+  - Stock management now reflects physical delivery rather than payment status
 
 ## System Architecture
 ### Frontend Architecture

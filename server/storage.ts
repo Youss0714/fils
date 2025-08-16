@@ -446,10 +446,9 @@ export class DatabaseStorage implements IStorage {
       // This ensures proper accounting - a sale is recorded when the invoice is generated
       await this.createSalesFromInvoice(newInvoice.id, invoice.userId);
       
-      // Update stock only for paid invoices to avoid double deduction
-      if (invoice.status === 'payee' || invoice.status === 'paid') {
-        await this.updateStockAfterInvoiceCreation(itemsWithInvoiceId, invoice.userId);
-      }
+      // Always update stock when an invoice is created (regardless of payment status)
+      // This reflects the physical reality that goods are delivered/reserved upon invoicing
+      await this.updateStockAfterInvoiceCreation(itemsWithInvoiceId, invoice.userId);
     }
 
     return newInvoice;
@@ -465,15 +464,7 @@ export class DatabaseStorage implements IStorage {
       .where(and(eq(invoices.id, id), eq(invoices.userId, userId)))
       .returning();
 
-    // If the status changed to 'payee' (or old 'paid'), update stock
-    if ((invoice.status === 'payee' || invoice.status === 'paid') && 
-        currentInvoice?.status !== 'payee' && currentInvoice?.status !== 'paid') {
-      // Get invoice items to update stock
-      const items = await db.select().from(invoiceItems).where(eq(invoiceItems.invoiceId, id));
-      if (items.length > 0) {
-        await this.updateStockAfterInvoiceCreation(items, userId);
-      }
-    }
+    // Stock is already updated during invoice creation, no need to update again on status change
 
     return updatedInvoice;
   }
