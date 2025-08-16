@@ -132,7 +132,7 @@ export function ClientSearch({
         </Button>
       </PopoverTrigger>
       <PopoverContent className="w-[400px] p-0" align="start">
-        <Command shouldFilter={false} value="" onValueChange={() => {}}>
+        <Command shouldFilter={false}>
           <CommandInput 
             placeholder="Tapez pour rechercher..." 
             value={searchQuery}
@@ -170,9 +170,11 @@ export function ClientSearch({
                   <CommandItem
                     key={client.id}
                     value={client.id.toString()}
-                    onSelect={() => handleSelect(client.id.toString())}
-                    onClick={() => handleSelect(client.id.toString())}
-                    className="cursor-pointer hover:bg-gray-100"
+                    onSelect={(currentValue) => {
+                      console.log("CommandItem onSelect called with:", currentValue);
+                      handleSelect(currentValue);
+                    }}
+                    className="cursor-pointer hover:bg-gray-100 data-[selected=true]:bg-accent"
                   >
                     <Check
                       className={cn(
@@ -197,8 +199,11 @@ export function ClientSearch({
                 ) && (
                   <CommandItem
                     value="create-new"
-                    onSelect={() => handleSelect("create-new")}
-                    className="text-primary cursor-pointer"
+                    onSelect={(currentValue) => {
+                      console.log("Create new onSelect called with:", currentValue);
+                      handleSelect(currentValue);
+                    }}
+                    className="text-primary cursor-pointer hover:bg-gray-100"
                   >
                     <Plus className="mr-2 h-4 w-4" />
                     Créer "{searchQuery.trim()}"
