@@ -296,8 +296,23 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Custom schema to properly handle dueDate nullability
   const createInvoiceSchema = z.object({
-    invoice: insertInvoiceSchema.omit({ userId: true }),
+    invoice: z.object({
+      number: z.string(),
+      clientId: z.number(),
+      status: z.string(),
+      totalHT: z.union([z.string(), z.number()]).transform(val => String(val)),
+      tvaRate: z.union([z.string(), z.number()]).transform(val => String(val)),
+      totalTVA: z.union([z.string(), z.number()]).transform(val => String(val)),
+      totalTTC: z.union([z.string(), z.number()]).transform(val => String(val)),
+      paymentMethod: z.string(),
+      dueDate: z.union([z.string(), z.null(), z.undefined()]).optional().nullable().transform(val => {
+        if (!val || val === null || val === undefined) return null;
+        return new Date(val);
+      }),
+      notes: z.string().optional(),
+    }),
     items: z.array(insertInvoiceItemSchema.omit({ invoiceId: true })),
   });
 
