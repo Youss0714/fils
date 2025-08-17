@@ -362,6 +362,10 @@ export class DatabaseStorage implements IStorage {
 
   async createProduct(product: InsertProduct): Promise<Product> {
     const [newProduct] = await db.insert(products).values(product).returning();
+    
+    // Automatically generate stock alerts after creating a product
+    await this.generateStockAlerts(product.userId);
+    
     return newProduct;
   }
 
@@ -371,6 +375,10 @@ export class DatabaseStorage implements IStorage {
       .set(product)
       .where(and(eq(products.id, id), eq(products.userId, userId)))
       .returning();
+    
+    // Automatically generate stock alerts after updating a product
+    await this.generateStockAlerts(userId);
+    
     return updatedProduct;
   }
 
@@ -499,6 +507,9 @@ export class DatabaseStorage implements IStorage {
           eq(products.userId, userId)
         ));
     }
+    
+    // Automatically generate stock alerts after updating stock
+    await this.generateStockAlerts(userId);
   }
 
   // Helper function to create sales from invoice items

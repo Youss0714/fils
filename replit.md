@@ -18,6 +18,10 @@ Preferred communication style: Simple, everyday language.
   - Added pagination system to sales list in "Ventes récentes" section (10 items per page)
   - Enhanced pagination with "First page" and "Last page" navigation buttons
   - Added payment method selection field to invoice creation form with 5 options
+  - **Post-Migration Enhancement**: Implemented automatic stock alert generation
+    - Stock alerts now generate automatically when creating/updating invoices
+    - Stock alerts now generate automatically when creating/updating products
+    - Removed need to manually click "Vérifier stocks" for alert generation
 
 ## Recent Changes
 - **August 17, 2025**: Enhanced UI/UX with detailed loading states and improved business rules
