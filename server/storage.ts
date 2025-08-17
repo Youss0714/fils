@@ -510,6 +510,9 @@ export class DatabaseStorage implements IStorage {
     
     // Automatically generate stock alerts after updating stock
     await this.generateStockAlerts(userId);
+    
+    // Automatically generate overdue invoice alerts after creating invoices
+    await this.generateOverdueInvoiceAlerts(userId);
   }
 
   // Helper function to create sales from invoice items
@@ -2004,6 +2007,16 @@ export class DatabaseStorage implements IStorage {
   }
 
   async generateOverdueInvoiceAlerts(userId: string): Promise<SelectBusinessAlert[]> {
+    // First, mark all existing overdue invoice alerts as resolved to refresh them
+    await db
+      .update(businessAlerts)
+      .set({ isResolved: true, updatedAt: new Date() })
+      .where(and(
+        eq(businessAlerts.userId, userId),
+        eq(businessAlerts.type, "overdue_invoice"),
+        eq(businessAlerts.isResolved, false)
+      ));
+
     // Get all unpaid invoices with due dates in the past
     const now = new Date();
     const overdueInvoices = await db
@@ -2020,7 +2033,7 @@ export class DatabaseStorage implements IStorage {
         eq(invoices.userId, userId),
         or(eq(invoices.status, "en_attente"), eq(invoices.status, "partiellement_reglee")),
         isNotNull(invoices.dueDate),
-        sql`${invoices.dueDate} < ${now}`
+        sql`${invoices.dueDate} < ${now.toISOString()}`
       ));
 
     const alerts: SelectBusinessAlert[] = [];
@@ -2034,22 +2047,30 @@ export class DatabaseStorage implements IStorage {
       const title = "Facture échue";
       const message = `La facture ${invoice.number} de ${invoice.client?.name || "Client inconnu"} est échue depuis ${daysPastDue} jour(s).`;
 
-      const alert = await this.createBusinessAlert({
-        userId,
-        type: "overdue_invoice",
-        severity,
-        title,
-        message,
-        entityType: "invoice",
-        entityId: invoice.id,
-        metadata: {
-          invoiceNumber: invoice.number,
-          clientName: invoice.client?.name,
-          amount: invoice.totalTTC,
-          dueDate: invoice.dueDate,
-          daysPastDue,
-        },
-      });
+      // Force create new alert by bypassing duplicate check
+      const [alert] = await db
+        .insert(businessAlerts)
+        .values({
+          userId,
+          type: "overdue_invoice",
+          severity,
+          title,
+          message,
+          entityType: "invoice",
+          entityId: invoice.id,
+          metadata: {
+            invoiceNumber: invoice.number,
+            clientName: invoice.client?.name,
+            amount: invoice.totalTTC,
+            dueDate: invoice.dueDate?.toISOString(),
+            daysPastDue,
+          },
+          isRead: false,
+          isResolved: false,
+          createdAt: new Date(),
+          updatedAt: new Date(),
+        })
+        .returning();
       
       alerts.push(alert);
     }
