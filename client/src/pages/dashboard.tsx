@@ -28,6 +28,7 @@ import {
 } from "lucide-react";
 import { Link, useLocation } from "wouter";
 import SyncStatus from "@/components/sync-status";
+import { DashboardSkeleton } from "@/components/loading-skeletons";
 
 export default function Dashboard() {
   const { toast } = useToast();
@@ -67,6 +68,10 @@ export default function Dashboard() {
   });
 
   if (isLoading || statsLoading) {
+    return <DashboardSkeleton />;
+  }
+
+  if (!isAuthenticated) {
     return (
       <div className="flex-1 flex flex-col overflow-hidden">
         <Header 

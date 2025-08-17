@@ -42,6 +42,7 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
 import { z } from "zod";
 import InvoicePDF from "@/components/invoice-pdf";
+import { InvoiceListSkeleton, InvoiceFormSkeleton } from "@/components/loading-skeletons";
 
 // Payment method options
 const PAYMENT_METHODS = [
@@ -373,18 +374,7 @@ export default function Invoices() {
   const total = subtotal + tax;
 
   if (isLoading || invoicesLoading) {
-    return (
-      <div className="flex-1 flex flex-col overflow-hidden">
-        <Header title="Factures" subtitle="Gérez vos factures et paiements" />
-        <main className="flex-1 overflow-y-auto p-6">
-          <div className="animate-pulse space-y-4">
-            {[...Array(5)].map((_, i) => (
-              <div key={i} className="bg-white p-6 rounded-xl shadow-sm border border-gray-200 h-24" />
-            ))}
-          </div>
-        </main>
-      </div>
-    );
+    return <InvoiceListSkeleton />;
   }
 
   return (
@@ -751,6 +741,7 @@ export default function Invoices() {
                             size="sm"
                             onClick={() => deleteMutation.mutate(invoice.id)}
                             disabled={deleteMutation.isPending}
+                            className={deleteMutation.isPending ? "opacity-50" : ""}
                           >
                             <Trash2 className="w-4 h-4" />
                           </Button>
@@ -1149,7 +1140,14 @@ export default function Invoices() {
                     type="submit" 
                     disabled={createMutation.isPending}
                   >
-                    Créer la Facture
+                    {createMutation.isPending ? (
+                      <div className="flex items-center space-x-2">
+                        <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-current"></div>
+                        <span>Création...</span>
+                      </div>
+                    ) : (
+                      "Créer la Facture"
+                    )}
                   </Button>
                 </div>
               </form>

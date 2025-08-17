@@ -3,6 +3,7 @@ import { useQuery, useMutation } from "@tanstack/react-query";
 import { useAuth } from "@/hooks/useAuth";
 import { useToast } from "@/hooks/use-toast";
 import { isUnauthorizedError } from "@/lib/authUtils";
+import { ProductListSkeleton } from "@/components/loading-skeletons";
 import { apiRequest, queryClient } from "@/lib/queryClient";
 import Header from "@/components/header";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -239,21 +240,7 @@ export default function Products() {
   };
 
   if (isLoading || productsLoading) {
-    return (
-      <div className="flex-1 flex flex-col overflow-hidden">
-        <Header 
-          title="Produits" 
-          subtitle="Gérez votre catalogue de produits"
-        />
-        <main className="flex-1 overflow-y-auto p-6">
-          <div className="animate-pulse space-y-4">
-            {[...Array(5)].map((_, i) => (
-              <div key={i} className="bg-white p-6 rounded-xl shadow-sm border border-gray-200 h-32" />
-            ))}
-          </div>
-        </main>
-      </div>
-    );
+    return <ProductListSkeleton />;
   }
 
   return (

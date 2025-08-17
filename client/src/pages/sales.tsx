@@ -22,6 +22,7 @@ import {
   PaginationPrevious,
 } from "@/components/ui/pagination";
 import { type Sale } from "@shared/schema";
+import { SalesListSkeleton } from "@/components/loading-skeletons";
 
 export default function Sales() {
   const { toast } = useToast();
@@ -106,21 +107,7 @@ export default function Sales() {
   }, {});
 
   if (isLoading || salesLoading) {
-    return (
-      <div className="flex-1 flex flex-col overflow-hidden">
-        <Header 
-          title="Historique des Ventes" 
-          subtitle="Analysez vos performances de vente"
-        />
-        <main className="flex-1 overflow-y-auto p-6">
-          <div className="animate-pulse space-y-4">
-            {[...Array(5)].map((_, i) => (
-              <div key={i} className="bg-white p-6 rounded-xl shadow-sm border border-gray-200 h-32" />
-            ))}
-          </div>
-        </main>
-      </div>
-    );
+    return <SalesListSkeleton />;
   }
 
   return (
