@@ -22,8 +22,11 @@ Preferred communication style: Simple, everyday language.
     - Stock alerts now generate automatically when creating/updating invoices
     - Stock alerts now generate automatically when creating/updating products
     - Overdue invoice alerts now generate automatically when creating/updating invoices
+    - Overdue invoice alerts now generate automatically when fetching alerts (every 30-60s)
+    - Overdue invoice alerts now generate automatically when loading dashboard (every 30s)
     - Fixed database date formatting issues preventing overdue alert generation
-    - Removed need to manually click "Vérifier stocks" or "Vérifier échéances" for alert generation
+    - Completely removed need to manually click "Vérifier stocks" or "Vérifier échéances"
+    - System now detects invoice due dates automatically and generates alerts in real-time
 
 ## Recent Changes
 - **August 17, 2025**: Enhanced UI/UX with detailed loading states and improved business rules

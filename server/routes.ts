@@ -54,6 +54,11 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.get("/api/dashboard/stats", isAuthenticated, async (req: any, res) => {
     try {
       const userId = req.user.id;
+      
+      // Automatically generate overdue invoice alerts when loading dashboard
+      // This ensures alerts are checked regularly as users view their dashboard
+      await storage.generateOverdueInvoiceAlerts(userId);
+      
       const stats = await storage.getDashboardStats(userId);
       res.json(stats);
     } catch (error) {
@@ -1241,6 +1246,11 @@ export async function registerRoutes(app: Express): Promise<Server> {
     try {
       const userId = req.user.id;
       const unreadOnly = req.query.unreadOnly === 'true';
+      
+      // Automatically generate overdue invoice alerts every time we fetch alerts
+      // This ensures alerts are up-to-date with current invoice statuses
+      await storage.generateOverdueInvoiceAlerts(userId);
+      
       const alerts = await storage.getBusinessAlerts(userId, unreadOnly);
       res.json(alerts);
     } catch (error) {
