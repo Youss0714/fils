@@ -21,7 +21,7 @@ Preferred communication style: Simple, everyday language.
   - **Post-Migration Enhancement**: Implemented automatic stock alert generation
     - Stock alerts now generate automatically when creating/updating invoices
     - Stock alerts now generate automatically when creating/updating products
-    - Overdue invoice alerts now generate automatically when creating invoices
+    - Overdue invoice alerts now generate automatically when creating/updating invoices
     - Fixed database date formatting issues preventing overdue alert generation
     - Removed need to manually click "Vérifier stocks" or "Vérifier échéances" for alert generation
 

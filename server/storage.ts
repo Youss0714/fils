@@ -473,6 +473,9 @@ export class DatabaseStorage implements IStorage {
       // Always update stock when an invoice is created (regardless of payment status)
       // This reflects the physical reality that goods are delivered/reserved upon invoicing
       await this.updateStockAfterInvoiceCreation(itemsWithInvoiceId, invoice.userId);
+      
+      // Automatically generate overdue invoice alerts after creating invoices
+      await this.generateOverdueInvoiceAlerts(invoice.userId);
     }
 
     return newInvoice;
@@ -489,6 +492,9 @@ export class DatabaseStorage implements IStorage {
       .returning();
 
     // Stock is already updated during invoice creation, no need to update again on status change
+    
+    // Automatically generate overdue invoice alerts after updating an invoice
+    await this.generateOverdueInvoiceAlerts(userId);
 
     return updatedInvoice;
   }
@@ -510,9 +516,6 @@ export class DatabaseStorage implements IStorage {
     
     // Automatically generate stock alerts after updating stock
     await this.generateStockAlerts(userId);
-    
-    // Automatically generate overdue invoice alerts after creating invoices
-    await this.generateOverdueInvoiceAlerts(userId);
   }
 
   // Helper function to create sales from invoice items
