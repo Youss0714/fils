@@ -1,5 +1,6 @@
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
 import { 
   BarChart3, 
   Users, 
@@ -19,6 +20,8 @@ import { Link, useLocation } from "wouter";
 import { useAuth } from "@/hooks/useAuth";
 import { useSettings } from "@/hooks/useSettings";
 import { useTranslation } from "@/lib/i18n";
+import { useQuery } from "@tanstack/react-query";
+import type { SelectBusinessAlert } from "@shared/schema";
 
 
 
@@ -27,6 +30,22 @@ export default function Sidebar() {
   const { user } = useAuth();
   const { settings } = useSettings();
   const { t } = useTranslation(settings?.language);
+
+  // Get unread alerts count
+  const { data: alerts = [] } = useQuery<SelectBusinessAlert[]>({
+    queryKey: ['/api/alerts', true], // unreadOnly = true
+    queryFn: async () => {
+      const response = await fetch('/api/alerts?unreadOnly=true');
+      if (!response.ok) {
+        throw new Error('Failed to fetch alerts');
+      }
+      return response.json();
+    },
+    refetchInterval: 30000, // Refresh every 30 seconds
+    enabled: !!user, // Only fetch if user is authenticated
+  });
+
+  const unreadAlertsCount = alerts.length;
 
   const navigation = [
     { name: t('dashboard'), href: "/", icon: BarChart3 },
@@ -69,13 +88,14 @@ export default function Sidebar() {
         {navigation.map((item) => {
           const Icon = item.icon;
           const isActive = location === item.href;
+          const isAlertsItem = item.href === "/alerts";
           
           return (
             <Link key={item.name} href={item.href}>
               <Button
                 variant="ghost"
                 className={cn(
-                  "w-full justify-start",
+                  "w-full justify-start relative",
                   isActive
                     ? "bg-primary text-white hover:bg-primary/90"
                     : "text-gray-700 hover:bg-gray-100"
@@ -83,6 +103,14 @@ export default function Sidebar() {
               >
                 <Icon className="mr-3 h-4 w-4" />
                 {item.name}
+                {isAlertsItem && unreadAlertsCount > 0 && (
+                  <Badge 
+                    variant="destructive" 
+                    className="ml-auto text-xs h-5 px-1.5 min-w-[20px] flex items-center justify-center"
+                  >
+                    {unreadAlertsCount > 99 ? '99+' : unreadAlertsCount}
+                  </Badge>
+                )}
               </Button>
             </Link>
           );
