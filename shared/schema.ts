@@ -637,6 +637,10 @@ export const insertProductSchema = createInsertSchema(products).omit({
 export const insertInvoiceSchema = createInsertSchema(invoices).omit({
   id: true,
   createdAt: true,
+}).extend({
+  dueDate: z.union([z.string(), z.null(), z.undefined()]).optional().transform(val => 
+    val && typeof val === 'string' ? new Date(val) : null
+  ),
 });
 
 export const insertInvoiceItemSchema = createInsertSchema(invoiceItems).omit({

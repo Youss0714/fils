@@ -297,9 +297,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   const createInvoiceSchema = z.object({
-    invoice: insertInvoiceSchema.omit({ userId: true }).extend({
-      dueDate: z.union([z.string(), z.null(), z.undefined()]).optional().transform(val => val && typeof val === 'string' ? new Date(val) : undefined),
-    }),
+    invoice: insertInvoiceSchema.omit({ userId: true }),
     items: z.array(insertInvoiceItemSchema.omit({ invoiceId: true })),
   });
 
