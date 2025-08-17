@@ -2019,6 +2019,7 @@ export class DatabaseStorage implements IStorage {
 
     // Get all unpaid invoices with due dates in the past
     const now = new Date();
+    const nowString = now.toISOString();
     const overdueInvoices = await db
       .select({
         id: invoices.id,
@@ -2033,7 +2034,7 @@ export class DatabaseStorage implements IStorage {
         eq(invoices.userId, userId),
         or(eq(invoices.status, "en_attente"), eq(invoices.status, "partiellement_reglee")),
         isNotNull(invoices.dueDate),
-        sql`${invoices.dueDate} < ${now.toISOString()}`
+        sql`${invoices.dueDate} < ${nowString}`
       ));
 
     const alerts: SelectBusinessAlert[] = [];
