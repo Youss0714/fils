@@ -312,17 +312,6 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return new Date(val);
       }),
       notes: z.string().optional(),
-    }).superRefine((data, ctx) => {
-      // Date d'échéance obligatoire pour les statuts en_attente et partiellement_reglee
-      console.log("Validation - Status:", data.status, "DueDate:", data.dueDate);
-      if ((data.status === "en_attente" || data.status === "partiellement_reglee") && (!data.dueDate || data.dueDate === null)) {
-        console.log("Validation failed - Missing dueDate for status:", data.status);
-        ctx.addIssue({
-          code: z.ZodIssueCode.custom,
-          message: "La date d'échéance est obligatoire pour les factures en attente ou partiellement réglées",
-          path: ["dueDate"],
-        });
-      }
     }),
     items: z.array(insertInvoiceItemSchema.omit({ invoiceId: true })),
   });
@@ -331,14 +320,24 @@ export async function registerRoutes(app: Express): Promise<Server> {
     try {
       const userId = req.user.id;
       console.log("Request body:", JSON.stringify(req.body, null, 2));
+      
+      // Manual validation before Zod parsing
+      const invoiceData = req.body.invoice;
+      if ((invoiceData.status === "en_attente" || invoiceData.status === "partiellement_reglee") && 
+          (!invoiceData.dueDate || invoiceData.dueDate === null || invoiceData.dueDate === "")) {
+        return res.status(400).json({ 
+          message: "La date d'échéance est obligatoire pour les factures en attente ou partiellement réglées" 
+        });
+      }
+      
       const { invoice, items } = createInvoiceSchema.parse(req.body);
-      const invoiceData = { ...invoice, userId };
-      const newInvoice = await storage.createInvoice(invoiceData, items);
+      const finalInvoiceData = { ...invoice, userId };
+      const newInvoice = await storage.createInvoice(finalInvoiceData, items);
       res.json(newInvoice);
-    } catch (error) {
+    } catch (error: any) {
       console.error("Error creating invoice:", error);
       if (error.issues && error.issues.length > 0) {
-        const dueDateError = error.issues.find(issue => issue.path.includes('dueDate'));
+        const dueDateError = error.issues.find((issue: any) => issue.path.includes('dueDate'));
         if (dueDateError) {
           return res.status(400).json({ message: dueDateError.message });
         }
