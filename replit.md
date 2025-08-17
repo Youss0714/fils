@@ -27,6 +27,9 @@ Preferred communication style: Simple, everyday language.
     - Fixed database date formatting issues preventing overdue alert generation
     - Completely removed need to manually click "Vérifier stocks" or "Vérifier échéances"
     - System now detects invoice due dates automatically and generates alerts in real-time
+    - Added notification badge on "Alertes" section in sidebar showing unread alert count
+    - Added "Marquer toutes comme lues" button for bulk alert management
+    - Optimized alert generation to prevent constant regeneration and duplicate alerts
 
 ## Recent Changes
 - **August 17, 2025**: Enhanced UI/UX with detailed loading states and improved business rules
