@@ -296,7 +296,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  // Custom schema to properly handle dueDate nullability
+  // Custom schema to properly handle dueDate nullability and validation
   const createInvoiceSchema = z.object({
     invoice: z.object({
       number: z.string(),
@@ -312,6 +312,15 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return new Date(val);
       }),
       notes: z.string().optional(),
+    }).refine((data) => {
+      // Date d'échéance obligatoire pour les statuts en_attente et partiellement_reglee
+      if ((data.status === "en_attente" || data.status === "partiellement_reglee") && !data.dueDate) {
+        return false;
+      }
+      return true;
+    }, {
+      message: "La date d'échéance est obligatoire pour les factures en attente ou partiellement réglées",
+      path: ["dueDate"],
     }),
     items: z.array(insertInvoiceItemSchema.omit({ invoiceId: true })),
   });

@@ -20,10 +20,12 @@ Preferred communication style: Simple, everyday language.
   - Added payment method selection field to invoice creation form with 5 options
 
 ## Recent Changes
-- **August 17, 2025**: Fixed invoice creation validation error
+- **August 17, 2025**: Fixed invoice creation validation and enhanced business rules
   - Corrected Zod schema to properly handle null dueDate values during invoice creation
-  - Resolved "400: Failed to create invoice" error when creating invoices with paid status
+  - Resolved "400: Failed to create invoice" error when creating invoices with paid status  
   - Enhanced invoice validation to accept null, undefined, and string values for dueDate field
+  - Added business rule: dueDate is now required for "en_attente" and "partiellement_reglee" status
+  - Created custom validation schema to replace generated schema for better control
 - **August 16, 2025**: Fixed invoice sales accounting logic
   - Sales are now created immediately upon invoice creation regardless of payment status
   - Stock is deducted immediately upon invoice creation regardless of payment status
