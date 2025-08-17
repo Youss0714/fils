@@ -1935,6 +1935,16 @@ export class DatabaseStorage implements IStorage {
   }
 
   async generateStockAlerts(userId: string): Promise<SelectBusinessAlert[]> {
+    // First, mark all existing stock alerts as resolved to refresh them
+    await db
+      .update(businessAlerts)
+      .set({ isResolved: true, updatedAt: new Date() })
+      .where(and(
+        eq(businessAlerts.userId, userId),
+        or(eq(businessAlerts.type, "low_stock"), eq(businessAlerts.type, "critical_stock")),
+        eq(businessAlerts.isResolved, false)
+      ));
+
     // Get all products with low stock for this user
     const lowStockProducts = await db
       .select()
@@ -1964,20 +1974,28 @@ export class DatabaseStorage implements IStorage {
         message = `Le produit "${product.name}" a un stock faible: ${stockLevel} unité(s) restante(s).`;
       }
 
-      const alert = await this.createBusinessAlert({
-        userId,
-        type,
-        severity,
-        title,
-        message,
-        entityType: "product",
-        entityId: product.id,
-        metadata: {
-          productName: product.name,
-          currentStock: stockLevel,
-          alertThreshold: alertLevel,
-        },
-      });
+      // Force create new alert by bypassing duplicate check
+      const [alert] = await db
+        .insert(businessAlerts)
+        .values({
+          userId,
+          type,
+          severity,
+          title,
+          message,
+          entityType: "product",
+          entityId: product.id,
+          metadata: {
+            productName: product.name,
+            currentStock: stockLevel,
+            alertThreshold: alertLevel,
+          },
+          isRead: false,
+          isResolved: false,
+          createdAt: new Date(),
+          updatedAt: new Date(),
+        })
+        .returning();
       
       alerts.push(alert);
     }
