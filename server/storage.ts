@@ -2104,6 +2104,22 @@ export class DatabaseStorage implements IStorage {
       ));
   }
 
+  async markAllAlertsAsRead(userId: string): Promise<number> {
+    const result = await db
+      .update(businessAlerts)
+      .set({ 
+        isRead: true, 
+        updatedAt: new Date() 
+      })
+      .where(and(
+        eq(businessAlerts.userId, userId),
+        eq(businessAlerts.isRead, false)
+      ))
+      .returning();
+    
+    return result.length;
+  }
+
 }
 
 export const storage = new DatabaseStorage();

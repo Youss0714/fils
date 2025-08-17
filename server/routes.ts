@@ -1286,6 +1286,20 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  app.patch("/api/alerts/mark-all-read", isAuthenticated, async (req: any, res) => {
+    try {
+      const userId = req.user.id;
+      const count = await storage.markAllAlertsAsRead(userId);
+      res.json({ 
+        message: `${count} alerte(s) marquée(s) comme lues`,
+        count 
+      });
+    } catch (error) {
+      console.error("Error marking all alerts as read:", error);
+      res.status(500).json({ message: "Erreur lors de la modification des alertes" });
+    }
+  });
+
   app.patch("/api/alerts/:id/resolve", isAuthenticated, async (req: any, res) => {
     try {
       const userId = req.user.id;

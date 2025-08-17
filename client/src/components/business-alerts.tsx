@@ -22,7 +22,8 @@ import {
   RefreshCw,
   Settings,
   Eye,
-  EyeOff
+  EyeOff,
+  CheckCheck
 } from 'lucide-react';
 import { formatDistance } from 'date-fns';
 import { fr } from 'date-fns/locale';
@@ -217,6 +218,30 @@ export function BusinessAlerts({ showUnreadOnly = false, compact = false }: Busi
       toast({
         title: "Erreur",
         description: "Impossible de générer les alertes de factures échues",
+        variant: "destructive",
+      });
+    },
+  });
+
+  const markAllAsReadMutation = useMutation({
+    mutationFn: async () => {
+      const response = await fetch('/api/alerts/mark-all-read', { method: 'PATCH' });
+      if (!response.ok) {
+        throw new Error('Failed to mark all alerts as read');
+      }
+      return response.json();
+    },
+    onSuccess: (data: { message: string }) => {
+      queryClient.invalidateQueries({ queryKey: ['/api/alerts'] });
+      toast({
+        title: "Succès",
+        description: data.message,
+      });
+    },
+    onError: () => {
+      toast({
+        title: "Erreur",
+        description: "Impossible de marquer toutes les alertes comme lues",
         variant: "destructive",
       });
     },
@@ -433,6 +458,18 @@ export function BusinessAlerts({ showUnreadOnly = false, compact = false }: Busi
           </p>
         </div>
         <div className="flex items-center space-x-2">
+          {unreadCount > 0 && (
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => markAllAsReadMutation.mutate()}
+              disabled={markAllAsReadMutation.isPending}
+              data-testid="button-mark-all-read"
+            >
+              <CheckCheck className="h-4 w-4 mr-2" />
+              Marquer toutes comme lues
+            </Button>
+          )}
           {unreadCount > 0 && (
             <Badge variant="destructive">
               {unreadCount} non lue(s)
