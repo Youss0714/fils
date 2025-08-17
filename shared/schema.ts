@@ -509,6 +509,30 @@ export const chartOfAccountsRelations = relations(chartOfAccounts, ({ one, many 
   expenses: many(expenses),
 }));
 
+// Business Alerts table
+export const businessAlerts = pgTable("business_alerts", {
+  id: serial("id").primaryKey(),
+  userId: varchar("user_id").notNull().references(() => users.id),
+  type: varchar("type", { length: 50 }).notNull(), // 'low_stock', 'overdue_invoice', 'critical_stock', 'payment_due'
+  severity: varchar("severity", { length: 20 }).default("medium"), // 'low', 'medium', 'high', 'critical'
+  title: varchar("title", { length: 255 }).notNull(),
+  message: text("message").notNull(),
+  entityType: varchar("entity_type", { length: 50 }), // 'product', 'invoice', 'client'
+  entityId: integer("entity_id"), // ID de l'entité concernée
+  metadata: jsonb("metadata"), // Données additionnelles (stock level, due date, etc.)
+  isRead: boolean("is_read").default(false),
+  isResolved: boolean("is_resolved").default(false),
+  createdAt: timestamp("created_at").defaultNow(),
+  updatedAt: timestamp("updated_at").defaultNow(),
+});
+
+export const businessAlertsRelations = relations(businessAlerts, ({ one }) => ({
+  user: one(users, {
+    fields: [businessAlerts.userId],
+    references: [users.id],
+  }),
+}));
+
 
 
 // Tax rates available for invoices
@@ -799,6 +823,13 @@ export const insertChartOfAccountsSchema = createInsertSchema(chartOfAccounts).o
   updatedAt: true,
 });
 
+// Business alerts insert schema
+export const insertBusinessAlertSchema = createInsertSchema(businessAlerts).omit({
+  id: true,
+  createdAt: true,
+  updatedAt: true,
+});
+
 // Types
 export type UpsertUser = typeof users.$inferInsert;
 export type User = typeof users.$inferSelect;
@@ -842,4 +873,8 @@ export type InsertPettyCashEntry = z.infer<typeof insertPettyCashEntrySchema>;
 export type InsertTransactionJournal = z.infer<typeof insertTransactionJournalSchema>;
 export type InsertRevenueCategory = z.infer<typeof insertRevenueCategorySchema>;
 export type InsertRevenue = z.infer<typeof insertRevenueSchema>;
+export type InsertChartOfAccounts = z.infer<typeof insertChartOfAccountsSchema>;
+export type SelectChartOfAccounts = typeof chartOfAccounts.$inferSelect;
+export type InsertBusinessAlert = z.infer<typeof insertBusinessAlertSchema>;
+export type SelectBusinessAlert = typeof businessAlerts.$inferSelect;
 

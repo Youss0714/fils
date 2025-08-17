@@ -19,6 +19,7 @@ import {
   insertTransactionJournalSchema,
   insertRevenueCategorySchema,
   insertRevenueSchema,
+  insertBusinessAlertSchema,
 } from "@shared/schema";
 import { z } from "zod";
 
@@ -1229,6 +1230,110 @@ export async function registerRoutes(app: Express): Promise<Server> {
     } catch (error) {
       console.error("Error deleting revenue:", error);
       res.status(500).json({ message: "Erreur lors de la suppression du revenu" });
+    }
+  });
+
+  // ==========================================
+  // BUSINESS ALERTS ROUTES
+  // ==========================================
+  
+  app.get("/api/alerts", isAuthenticated, async (req: any, res) => {
+    try {
+      const userId = req.user.id;
+      const unreadOnly = req.query.unreadOnly === 'true';
+      const alerts = await storage.getBusinessAlerts(userId, unreadOnly);
+      res.json(alerts);
+    } catch (error) {
+      console.error("Error fetching alerts:", error);
+      res.status(500).json({ message: "Erreur lors de la récupération des alertes" });
+    }
+  });
+
+  app.post("/api/alerts", isAuthenticated, async (req: any, res) => {
+    try {
+      const userId = req.user.id;
+      const alertData = insertBusinessAlertSchema.parse({ ...req.body, userId });
+      const alert = await storage.createBusinessAlert(alertData);
+      res.json(alert);
+    } catch (error) {
+      console.error("Error creating alert:", error);
+      res.status(400).json({ message: "Erreur lors de la création de l'alerte" });
+    }
+  });
+
+  app.patch("/api/alerts/:id/read", isAuthenticated, async (req: any, res) => {
+    try {
+      const userId = req.user.id;
+      const id = parseInt(req.params.id);
+      await storage.markAlertAsRead(id, userId);
+      res.json({ message: "Alerte marquée comme lue" });
+    } catch (error) {
+      console.error("Error marking alert as read:", error);
+      res.status(400).json({ message: "Erreur lors de la modification de l'alerte" });
+    }
+  });
+
+  app.patch("/api/alerts/:id/resolve", isAuthenticated, async (req: any, res) => {
+    try {
+      const userId = req.user.id;
+      const id = parseInt(req.params.id);
+      await storage.markAlertAsResolved(id, userId);
+      res.json({ message: "Alerte résolue" });
+    } catch (error) {
+      console.error("Error resolving alert:", error);
+      res.status(400).json({ message: "Erreur lors de la résolution de l'alerte" });
+    }
+  });
+
+  app.delete("/api/alerts/:id", isAuthenticated, async (req: any, res) => {
+    try {
+      const userId = req.user.id;
+      const id = parseInt(req.params.id);
+      await storage.deleteBusinessAlert(id, userId);
+      res.json({ message: "Alerte supprimée" });
+    } catch (error) {
+      console.error("Error deleting alert:", error);
+      res.status(500).json({ message: "Erreur lors de la suppression de l'alerte" });
+    }
+  });
+
+  app.post("/api/alerts/generate/stock", isAuthenticated, async (req: any, res) => {
+    try {
+      const userId = req.user.id;
+      const alerts = await storage.generateStockAlerts(userId);
+      res.json({ 
+        message: `${alerts.length} alerte(s) de stock générée(s)`,
+        alerts 
+      });
+    } catch (error) {
+      console.error("Error generating stock alerts:", error);
+      res.status(500).json({ message: "Erreur lors de la génération des alertes de stock" });
+    }
+  });
+
+  app.post("/api/alerts/generate/overdue", isAuthenticated, async (req: any, res) => {
+    try {
+      const userId = req.user.id;
+      const alerts = await storage.generateOverdueInvoiceAlerts(userId);
+      res.json({ 
+        message: `${alerts.length} alerte(s) de factures échues générée(s)`,
+        alerts 
+      });
+    } catch (error) {
+      console.error("Error generating overdue alerts:", error);
+      res.status(500).json({ message: "Erreur lors de la génération des alertes de factures échues" });
+    }
+  });
+
+  app.delete("/api/alerts/cleanup", isAuthenticated, async (req: any, res) => {
+    try {
+      const userId = req.user.id;
+      const olderThanDays = parseInt(req.query.days as string) || 30;
+      await storage.cleanupResolvedAlerts(userId, olderThanDays);
+      res.json({ message: "Alertes nettoyées avec succès" });
+    } catch (error) {
+      console.error("Error cleaning up alerts:", error);
+      res.status(500).json({ message: "Erreur lors du nettoyage des alertes" });
     }
   });
 

@@ -56,6 +56,12 @@ import {
   type InsertRevenueCategory,
   type InsertRevenue,
 
+  chartOfAccounts,
+  businessAlerts,
+  type SelectChartOfAccounts,
+  type InsertBusinessAlert,
+  type SelectBusinessAlert,
+
 } from "@shared/schema";
 import { db } from "./db";
 import { eq, desc, and, sum, count, sql, like, or, gte, lte, isNotNull, ne } from "drizzle-orm";
@@ -225,6 +231,16 @@ export interface IStorage {
   createRevenue(revenue: InsertRevenue): Promise<Revenue>;
   updateRevenue(id: number, revenue: Partial<InsertRevenue>, userId: string): Promise<Revenue>;
   deleteRevenue(id: number, userId: string): Promise<void>;
+
+  // Business Alerts operations
+  getBusinessAlerts(userId: string, unreadOnly?: boolean): Promise<SelectBusinessAlert[]>;
+  createBusinessAlert(alert: InsertBusinessAlert): Promise<SelectBusinessAlert>;
+  markAlertAsRead(id: number, userId: string): Promise<void>;
+  markAlertAsResolved(id: number, userId: string): Promise<void>;
+  deleteBusinessAlert(id: number, userId: string): Promise<void>;
+  generateStockAlerts(userId: string): Promise<SelectBusinessAlert[]>;
+  generateOverdueInvoiceAlerts(userId: string): Promise<SelectBusinessAlert[]>;
+  cleanupResolvedAlerts(userId: string, olderThanDays?: number): Promise<void>;
 }
 
 export class DatabaseStorage implements IStorage {
@@ -1834,6 +1850,195 @@ export class DatabaseStorage implements IStorage {
     await db
       .delete(revenues)
       .where(and(eq(revenues.id, id), eq(revenues.userId, userId)));
+  }
+
+  // Business Alerts implementation
+  async getBusinessAlerts(userId: string, unreadOnly: boolean = false): Promise<SelectBusinessAlert[]> {
+    const condition = unreadOnly 
+      ? and(eq(businessAlerts.userId, userId), eq(businessAlerts.isRead, false))
+      : eq(businessAlerts.userId, userId);
+      
+    return await db
+      .select()
+      .from(businessAlerts)
+      .where(condition)
+      .orderBy(desc(businessAlerts.createdAt));
+  }
+
+  async createBusinessAlert(alertData: InsertBusinessAlert): Promise<SelectBusinessAlert> {
+    // Check if similar alert already exists (to avoid duplicates)
+    if (alertData.entityType && alertData.entityId) {
+      const existingAlert = await db
+        .select()
+        .from(businessAlerts)
+        .where(and(
+          eq(businessAlerts.userId, alertData.userId),
+          eq(businessAlerts.type, alertData.type),
+          eq(businessAlerts.entityType, alertData.entityType),
+          eq(businessAlerts.entityId, alertData.entityId),
+          eq(businessAlerts.isResolved, false)
+        ))
+        .limit(1);
+        
+      if (existingAlert.length > 0) {
+        return existingAlert[0];
+      }
+    }
+
+    const [alert] = await db
+      .insert(businessAlerts)
+      .values({
+        ...alertData,
+        createdAt: new Date(),
+        updatedAt: new Date(),
+      })
+      .returning();
+    return alert;
+  }
+
+  async markAlertAsRead(id: number, userId: string): Promise<void> {
+    await db
+      .update(businessAlerts)
+      .set({ 
+        isRead: true,
+        updatedAt: new Date(),
+      })
+      .where(and(eq(businessAlerts.id, id), eq(businessAlerts.userId, userId)));
+  }
+
+  async markAlertAsResolved(id: number, userId: string): Promise<void> {
+    await db
+      .update(businessAlerts)
+      .set({ 
+        isResolved: true,
+        isRead: true,
+        updatedAt: new Date(),
+      })
+      .where(and(eq(businessAlerts.id, id), eq(businessAlerts.userId, userId)));
+  }
+
+  async deleteBusinessAlert(id: number, userId: string): Promise<void> {
+    await db
+      .delete(businessAlerts)
+      .where(and(eq(businessAlerts.id, id), eq(businessAlerts.userId, userId)));
+  }
+
+  async generateStockAlerts(userId: string): Promise<SelectBusinessAlert[]> {
+    // Get all products with low stock for this user
+    const lowStockProducts = await db
+      .select()
+      .from(products)
+      .where(and(
+        eq(products.userId, userId),
+        sql`${products.stock} <= ${products.alertStock}`
+      ));
+
+    const alerts: SelectBusinessAlert[] = [];
+
+    for (const product of lowStockProducts) {
+      const stockLevel = product.stock || 0;
+      const alertLevel = product.alertStock || 10;
+      
+      let severity: string, type: string, title: string, message: string;
+      
+      if (stockLevel === 0) {
+        severity = "critical";
+        type = "critical_stock";
+        title = "Rupture de stock";
+        message = `Le produit "${product.name}" est en rupture de stock.`;
+      } else {
+        severity = stockLevel <= alertLevel / 2 ? "high" : "medium";
+        type = "low_stock";
+        title = "Stock faible";
+        message = `Le produit "${product.name}" a un stock faible: ${stockLevel} unité(s) restante(s).`;
+      }
+
+      const alert = await this.createBusinessAlert({
+        userId,
+        type,
+        severity,
+        title,
+        message,
+        entityType: "product",
+        entityId: product.id,
+        metadata: {
+          productName: product.name,
+          currentStock: stockLevel,
+          alertThreshold: alertLevel,
+        },
+      });
+      
+      alerts.push(alert);
+    }
+
+    return alerts;
+  }
+
+  async generateOverdueInvoiceAlerts(userId: string): Promise<SelectBusinessAlert[]> {
+    // Get all unpaid invoices with due dates in the past
+    const now = new Date();
+    const overdueInvoices = await db
+      .select({
+        id: invoices.id,
+        number: invoices.number,
+        dueDate: invoices.dueDate,
+        totalTTC: invoices.totalTTC,
+        client: clients,
+      })
+      .from(invoices)
+      .leftJoin(clients, eq(invoices.clientId, clients.id))
+      .where(and(
+        eq(invoices.userId, userId),
+        or(eq(invoices.status, "en_attente"), eq(invoices.status, "partiellement_reglee")),
+        isNotNull(invoices.dueDate),
+        sql`${invoices.dueDate} < ${now}`
+      ));
+
+    const alerts: SelectBusinessAlert[] = [];
+
+    for (const invoice of overdueInvoices) {
+      const daysPastDue = Math.floor(
+        (now.getTime() - new Date(invoice.dueDate!).getTime()) / (1000 * 60 * 60 * 24)
+      );
+      
+      const severity = daysPastDue > 30 ? "critical" : daysPastDue > 7 ? "high" : "medium";
+      const title = "Facture échue";
+      const message = `La facture ${invoice.number} de ${invoice.client?.name || "Client inconnu"} est échue depuis ${daysPastDue} jour(s).`;
+
+      const alert = await this.createBusinessAlert({
+        userId,
+        type: "overdue_invoice",
+        severity,
+        title,
+        message,
+        entityType: "invoice",
+        entityId: invoice.id,
+        metadata: {
+          invoiceNumber: invoice.number,
+          clientName: invoice.client?.name,
+          amount: invoice.totalTTC,
+          dueDate: invoice.dueDate,
+          daysPastDue,
+        },
+      });
+      
+      alerts.push(alert);
+    }
+
+    return alerts;
+  }
+
+  async cleanupResolvedAlerts(userId: string, olderThanDays: number = 30): Promise<void> {
+    const cutoffDate = new Date();
+    cutoffDate.setDate(cutoffDate.getDate() - olderThanDays);
+    
+    await db
+      .delete(businessAlerts)
+      .where(and(
+        eq(businessAlerts.userId, userId),
+        eq(businessAlerts.isResolved, true),
+        sql`${businessAlerts.updatedAt} < ${cutoffDate}`
+      ));
   }
 
 }

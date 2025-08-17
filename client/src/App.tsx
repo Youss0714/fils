@@ -23,6 +23,8 @@ import UserRegistration from "@/pages/user-registration";
 import LicenseActivation from "@/pages/license-activation";
 import AdminLicenses from "@/pages/admin-licenses";
 import Accounting from "@/pages/accounting";
+
+import AlertsPage from "@/pages/alerts";
 import Sidebar from "@/components/sidebar";
 import TrialBanner from "@/components/trial-banner";
 
@@ -116,6 +118,7 @@ function AppContent() {
             <Route path="/sales" component={Sales} />
             <Route path="/accounting" component={Accounting} />
             <Route path="/settings" component={Settings} />
+            <Route path="/alerts" component={AlertsPage} />
             <Route path="/export" component={Export} />
             <Route path="/complete-profile" component={UserRegistration} />
             <Route component={NotFound} />

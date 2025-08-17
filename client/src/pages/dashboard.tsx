@@ -29,6 +29,7 @@ import {
 import { Link, useLocation } from "wouter";
 import SyncStatus from "@/components/sync-status";
 import { DashboardSkeleton } from "@/components/loading-skeletons";
+import { DashboardAlertsWidget } from "@/components/dashboard-alerts-widget";
 
 export default function Dashboard() {
   const { toast } = useToast();
@@ -369,37 +370,8 @@ export default function Dashboard() {
               </CardContent>
             </Card>
 
-            {/* Low Stock Alert */}
-            {((stats as any)?.lowStockProducts || []).length > 0 && (
-              <Card>
-                <CardHeader>
-                  <div className="flex items-center justify-between">
-                    <CardTitle>Alertes Stock</CardTitle>
-                    <Badge variant="destructive">
-                      {((stats as any)?.lowStockProducts || []).length} alertes
-                    </Badge>
-                  </div>
-                </CardHeader>
-                <CardContent className="space-y-3">
-                  {((stats as any)?.lowStockProducts || []).slice(0, 3).map((product: any) => (
-                    <div key={product.id} className="flex items-center justify-between p-3 bg-red-50 rounded-lg">
-                      <div className="flex items-center space-x-3">
-                        <AlertTriangle className="w-5 h-5 text-red-500" />
-                        <div>
-                          <p className="text-sm font-medium text-gray-900">{product.name}</p>
-                          <p className="text-xs text-gray-500">Stock: {product.stock} unités</p>
-                        </div>
-                      </div>
-                      <Link href={`/products/${product.id}`}>
-                        <Button variant="ghost" size="sm" className="text-red-600 hover:text-red-800">
-                          Réapprovisionner
-                        </Button>
-                      </Link>
-                    </div>
-                  ))}
-                </CardContent>
-              </Card>
-            )}
+            {/* Business Alerts Widget */}
+            <DashboardAlertsWidget />
           </div>
         </div>
       </main>
