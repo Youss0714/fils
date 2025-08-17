@@ -7,9 +7,10 @@ YGestion is a comprehensive business management application for the African mark
 Preferred communication style: Simple, everyday language.
 
 ## Migration History
-- **August 16, 2025**: Successfully migrated from Replit Agent to Replit environment
+- **August 17, 2025**: Successfully migrated from Replit Agent to Replit environment
   - Installed all required Node.js dependencies (tsx, express, drizzle-orm, etc.)
   - Created PostgreSQL database with complete schema deployment
+  - Fixed invoice creation validation to handle null dueDate values properly
   - Verified all authentication, dashboard, and core business features working
   - Application running stable on port 5000 with proper client/server separation
   - Fixed dashboard recent invoices to display only 4 most recent instead of 5
@@ -19,6 +20,10 @@ Preferred communication style: Simple, everyday language.
   - Added payment method selection field to invoice creation form with 5 options
 
 ## Recent Changes
+- **August 17, 2025**: Fixed invoice creation validation error
+  - Corrected Zod schema to properly handle null dueDate values during invoice creation
+  - Resolved "400: Failed to create invoice" error when creating invoices with paid status
+  - Enhanced invoice validation to accept null, undefined, and string values for dueDate field
 - **August 16, 2025**: Fixed invoice sales accounting logic
   - Sales are now created immediately upon invoice creation regardless of payment status
   - Stock is deducted immediately upon invoice creation regardless of payment status
