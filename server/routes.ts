@@ -56,8 +56,15 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const userId = req.user.id;
       
       // Automatically generate overdue invoice alerts when loading dashboard
-      // This ensures alerts are checked regularly as users view their dashboard
-      await storage.generateOverdueInvoiceAlerts(userId);
+      // But only do it periodically to avoid constant regeneration
+      const now = new Date();
+      const lastCheck = (req.session as any)?.lastAlertCheck;
+      
+      // Only check alerts every 5 minutes to avoid constant regeneration
+      if (!lastCheck || (now.getTime() - lastCheck) > 5 * 60 * 1000) {
+        await storage.generateOverdueInvoiceAlerts(userId);
+        (req.session as any).lastAlertCheck = now.getTime();
+      }
       
       const stats = await storage.getDashboardStats(userId);
       res.json(stats);
@@ -1246,10 +1253,6 @@ export async function registerRoutes(app: Express): Promise<Server> {
     try {
       const userId = req.user.id;
       const unreadOnly = req.query.unreadOnly === 'true';
-      
-      // Automatically generate overdue invoice alerts every time we fetch alerts
-      // This ensures alerts are up-to-date with current invoice statuses
-      await storage.generateOverdueInvoiceAlerts(userId);
       
       const alerts = await storage.getBusinessAlerts(userId, unreadOnly);
       res.json(alerts);

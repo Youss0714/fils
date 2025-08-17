@@ -2010,16 +2010,6 @@ export class DatabaseStorage implements IStorage {
   }
 
   async generateOverdueInvoiceAlerts(userId: string): Promise<SelectBusinessAlert[]> {
-    // First, mark all existing overdue invoice alerts as resolved to refresh them
-    await db
-      .update(businessAlerts)
-      .set({ isResolved: true, updatedAt: new Date() })
-      .where(and(
-        eq(businessAlerts.userId, userId),
-        eq(businessAlerts.type, "overdue_invoice"),
-        eq(businessAlerts.isResolved, false)
-      ));
-
     // Get all unpaid invoices with due dates in the past
     const now = new Date();
     const nowString = now.toISOString();
@@ -2043,6 +2033,25 @@ export class DatabaseStorage implements IStorage {
     const alerts: SelectBusinessAlert[] = [];
 
     for (const invoice of overdueInvoices) {
+      // Check if an alert already exists for this specific invoice
+      const existingAlert = await db
+        .select()
+        .from(businessAlerts)
+        .where(and(
+          eq(businessAlerts.userId, userId),
+          eq(businessAlerts.type, "overdue_invoice"),
+          eq(businessAlerts.entityType, "invoice"),
+          eq(businessAlerts.entityId, invoice.id),
+          eq(businessAlerts.isResolved, false)
+        ))
+        .limit(1);
+
+      // Skip if alert already exists for this invoice
+      if (existingAlert.length > 0) {
+        alerts.push(existingAlert[0]);
+        continue;
+      }
+
       const daysPastDue = Math.floor(
         (now.getTime() - new Date(invoice.dueDate!).getTime()) / (1000 * 60 * 60 * 24)
       );
@@ -2051,7 +2060,7 @@ export class DatabaseStorage implements IStorage {
       const title = "Facture échue";
       const message = `La facture ${invoice.number} de ${invoice.client?.name || "Client inconnu"} est échue depuis ${daysPastDue} jour(s).`;
 
-      // Force create new alert by bypassing duplicate check
+      // Create new alert only if none exists
       const [alert] = await db
         .insert(businessAlerts)
         .values({
