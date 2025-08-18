@@ -120,7 +120,7 @@ export default function Products() {
   const watchedQuantity = replenishmentForm.watch("quantity");
   const watchedCostPerUnit = replenishmentForm.watch("costPerUnit");
 
-  React.useEffect(() => {
+  useEffect(() => {
     const quantity = Number(watchedQuantity) || 0;
     const costPerUnit = Number(watchedCostPerUnit) || 0;
     const totalCost = quantity * costPerUnit;
