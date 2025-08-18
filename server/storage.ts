@@ -98,7 +98,7 @@ export interface IStorage {
   
   // Stock replenishment operations
   getStockReplenishments(userId: string): Promise<StockReplenishment[]>;
-  getStockReplenishmentsByProduct(productId: number): Promise<StockReplenishment[]>;
+  getStockReplenishmentsByProduct(productId: number, userId: string): Promise<StockReplenishment[]>;
   createStockReplenishment(replenishment: InsertStockReplenishment): Promise<StockReplenishment>;
   deleteStockReplenishment(id: number): Promise<void>;
   
@@ -433,9 +433,9 @@ export class DatabaseStorage implements IStorage {
     return replenishments as any;
   }
 
-  async getStockReplenishmentsByProduct(productId: number): Promise<StockReplenishment[]> {
+  async getStockReplenishmentsByProduct(productId: number, userId: string): Promise<StockReplenishment[]> {
     return db.select().from(stockReplenishments)
-      .where(eq(stockReplenishments.productId, productId))
+      .where(and(eq(stockReplenishments.productId, productId), eq(stockReplenishments.userId, userId)))
       .orderBy(desc(stockReplenishments.createdAt));
   }
 

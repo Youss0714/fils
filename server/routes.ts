@@ -233,8 +233,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   app.get("/api/products/:productId/replenishments", isAuthenticated, async (req: any, res) => {
     try {
+      const userId = req.user.id;
       const productId = parseInt(req.params.productId);
-      const replenishments = await storage.getStockReplenishmentsByProduct(productId);
+      const replenishments = await storage.getStockReplenishmentsByProduct(productId, userId);
       res.json(replenishments);
     } catch (error) {
       console.error("Error fetching product replenishments:", error);
