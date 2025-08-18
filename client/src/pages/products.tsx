@@ -20,9 +20,11 @@ import {
   Trash2, 
   Plus,
   Search,
-  AlertTriangle
+  AlertTriangle,
+  TrendingUp,
+  History
 } from "lucide-react";
-import { insertProductSchema, type Product, type InsertProduct, type Category } from "@shared/schema";
+import { insertProductSchema, insertStockReplenishmentSchema, type Product, type InsertProduct, type Category, type StockReplenishment, type InsertStockReplenishment } from "@shared/schema";
 import { formatPrice } from "@/lib/i18n";
 import { useSettings } from "@/hooks/useSettings";
 import { useForm } from "react-hook-form";
@@ -37,6 +39,9 @@ export default function Products() {
   const [searchTerm, setSearchTerm] = useState("");
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [editingProduct, setEditingProduct] = useState<Product | null>(null);
+  const [isReplenishmentDialogOpen, setIsReplenishmentDialogOpen] = useState(false);
+  const [selectedProductForReplenishment, setSelectedProductForReplenishment] = useState<Product | null>(null);
+  const [isHistoryDialogOpen, setIsHistoryDialogOpen] = useState(false);
 
   // Redirect to home if not authenticated
   useEffect(() => {
@@ -68,6 +73,24 @@ export default function Products() {
     staleTime: 60000,
   });
 
+  // Query for stock replenishments
+  const { data: stockReplenishments = [] } = useQuery<StockReplenishment[]>({
+    queryKey: ["/api/stock-replenishments"],
+    retry: false,
+    refetchInterval: 60000,
+    staleTime: 30000,
+  });
+
+  // Query for specific product replenishments (conditional)
+  const { data: productReplenishments = [] } = useQuery<StockReplenishment[]>({
+    queryKey: ["/api/products", selectedProductForReplenishment?.id, "replenishments"],
+    queryFn: () => selectedProductForReplenishment 
+      ? apiRequest("GET", `/api/products/${selectedProductForReplenishment.id}/replenishments`)
+      : Promise.resolve([]),
+    enabled: !!selectedProductForReplenishment && isHistoryDialogOpen,
+    retry: false,
+  });
+
   const form = useForm<InsertProduct>({
     resolver: zodResolver(insertProductSchema.omit({ userId: true })),
     defaultValues: {
@@ -77,6 +100,18 @@ export default function Products() {
       stock: 0,
       alertStock: 10,
       categoryId: undefined,
+    },
+  });
+
+  const replenishmentForm = useForm<InsertStockReplenishment>({
+    resolver: zodResolver(insertStockReplenishmentSchema.omit({ userId: true, productId: true })),
+    defaultValues: {
+      quantity: 0,
+      costPerUnit: "",
+      totalCost: "",
+      supplier: "",
+      reference: "",
+      notes: "",
     },
   });
 
@@ -179,6 +214,46 @@ export default function Products() {
     },
   });
 
+  // Stock replenishment mutations
+  const createReplenishmentMutation = useMutation({
+    mutationFn: async (data: InsertStockReplenishment) => {
+      if (!selectedProductForReplenishment) throw new Error("No product selected");
+      await apiRequest("POST", "/api/stock-replenishments", { 
+        ...data, 
+        productId: selectedProductForReplenishment.id 
+      });
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["/api/products"] });
+      queryClient.invalidateQueries({ queryKey: ["/api/stock-replenishments"] });
+      toast({
+        title: "Réapprovisionnement ajouté",
+        description: "Le stock a été réapprovisionné avec succès.",
+      });
+      setIsReplenishmentDialogOpen(false);
+      setSelectedProductForReplenishment(null);
+      replenishmentForm.reset();
+    },
+    onError: (error) => {
+      if (isUnauthorizedError(error)) {
+        toast({
+          title: "Non autorisé",
+          description: "Vous êtes déconnecté. Reconnexion...",
+          variant: "destructive",
+        });
+        setTimeout(() => {
+          window.location.href = "/api/login";
+        }, 500);
+        return;
+      }
+      toast({
+        title: "Erreur",
+        description: "Impossible d'ajouter le réapprovisionnement.",
+        variant: "destructive",
+      });
+    },
+  });
+
   const handleOpenDialog = (product?: Product) => {
     if (product) {
       setEditingProduct(product);
@@ -204,12 +279,34 @@ export default function Products() {
     setIsDialogOpen(true);
   };
 
+  const handleOpenReplenishmentDialog = (product: Product) => {
+    setSelectedProductForReplenishment(product);
+    replenishmentForm.reset({
+      quantity: 0,
+      costPerUnit: "",
+      totalCost: "",
+      supplier: "",
+      reference: "",
+      notes: "",
+    });
+    setIsReplenishmentDialogOpen(true);
+  };
+
+  const handleOpenHistoryDialog = (product: Product) => {
+    setSelectedProductForReplenishment(product);
+    setIsHistoryDialogOpen(true);
+  };
+
   const onSubmit = (data: InsertProduct) => {
     if (editingProduct) {
       updateMutation.mutate(data);
     } else {
       createMutation.mutate(data);
     }
+  };
+
+  const onReplenishmentSubmit = (data: InsertStockReplenishment) => {
+    createReplenishmentMutation.mutate(data);
   };
 
   const filteredProducts = products.filter((product: Product) =>
@@ -313,6 +410,22 @@ export default function Products() {
                         </div>
                       </div>
                       <div className="flex space-x-1">
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          onClick={() => handleOpenReplenishmentDialog(product)}
+                          title="Réapprovisionner le stock"
+                        >
+                          <TrendingUp className="w-4 h-4" />
+                        </Button>
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          onClick={() => handleOpenHistoryDialog(product)}
+                          title="Historique des réapprovisionnements"
+                        >
+                          <History className="w-4 h-4" />
+                        </Button>
                         <Button
                           variant="ghost"
                           size="sm"
@@ -517,6 +630,216 @@ export default function Products() {
                 </div>
               </form>
             </Form>
+          </DialogContent>
+        </Dialog>
+
+        {/* Stock Replenishment Dialog */}
+        <Dialog open={isReplenishmentDialogOpen} onOpenChange={setIsReplenishmentDialogOpen}>
+          <DialogContent className="sm:max-w-[500px]">
+            <DialogHeader>
+              <DialogTitle>
+                Réapprovisionner le stock - {selectedProductForReplenishment?.name}
+              </DialogTitle>
+            </DialogHeader>
+            <Form {...replenishmentForm}>
+              <form onSubmit={replenishmentForm.handleSubmit(onReplenishmentSubmit)} className="space-y-4">
+                <div className="grid grid-cols-2 gap-4">
+                  <FormField
+                    control={replenishmentForm.control}
+                    name="quantity"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Quantité *</FormLabel>
+                        <FormControl>
+                          <Input 
+                            type="number" 
+                            min="1"
+                            placeholder="100" 
+                            {...field}
+                            onChange={(e) => field.onChange(Math.max(1, parseInt(e.target.value) || 0))}
+                          />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+
+                  <FormField
+                    control={replenishmentForm.control}
+                    name="costPerUnit"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Coût unitaire ({settings?.currency === 'GHS' ? 'GH₵' : 'XOF'})</FormLabel>
+                        <FormControl>
+                          <Input 
+                            type="number" 
+                            step="0.01" 
+                            min="0"
+                            placeholder="0.00" 
+                            {...field} 
+                          />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                </div>
+
+                <FormField
+                  control={replenishmentForm.control}
+                  name="totalCost"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Coût total ({settings?.currency === 'GHS' ? 'GH₵' : 'XOF'})</FormLabel>
+                      <FormControl>
+                        <Input 
+                          type="number" 
+                          step="0.01" 
+                          min="0"
+                          placeholder="0.00" 
+                          {...field} 
+                        />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+
+                <div className="grid grid-cols-2 gap-4">
+                  <FormField
+                    control={replenishmentForm.control}
+                    name="supplier"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Fournisseur</FormLabel>
+                        <FormControl>
+                          <Input placeholder="Nom du fournisseur" {...field} />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+
+                  <FormField
+                    control={replenishmentForm.control}
+                    name="reference"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Référence/Facture</FormLabel>
+                        <FormControl>
+                          <Input placeholder="REF-2024-001" {...field} />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                </div>
+
+                <FormField
+                  control={replenishmentForm.control}
+                  name="notes"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Notes</FormLabel>
+                      <FormControl>
+                        <Textarea 
+                          placeholder="Notes sur ce réapprovisionnement..."
+                          rows={3}
+                          {...field}
+                        />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+
+                <div className="flex justify-end space-x-4 pt-4">
+                  <Button 
+                    type="button" 
+                    variant="outline" 
+                    onClick={() => setIsReplenishmentDialogOpen(false)}
+                  >
+                    Annuler
+                  </Button>
+                  <Button 
+                    type="submit" 
+                    disabled={createReplenishmentMutation.isPending}
+                  >
+                    Réapprovisionner
+                  </Button>
+                </div>
+              </form>
+            </Form>
+          </DialogContent>
+        </Dialog>
+
+        {/* Stock Replenishment History Dialog */}
+        <Dialog open={isHistoryDialogOpen} onOpenChange={setIsHistoryDialogOpen}>
+          <DialogContent className="sm:max-w-[700px]">
+            <DialogHeader>
+              <DialogTitle>
+                Historique des réapprovisionnements - {selectedProductForReplenishment?.name}
+              </DialogTitle>
+            </DialogHeader>
+            <div className="space-y-4">
+              {productReplenishments.length === 0 ? (
+                <div className="text-center py-8">
+                  <Package className="mx-auto h-12 w-12 text-gray-400" />
+                  <h3 className="mt-2 text-sm font-medium text-gray-900">
+                    Aucun réapprovisionnement
+                  </h3>
+                  <p className="mt-1 text-sm text-gray-500">
+                    Ce produit n'a pas encore été réapprovisionné.
+                  </p>
+                </div>
+              ) : (
+                <div className="max-h-96 overflow-y-auto">
+                  <div className="space-y-3">
+                    {productReplenishments.map((replenishment: StockReplenishment) => (
+                      <Card key={replenishment.id} className="p-4">
+                        <div className="flex items-center justify-between">
+                          <div className="flex-1">
+                            <div className="flex items-center gap-4">
+                              <div>
+                                <p className="font-medium">+{replenishment.quantity} unités</p>
+                                <p className="text-sm text-gray-500">
+                                  {replenishment.createdAt && new Date(replenishment.createdAt).toLocaleDateString('fr-FR')}
+                                </p>
+                              </div>
+                              {replenishment.supplier && (
+                                <div>
+                                  <p className="text-sm font-medium">Fournisseur:</p>
+                                  <p className="text-sm text-gray-600">{replenishment.supplier}</p>
+                                </div>
+                              )}
+                              {replenishment.totalCost && (
+                                <div>
+                                  <p className="text-sm font-medium">Coût total:</p>
+                                  <p className="text-sm text-gray-600">
+                                    {formatPrice(parseFloat(replenishment.totalCost), settings?.currency || 'XOF')}
+                                  </p>
+                                </div>
+                              )}
+                            </div>
+                            {replenishment.notes && (
+                              <p className="text-sm text-gray-500 mt-2">{replenishment.notes}</p>
+                            )}
+                          </div>
+                        </div>
+                      </Card>
+                    ))}
+                  </div>
+                </div>
+              )}
+              <div className="flex justify-end pt-4">
+                <Button 
+                  variant="outline" 
+                  onClick={() => setIsHistoryDialogOpen(false)}
+                >
+                  Fermer
+                </Button>
+              </div>
+            </div>
           </DialogContent>
         </Dialog>
       </main>

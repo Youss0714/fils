@@ -115,6 +115,20 @@ export const sales = pgTable("sales", {
   createdAt: timestamp("created_at").defaultNow(),
 });
 
+// Table pour gérer les réapprovisionnements de stock
+export const stockReplenishments = pgTable("stock_replenishments", {
+  id: serial("id").primaryKey(),
+  productId: integer("product_id").notNull().references(() => products.id),
+  quantity: integer("quantity").notNull(),
+  costPerUnit: decimal("cost_per_unit", { precision: 10, scale: 2 }), // Coût d'achat par unité
+  totalCost: decimal("total_cost", { precision: 10, scale: 2 }), // Coût total du réapprovisionnement
+  supplier: varchar("supplier", { length: 255 }), // Nom du fournisseur
+  reference: varchar("reference", { length: 100 }), // Référence de la commande/livraison
+  notes: text("notes"), // Notes sur le réapprovisionnement
+  userId: varchar("user_id").notNull().references(() => users.id),
+  createdAt: timestamp("created_at").defaultNow(),
+});
+
 // Licenses table for activation system
 export const licenses = pgTable("licenses", {
   id: serial("id").primaryKey(),
@@ -301,6 +315,7 @@ export const usersRelations = relations(users, ({ many }) => ({
   categories: many(categories),
   invoices: many(invoices),
   sales: many(sales),
+  stockReplenishments: many(stockReplenishments),
   expenseCategories: many(expenseCategories),
   expenses: many(expenses),
   imprestFunds: many(imprestFunds),
@@ -343,6 +358,7 @@ export const productsRelations = relations(products, ({ one, many }) => ({
   }),
   invoiceItems: many(invoiceItems),
   sales: many(sales),
+  replenishments: many(stockReplenishments),
 }));
 
 export const invoicesRelations = relations(invoices, ({ one, many }) => ({
@@ -380,6 +396,17 @@ export const salesRelations = relations(sales, ({ one }) => ({
   }),
   product: one(products, {
     fields: [sales.productId],
+    references: [products.id],
+  }),
+}));
+
+export const stockReplenishmentsRelations = relations(stockReplenishments, ({ one }) => ({
+  user: one(users, {
+    fields: [stockReplenishments.userId],
+    references: [users.id],
+  }),
+  product: one(products, {
+    fields: [stockReplenishments.productId],
     references: [products.id],
   }),
 }));
@@ -676,6 +703,11 @@ export const insertSaleSchema = createInsertSchema(sales).omit({
   createdAt: true,
 });
 
+export const insertStockReplenishmentSchema = createInsertSchema(stockReplenishments).omit({
+  id: true,
+  createdAt: true,
+});
+
 export const insertLicenseSchema = createInsertSchema(licenses).omit({
   id: true,
   createdAt: true,
@@ -839,6 +871,7 @@ export type Product = typeof products.$inferSelect;
 export type Invoice = typeof invoices.$inferSelect;
 export type InvoiceItem = typeof invoiceItems.$inferSelect;
 export type Sale = typeof sales.$inferSelect;
+export type StockReplenishment = typeof stockReplenishments.$inferSelect;
 export type License = typeof licenses.$inferSelect;
 
 // Accounting types
@@ -860,6 +893,7 @@ export type InsertProduct = z.infer<typeof insertProductSchema>;
 export type InsertInvoice = z.infer<typeof insertInvoiceSchema>;
 export type InsertInvoiceItem = z.infer<typeof insertInvoiceItemSchema>;
 export type InsertSale = z.infer<typeof insertSaleSchema>;
+export type InsertStockReplenishment = z.infer<typeof insertStockReplenishmentSchema>;
 export type InsertLicense = z.infer<typeof insertLicenseSchema>;
 
 // Accounting insert types

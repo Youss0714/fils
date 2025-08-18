@@ -6,6 +6,7 @@ import {
   invoices,
   invoiceItems,
   sales,
+  stockReplenishments,
   licenses,
   expenseCategories,
   expenses,
@@ -26,6 +27,7 @@ import {
   type Invoice,
   type InvoiceItem,
   type Sale,
+  type StockReplenishment,
   type License,
   type ExpenseCategory,
   type Expense,
@@ -44,6 +46,7 @@ import {
   type InsertInvoice,
   type InsertInvoiceItem,
   type InsertSale,
+  type InsertStockReplenishment,
   type InsertLicense,
   type InsertExpenseCategory,
   type InsertExpense,
@@ -92,6 +95,12 @@ export interface IStorage {
   updateProduct(id: number, product: Partial<InsertProduct>, userId: string): Promise<Product>;
   deleteProduct(id: number, userId: string): Promise<void>;
   searchProducts(userId: string, query: string): Promise<Product[]>;
+  
+  // Stock replenishment operations
+  getStockReplenishments(userId: string): Promise<StockReplenishment[]>;
+  getStockReplenishmentsByProduct(productId: number): Promise<StockReplenishment[]>;
+  createStockReplenishment(replenishment: InsertStockReplenishment): Promise<StockReplenishment>;
+  deleteStockReplenishment(id: number): Promise<void>;
   
   // Category operations
   getCategories(userId: string): Promise<Category[]>;
@@ -398,6 +407,57 @@ export class DatabaseStorage implements IStorage {
       ))
       .orderBy(desc(products.createdAt))
       .limit(10);
+  }
+
+  // Stock replenishment operations
+  async getStockReplenishments(userId: string): Promise<StockReplenishment[]> {
+    const replenishments = await db
+      .select({
+        id: stockReplenishments.id,
+        productId: stockReplenishments.productId,
+        quantity: stockReplenishments.quantity,
+        costPerUnit: stockReplenishments.costPerUnit,
+        totalCost: stockReplenishments.totalCost,
+        supplier: stockReplenishments.supplier,
+        reference: stockReplenishments.reference,
+        notes: stockReplenishments.notes,
+        userId: stockReplenishments.userId,
+        createdAt: stockReplenishments.createdAt,
+        productName: products.name,
+      })
+      .from(stockReplenishments)
+      .leftJoin(products, eq(stockReplenishments.productId, products.id))
+      .where(eq(stockReplenishments.userId, userId))
+      .orderBy(desc(stockReplenishments.createdAt));
+    
+    return replenishments as any;
+  }
+
+  async getStockReplenishmentsByProduct(productId: number): Promise<StockReplenishment[]> {
+    return db.select().from(stockReplenishments)
+      .where(eq(stockReplenishments.productId, productId))
+      .orderBy(desc(stockReplenishments.createdAt));
+  }
+
+  async createStockReplenishment(replenishment: InsertStockReplenishment): Promise<StockReplenishment> {
+    const [newReplenishment] = await db.insert(stockReplenishments).values(replenishment).returning();
+    
+    // Update product stock
+    await db
+      .update(products)
+      .set({
+        stock: sql`${products.stock} + ${replenishment.quantity}`
+      })
+      .where(eq(products.id, replenishment.productId));
+    
+    // Automatically generate stock alerts after replenishment
+    await this.generateStockAlerts(replenishment.userId);
+    
+    return newReplenishment;
+  }
+
+  async deleteStockReplenishment(id: number): Promise<void> {
+    await db.delete(stockReplenishments).where(eq(stockReplenishments.id, id));
   }
 
   // Category operations

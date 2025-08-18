@@ -20,6 +20,7 @@ import {
   insertRevenueCategorySchema,
   insertRevenueSchema,
   insertBusinessAlertSchema,
+  insertStockReplenishmentSchema,
 } from "@shared/schema";
 import { z } from "zod";
 
@@ -215,6 +216,52 @@ export async function registerRoutes(app: Express): Promise<Server> {
     } catch (error) {
       console.error("Error deleting product:", error);
       res.status(500).json({ message: "Failed to delete product" });
+    }
+  });
+
+  // Stock replenishment routes
+  app.get("/api/stock-replenishments", isAuthenticated, async (req: any, res) => {
+    try {
+      const userId = req.user.id;
+      const replenishments = await storage.getStockReplenishments(userId);
+      res.json(replenishments);
+    } catch (error) {
+      console.error("Error fetching stock replenishments:", error);
+      res.status(500).json({ message: "Failed to fetch stock replenishments" });
+    }
+  });
+
+  app.get("/api/products/:productId/replenishments", isAuthenticated, async (req: any, res) => {
+    try {
+      const productId = parseInt(req.params.productId);
+      const replenishments = await storage.getStockReplenishmentsByProduct(productId);
+      res.json(replenishments);
+    } catch (error) {
+      console.error("Error fetching product replenishments:", error);
+      res.status(500).json({ message: "Failed to fetch product replenishments" });
+    }
+  });
+
+  app.post("/api/stock-replenishments", isAuthenticated, async (req: any, res) => {
+    try {
+      const userId = req.user.id;
+      const replenishmentData = insertStockReplenishmentSchema.parse({ ...req.body, userId });
+      const replenishment = await storage.createStockReplenishment(replenishmentData);
+      res.json(replenishment);
+    } catch (error) {
+      console.error("Error creating stock replenishment:", error);
+      res.status(400).json({ message: "Failed to create stock replenishment" });
+    }
+  });
+
+  app.delete("/api/stock-replenishments/:id", isAuthenticated, async (req: any, res) => {
+    try {
+      const id = parseInt(req.params.id);
+      await storage.deleteStockReplenishment(id);
+      res.json({ message: "Stock replenishment deleted successfully" });
+    } catch (error) {
+      console.error("Error deleting stock replenishment:", error);
+      res.status(500).json({ message: "Failed to delete stock replenishment" });
     }
   });
 
