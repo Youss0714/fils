@@ -84,9 +84,11 @@ export default function Products() {
   // Query for specific product replenishments (conditional)
   const { data: productReplenishments = [] } = useQuery<StockReplenishment[]>({
     queryKey: ["/api/products", selectedProductForReplenishment?.id, "replenishments"],
-    queryFn: () => selectedProductForReplenishment 
-      ? apiRequest("GET", `/api/products/${selectedProductForReplenishment.id}/replenishments`)
-      : Promise.resolve([]),
+    queryFn: async () => {
+      if (!selectedProductForReplenishment) return [];
+      const response = await apiRequest("GET", `/api/products/${selectedProductForReplenishment.id}/replenishments`);
+      return response as unknown as StockReplenishment[];
+    },
     enabled: !!selectedProductForReplenishment && isHistoryDialogOpen,
     retry: false,
   });
@@ -103,8 +105,7 @@ export default function Products() {
     },
   });
 
-  const replenishmentForm = useForm<InsertStockReplenishment>({
-    resolver: zodResolver(insertStockReplenishmentSchema.omit({ userId: true, productId: true })),
+  const replenishmentForm = useForm({
     defaultValues: {
       quantity: 0,
       costPerUnit: "",
@@ -216,7 +217,7 @@ export default function Products() {
 
   // Stock replenishment mutations
   const createReplenishmentMutation = useMutation({
-    mutationFn: async (data: InsertStockReplenishment) => {
+    mutationFn: async (data: any) => {
       if (!selectedProductForReplenishment) throw new Error("No product selected");
       await apiRequest("POST", "/api/stock-replenishments", { 
         ...data, 
@@ -305,7 +306,7 @@ export default function Products() {
     }
   };
 
-  const onReplenishmentSubmit = (data: InsertStockReplenishment) => {
+  const onReplenishmentSubmit = (data: any) => {
     createReplenishmentMutation.mutate(data);
   };
 
@@ -677,6 +678,7 @@ export default function Products() {
                             min="0"
                             placeholder="0.00" 
                             {...field} 
+                            value={field.value || ""}
                           />
                         </FormControl>
                         <FormMessage />
@@ -698,6 +700,7 @@ export default function Products() {
                           min="0"
                           placeholder="0.00" 
                           {...field} 
+                          value={field.value || ""}
                         />
                       </FormControl>
                       <FormMessage />
@@ -713,7 +716,7 @@ export default function Products() {
                       <FormItem>
                         <FormLabel>Fournisseur</FormLabel>
                         <FormControl>
-                          <Input placeholder="Nom du fournisseur" {...field} />
+                          <Input placeholder="Nom du fournisseur" {...field} value={field.value || ""} />
                         </FormControl>
                         <FormMessage />
                       </FormItem>
@@ -727,7 +730,7 @@ export default function Products() {
                       <FormItem>
                         <FormLabel>Référence/Facture</FormLabel>
                         <FormControl>
-                          <Input placeholder="REF-2024-001" {...field} />
+                          <Input placeholder="REF-2024-001" {...field} value={field.value || ""} />
                         </FormControl>
                         <FormMessage />
                       </FormItem>
@@ -746,6 +749,7 @@ export default function Products() {
                           placeholder="Notes sur ce réapprovisionnement..."
                           rows={3}
                           {...field}
+                          value={field.value || ""}
                         />
                       </FormControl>
                       <FormMessage />
@@ -782,7 +786,7 @@ export default function Products() {
               </DialogTitle>
             </DialogHeader>
             <div className="space-y-4">
-              {productReplenishments.length === 0 ? (
+              {!Array.isArray(productReplenishments) || productReplenishments.length === 0 ? (
                 <div className="text-center py-8">
                   <Package className="mx-auto h-12 w-12 text-gray-400" />
                   <h3 className="mt-2 text-sm font-medium text-gray-900">
@@ -795,7 +799,7 @@ export default function Products() {
               ) : (
                 <div className="max-h-96 overflow-y-auto">
                   <div className="space-y-3">
-                    {productReplenishments.map((replenishment: StockReplenishment) => (
+                    {Array.isArray(productReplenishments) && productReplenishments.map((replenishment: StockReplenishment) => (
                       <Card key={replenishment.id} className="p-4">
                         <div className="flex items-center justify-between">
                           <div className="flex-1">
