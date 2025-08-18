@@ -116,6 +116,22 @@ export default function Products() {
     },
   });
 
+  // Calcul automatique du coût total
+  const watchedQuantity = replenishmentForm.watch("quantity");
+  const watchedCostPerUnit = replenishmentForm.watch("costPerUnit");
+
+  React.useEffect(() => {
+    const quantity = Number(watchedQuantity) || 0;
+    const costPerUnit = Number(watchedCostPerUnit) || 0;
+    const totalCost = quantity * costPerUnit;
+    
+    if (quantity > 0 && costPerUnit > 0) {
+      replenishmentForm.setValue("totalCost", totalCost.toFixed(2));
+    } else {
+      replenishmentForm.setValue("totalCost", "");
+    }
+  }, [watchedQuantity, watchedCostPerUnit, replenishmentForm]);
+
   const createMutation = useMutation({
     mutationFn: async (data: InsertProduct) => {
       await apiRequest("POST", "/api/products", data);
@@ -657,7 +673,10 @@ export default function Products() {
                             min="1"
                             placeholder="100" 
                             {...field}
-                            onChange={(e) => field.onChange(Math.max(1, parseInt(e.target.value) || 0))}
+                            onChange={(e) => {
+                              const value = Math.max(1, parseInt(e.target.value) || 0);
+                              field.onChange(value);
+                            }}
                           />
                         </FormControl>
                         <FormMessage />
@@ -679,6 +698,9 @@ export default function Products() {
                             placeholder="0.00" 
                             {...field} 
                             value={field.value || ""}
+                            onChange={(e) => {
+                              field.onChange(e.target.value);
+                            }}
                           />
                         </FormControl>
                         <FormMessage />
@@ -701,6 +723,8 @@ export default function Products() {
                           placeholder="0.00" 
                           {...field} 
                           value={field.value || ""}
+                          readOnly
+                          className="bg-gray-50 cursor-not-allowed"
                         />
                       </FormControl>
                       <FormMessage />
