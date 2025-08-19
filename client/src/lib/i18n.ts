@@ -79,6 +79,49 @@ export interface Translations {
   minutesAgo: string;
   fullName: string;
   createdOn: string;
+
+  // Invoices
+  invoices: string;
+  newInvoice: string;
+  manageInvoices: string;
+  searchInvoice: string;
+  noInvoice: string;
+  noInvoiceFound: string;
+  createFirstInvoice: string;
+  tryModifyFilters: string;
+  allStatuses: string;
+  invoiceNumber: string;
+  client: string;
+  amount: string;
+  status: string;
+  actions: string;
+  edit: string;
+  delete: string;
+  dueDate: string;
+  createInvoice: string;
+  editInvoice: string;
+  invoiceDetails: string;
+  product: string;
+  quantity: string;
+  unitPrice: string;
+  total: string;
+  addProduct: string;
+  taxRate: string;
+  subtotal: string;
+  tax: string;
+  totalAmount: string;
+  paymentMethod: string;
+  notes: string;
+  invoiceCreated: string;
+  invoiceCreatedDesc: string;
+  invoiceModified: string;
+  invoiceModifiedDesc: string;
+  invoiceDeleted: string;
+  invoiceDeletedDesc: string;
+  confirmDeleteInvoice: string;
+  errorCreateInvoice: string;
+  errorUpdateInvoice: string;
+  errorDeleteInvoice: string;
   
   // Products
   productName: string;
@@ -86,20 +129,13 @@ export interface Translations {
   price: string;
   stock: string;
   category: string;
-  taxRate: string;
   newProduct: string;
   editProduct: string;
   
-  // Invoices
-  invoiceNumber: string;
-  client: string;
-  status: string;
-  total: string;
-  dueDate: string;
+  // Invoice Status
   pending: string;
   paid: string;
   overdue: string;
-  newInvoice: string;
   
   // Settings
   language: string;
@@ -284,6 +320,49 @@ export const translations: Record<Language, Translations> = {
     minutesAgo: "Il y a 2 minutes",
     fullName: "Nom complet",
     createdOn: "Créé le",
+
+    // Invoices
+    invoices: "Factures",
+    newInvoice: "Nouvelle Facture",
+    manageInvoices: "Gérez vos factures et paiements",
+    searchInvoice: "Rechercher une facture...",
+    noInvoice: "Aucune facture",
+    noInvoiceFound: "Aucune facture trouvée",
+    createFirstInvoice: "Commencez par créer votre première facture.",
+    tryModifyFilters: "Essayez de modifier vos filtres.",
+    allStatuses: "Tous les statuts",
+    invoiceNumber: "Numéro",
+    client: "Client",
+    amount: "Montant",
+    status: "Statut",
+    actions: "Actions",
+    edit: "Modifier",
+    delete: "Supprimer",
+    dueDate: "Date d'échéance",
+    createInvoice: "Créer une facture",
+    editInvoice: "Modifier la facture",
+    invoiceDetails: "Détails de la facture",
+    product: "Produit",
+    quantity: "Quantité",
+    unitPrice: "Prix unitaire HT",
+    total: "Total",
+    addProduct: "Ajouter un produit",
+    taxRate: "Taux de TVA",
+    subtotal: "Sous-total",
+    tax: "TVA",
+    totalAmount: "Total TTC",
+    paymentMethod: "Mode de paiement",
+    notes: "Notes",
+    invoiceCreated: "Facture créée",
+    invoiceCreatedDesc: "La facture a été créée avec succès.",
+    invoiceModified: "Facture modifiée",
+    invoiceModifiedDesc: "La facture a été modifiée avec succès.",
+    invoiceDeleted: "Facture supprimée",
+    invoiceDeletedDesc: "La facture a été supprimée avec succès.",
+    confirmDeleteInvoice: "Êtes-vous sûr de vouloir supprimer cette facture ?",
+    errorCreateInvoice: "Impossible de créer la facture.",
+    errorUpdateInvoice: "Impossible de modifier la facture.",
+    errorDeleteInvoice: "Impossible de supprimer la facture.",
     
     // Products
     productName: "Nom du produit",
@@ -291,20 +370,13 @@ export const translations: Record<Language, Translations> = {
     price: "Prix",
     stock: "Stock",
     category: "Catégorie",
-    taxRate: "Taux de TVA",
     newProduct: "Nouveau Produit",
     editProduct: "Modifier le Produit",
     
-    // Invoices
-    invoiceNumber: "Numéro de facture",
-    client: "Client",
-    status: "Statut",
-    total: "Total",
-    dueDate: "Date d'échéance",
+    // Invoice Status
     pending: "En attente",
     paid: "Payée",
     overdue: "En retard",
-    newInvoice: "Nouvelle Facture",
     
     // Settings
     language: "Langue",
@@ -488,6 +560,49 @@ export const translations: Record<Language, Translations> = {
     minutesAgo: "2 minutes ago",
     fullName: "Full Name",
     createdOn: "Created on",
+
+    // Invoices
+    invoices: "Invoices",
+    newInvoice: "New Invoice",
+    manageInvoices: "Manage your invoices and payments",
+    searchInvoice: "Search invoice...",
+    noInvoice: "No invoices",
+    noInvoiceFound: "No invoice found",
+    createFirstInvoice: "Start by creating your first invoice.",
+    tryModifyFilters: "Try modifying your filters.",
+    allStatuses: "All statuses",
+    invoiceNumber: "Number",
+    client: "Client",
+    amount: "Amount",
+    status: "Status",
+    actions: "Actions",
+    edit: "Edit",
+    delete: "Delete",
+    dueDate: "Due Date",
+    createInvoice: "Create Invoice",
+    editInvoice: "Edit Invoice",
+    invoiceDetails: "Invoice Details",
+    product: "Product",
+    quantity: "Quantity",
+    unitPrice: "Unit Price (excl. tax)",
+    total: "Total",
+    addProduct: "Add Product",
+    taxRate: "Tax Rate",
+    subtotal: "Subtotal",
+    tax: "Tax",
+    totalAmount: "Total Amount",
+    paymentMethod: "Payment Method",
+    notes: "Notes",
+    invoiceCreated: "Invoice created",
+    invoiceCreatedDesc: "The invoice has been created successfully.",
+    invoiceModified: "Invoice modified",
+    invoiceModifiedDesc: "The invoice has been modified successfully.",
+    invoiceDeleted: "Invoice deleted",
+    invoiceDeletedDesc: "The invoice has been deleted successfully.",
+    confirmDeleteInvoice: "Are you sure you want to delete this invoice?",
+    errorCreateInvoice: "Unable to create invoice.",
+    errorUpdateInvoice: "Unable to update invoice.",
+    errorDeleteInvoice: "Unable to delete invoice.",
     
     // Products
     productName: "Product Name",
@@ -495,20 +610,13 @@ export const translations: Record<Language, Translations> = {
     price: "Price",
     stock: "Stock",
     category: "Category",
-    taxRate: "Tax Rate",
     newProduct: "New Product",
     editProduct: "Edit Product",
     
-    // Invoices
-    invoiceNumber: "Invoice Number",
-    client: "Client",
-    status: "Status",
-    total: "Total",
-    dueDate: "Due Date",
+    // Invoice Status
     pending: "Pending",
     paid: "Paid",
     overdue: "Overdue",
-    newInvoice: "New Invoice",
     
     // Settings
     language: "Language",

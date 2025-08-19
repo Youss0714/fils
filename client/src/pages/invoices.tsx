@@ -41,6 +41,7 @@ import { useForm, useFieldArray } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
 import { z } from "zod";
+import { useTranslation } from "@/lib/i18n";
 import InvoicePDF from "@/components/invoice-pdf";
 import { InvoiceListSkeleton, InvoiceFormSkeleton } from "@/components/loading-skeletons";
 
@@ -73,6 +74,7 @@ type CreateInvoiceForm = z.infer<typeof createInvoiceFormSchema>;
 export default function Invoices() {
   const { toast } = useToast();
   const { isAuthenticated, isLoading } = useAuth();
+  const { t } = useTranslation();
   const [, setLocation] = useLocation();
   const [searchTerm, setSearchTerm] = useState("");
   const [statusFilter, setStatusFilter] = useState("all");
@@ -380,10 +382,10 @@ export default function Invoices() {
   return (
     <div className="flex-1 flex flex-col overflow-hidden">
       <Header 
-        title="Factures" 
-        subtitle="Gérez vos factures et paiements"
+        title={t('invoices')} 
+        subtitle={t('manageInvoices')}
         action={{
-          label: "Nouvelle Facture",
+          label: t('newInvoice'),
           onClick: () => setIsDialogOpen(true)
         }}
       />
@@ -394,7 +396,7 @@ export default function Invoices() {
           <div className="relative flex-1">
             <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4" />
             <Input
-              placeholder="Rechercher une facture..."
+              placeholder={t('searchInvoice')}
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
               className="pl-10"
@@ -405,7 +407,7 @@ export default function Invoices() {
               <SelectValue />
             </SelectTrigger>
             <SelectContent>
-              <SelectItem value="all">Tous les statuts</SelectItem>
+              <SelectItem value="all">{t('allStatuses')}</SelectItem>
               {INVOICE_STATUS.map((status) => (
                 <SelectItem key={status.value} value={status.value}>
                   {status.icon} {status.label}
@@ -418,25 +420,25 @@ export default function Invoices() {
         {/* Invoices Table */}
         <Card>
           <CardHeader>
-            <CardTitle>Liste des Factures</CardTitle>
+            <CardTitle>{t('invoices')}</CardTitle>
           </CardHeader>
           <CardContent>
             {filteredInvoices.length === 0 ? (
               <div className="py-12 text-center">
                 <FileText className="w-12 h-12 text-gray-400 mx-auto mb-4" />
                 <h3 className="text-lg font-medium text-gray-900 mb-2">
-                  {searchTerm || statusFilter !== "all" ? "Aucune facture trouvée" : "Aucune facture"}
+                  {searchTerm || statusFilter !== "all" ? t('noInvoiceFound') : t('noInvoice')}
                 </h3>
                 <p className="text-gray-500 mb-4">
                   {searchTerm || statusFilter !== "all"
-                    ? "Essayez de modifier vos filtres."
-                    : "Commencez par créer votre première facture."
+                    ? t('tryModifyFilters')
+                    : t('createFirstInvoice')
                   }
                 </p>
                 {!searchTerm && statusFilter === "all" && (
                   <Button onClick={() => setIsDialogOpen(true)}>
                     <Plus className="mr-2 h-4 w-4" />
-                    Nouvelle Facture
+                    {t('newInvoice')}
                   </Button>
                 )}
               </div>
@@ -446,28 +448,28 @@ export default function Invoices() {
                   <thead className="bg-gray-50">
                     <tr>
                       <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                        N° Facture
+                        {t('invoiceNumber')}
                       </th>
                       <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                        Client
+                        {t('client')}
                       </th>
                       <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                        Montant
+                        {t('amount')}
                       </th>
                       <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                        Statut
+                        {t('status')}
                       </th>
                       <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                         Date
                       </th>
                       <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                        Échéance
+                        {t('dueDate')}
                       </th>
                       <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                        Paiement
+                        {t('paymentMethod')}
                       </th>
                       <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                        Actions
+                        {t('actions')}
                       </th>
                     </tr>
                   </thead>
