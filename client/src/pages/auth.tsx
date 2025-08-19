@@ -181,9 +181,6 @@ export default function AuthPage() {
               />
             </div>
           </div>
-          <h1 className="text-3xl font-bold text-gray-900 mb-2">
-            YGestion
-          </h1>
           <p className="text-gray-600">
             Connectez-vous à votre espace de gestion commerciale
           </p>
