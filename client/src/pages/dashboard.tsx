@@ -314,9 +314,9 @@ export default function Dashboard() {
               </CardHeader>
               <CardContent className="space-y-3">
                 <Link href="/clients">
-                  <Button variant="ghost" className="w-full justify-start bg-primary-50 hover:bg-primary-100">
-                    <UserPlus className="mr-3 w-4 h-4 text-primary" />
-                    Nouveau Client
+                  <Button variant="ghost" className="w-full justify-start bg-gradient-to-r from-blue-50 to-indigo-50 hover:from-blue-100 hover:to-indigo-100 border border-blue-200 hover:border-blue-300 shadow-sm">
+                    <UserPlus className="mr-3 w-4 h-4 text-blue-600" />
+                    <span className="text-blue-800 font-medium">Nouveau Client</span>
                   </Button>
                 </Link>
                 <Link href="/products">
