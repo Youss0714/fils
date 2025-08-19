@@ -172,16 +172,13 @@ export default function AuthPage() {
             <div className="absolute -inset-1 bg-gradient-to-r from-blue-400 via-purple-500 to-indigo-600 rounded-2xl opacity-75 animate-spin" style={{ animationDuration: '3s' }}></div>
             
             {/* Main logo background */}
-            <div className="relative w-full h-full bg-gradient-to-br from-blue-500 via-blue-600 to-indigo-700 rounded-2xl shadow-2xl flex items-center justify-center">
-              {/* White background for logo */}
-              <div className="w-16 h-16 bg-white rounded-xl flex items-center justify-center shadow-inner m-1">
-                <img 
-                  src="/attached_assets/image_1755621023361.png" 
-                  alt="YGestion Logo" 
-                  className="w-12 h-12 object-contain animate-bounce"
-                  style={{ animationDuration: '2s' }}
-                />
-              </div>
+            <div className="relative w-full h-full rounded-2xl flex items-center justify-center">
+              <img 
+                src="/attached_assets/image_1755621023361.png" 
+                alt="YGestion Logo" 
+                className="w-16 h-16 object-contain animate-bounce"
+                style={{ animationDuration: '2s' }}
+              />
             </div>
           </div>
           <h1 className="text-3xl font-bold text-gray-900 mb-2">

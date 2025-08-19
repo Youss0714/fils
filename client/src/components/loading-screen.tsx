@@ -57,16 +57,13 @@ export default function LoadingScreen({ onComplete }: LoadingScreenProps) {
             <div className="absolute -inset-1 bg-gradient-to-br from-blue-300 to-indigo-400 rounded-2xl opacity-60 animate-pulse" style={{ animationDuration: '2s' }}></div>
             
             {/* Main logo background */}
-            <div className="relative w-full h-full bg-gradient-to-br from-blue-500 via-blue-600 to-indigo-700 rounded-2xl shadow-2xl flex items-center justify-center">
-              {/* White background for logo */}
-              <div className="w-20 h-20 bg-white rounded-xl flex items-center justify-center shadow-inner">
-                <img 
-                  src="/attached_assets/image_1755621023361.png" 
-                  alt="YGestion Logo" 
-                  className="w-16 h-16 object-contain animate-bounce"
-                  style={{ animationDuration: '2.5s', animationTimingFunction: 'cubic-bezier(0.4, 0, 0.2, 1)' }}
-                />
-              </div>
+            <div className="relative w-full h-full rounded-2xl flex items-center justify-center">
+              <img 
+                src="/attached_assets/image_1755621023361.png" 
+                alt="YGestion Logo" 
+                className="w-20 h-20 object-contain animate-bounce"
+                style={{ animationDuration: '2.5s', animationTimingFunction: 'cubic-bezier(0.4, 0, 0.2, 1)' }}
+              />
             </div>
           </div>
           
