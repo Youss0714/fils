@@ -61,7 +61,7 @@ export default function LoadingScreen({ onComplete }: LoadingScreenProps) {
               {/* White background for logo */}
               <div className="w-20 h-20 bg-white rounded-xl flex items-center justify-center shadow-inner">
                 <img 
-                  src="/attached_assets/image_1755620356302.png" 
+                  src="/attached_assets/image_1755620675522.png" 
                   alt="YGestion Logo" 
                   className="w-16 h-16 object-contain animate-bounce"
                   style={{ animationDuration: '2.5s', animationTimingFunction: 'cubic-bezier(0.4, 0, 0.2, 1)' }}
