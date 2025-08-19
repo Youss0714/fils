@@ -29,10 +29,12 @@ import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
 import { Users as UsersIcon } from "lucide-react";
+import { useTranslation } from "@/lib/i18n";
 
 export default function Clients() {
   const { toast } = useToast();
   const { isAuthenticated, isLoading } = useAuth();
+  const { t } = useTranslation();
   const [searchTerm, setSearchTerm] = useState("");
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [editingClient, setEditingClient] = useState<Client | null>(null);
@@ -41,8 +43,8 @@ export default function Clients() {
   useEffect(() => {
     if (!isLoading && !isAuthenticated) {
       toast({
-        title: "Non autorisé",
-        description: "Vous êtes déconnecté. Reconnexion...",
+        title: t('unauthorized'),
+        description: t('unauthorizedDesc'),
         variant: "destructive",
       });
       setTimeout(() => {
@@ -78,8 +80,8 @@ export default function Clients() {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["/api/clients"] });
       toast({
-        title: "Client créé",
-        description: "Le client a été créé avec succès.",
+        title: t('clientCreated'),
+        description: t('clientCreatedDesc'),
       });
       setIsDialogOpen(false);
       form.reset();
@@ -97,8 +99,8 @@ export default function Clients() {
         return;
       }
       toast({
-        title: "Erreur",
-        description: "Impossible de créer le client.",
+        title: t('error'),
+        description: t('errorCreateClient'),
         variant: "destructive",
       });
     },
@@ -112,8 +114,8 @@ export default function Clients() {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["/api/clients"] });
       toast({
-        title: "Client modifié",
-        description: "Le client a été modifié avec succès.",
+        title: t('clientModified'),
+        description: t('clientModifiedDesc'),
       });
       setIsDialogOpen(false);
       setEditingClient(null);
@@ -122,8 +124,8 @@ export default function Clients() {
     onError: (error) => {
       if (isUnauthorizedError(error)) {
         toast({
-          title: "Non autorisé",
-          description: "Vous êtes déconnecté. Reconnexion...",
+          title: t('unauthorized'),
+          description: t('unauthorizedDesc'),
           variant: "destructive",
         });
         setTimeout(() => {
@@ -132,8 +134,8 @@ export default function Clients() {
         return;
       }
       toast({
-        title: "Erreur",
-        description: "Impossible de modifier le client.",
+        title: t('error'),
+        description: t('errorUpdateClient'),
         variant: "destructive",
       });
     },
@@ -146,15 +148,15 @@ export default function Clients() {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["/api/clients"] });
       toast({
-        title: "Client supprimé",
-        description: "Le client a été supprimé avec succès.",
+        title: t('clientDeleted'),
+        description: t('clientDeletedDesc'),
       });
     },
     onError: (error) => {
       if (isUnauthorizedError(error)) {
         toast({
-          title: "Non autorisé",
-          description: "Vous êtes déconnecté. Reconnexion...",
+          title: t('unauthorized'),
+          description: t('unauthorizedDesc'),
           variant: "destructive",
         });
         setTimeout(() => {
@@ -163,8 +165,8 @@ export default function Clients() {
         return;
       }
       toast({
-        title: "Erreur",
-        description: "Impossible de supprimer le client.",
+        title: t('error'),
+        description: t('errorDeleteClient'),
         variant: "destructive",
       });
     },
@@ -208,10 +210,10 @@ export default function Clients() {
   return (
     <div className="flex-1 flex flex-col overflow-hidden">
       <Header 
-        title="Clients" 
-        subtitle="Gérez vos clients et leurs informations"
+        title={t('clients')} 
+        subtitle={t('manageClients')}
         action={{
-          label: "Nouveau Client",
+          label: t('newClient'),
           onClick: () => handleOpenDialog()
         }}
       />
@@ -222,7 +224,7 @@ export default function Clients() {
           <div className="relative">
             <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4" />
             <Input
-              placeholder="Rechercher un client..."
+              placeholder={t('searchClient')}
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
               className="pl-10"
@@ -236,18 +238,18 @@ export default function Clients() {
             <CardContent className="py-12 text-center">
               <Users className="w-12 h-12 text-gray-400 mx-auto mb-4" />
               <h3 className="text-lg font-medium text-gray-900 mb-2">
-                {searchTerm ? "Aucun client trouvé" : "Aucun client"}
+                {searchTerm ? t('noClientFound') : t('noClient')}
               </h3>
               <p className="text-gray-500 mb-4">
                 {searchTerm 
-                  ? "Essayez de modifier votre recherche."
-                  : "Commencez par ajouter votre premier client."
+                  ? t('tryModifySearch')
+                  : t('addFirstClient')
                 }
               </p>
               {!searchTerm && (
                 <Button onClick={() => handleOpenDialog()}>
                   <Plus className="mr-2 h-4 w-4" />
-                  Nouveau Client
+                  {t('newClient')}
                 </Button>
               )}
             </CardContent>
@@ -305,7 +307,7 @@ export default function Clients() {
                     </div>
                   )}
                   <div className="pt-2 text-xs text-gray-500">
-                    Créé le {client.createdAt && new Date(client.createdAt).toLocaleDateString('fr-FR')}
+                    {t('createdOn')} {client.createdAt && new Date(client.createdAt).toLocaleDateString()}
                   </div>
                 </CardContent>
               </Card>
@@ -318,7 +320,7 @@ export default function Clients() {
           <DialogContent className="sm:max-w-[500px]">
             <DialogHeader>
               <DialogTitle>
-                {editingClient ? "Modifier le Client" : "Nouveau Client"}
+                {editingClient ? t('editClient') : t('newClient')}
               </DialogTitle>
             </DialogHeader>
             <Form {...form}>
@@ -328,7 +330,7 @@ export default function Clients() {
                   name="name"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>Nom complet *</FormLabel>
+                      <FormLabel>{t('fullName')} *</FormLabel>
                       <FormControl>
                         <Input placeholder="Kouamé Yao" {...field} />
                       </FormControl>
@@ -342,7 +344,7 @@ export default function Clients() {
                   name="company"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>Entreprise</FormLabel>
+                      <FormLabel>{t('company')}</FormLabel>
                       <FormControl>
                         <Input placeholder="SARL AKWABA" {...field} value={field.value || ""} />
                       </FormControl>
@@ -357,7 +359,7 @@ export default function Clients() {
                     name="email"
                     render={({ field }) => (
                       <FormItem>
-                        <FormLabel>Email</FormLabel>
+                        <FormLabel>{t('email')}</FormLabel>
                         <FormControl>
                           <Input type="email" placeholder="kouame@exemple.ci" {...field} value={field.value || ""} />
                         </FormControl>
@@ -371,7 +373,7 @@ export default function Clients() {
                     name="phone"
                     render={({ field }) => (
                       <FormItem>
-                        <FormLabel>Téléphone</FormLabel>
+                        <FormLabel>{t('phone')}</FormLabel>
                         <FormControl>
                           <Input placeholder="07 12 34 56 78" {...field} value={field.value || ""} />
                         </FormControl>
@@ -386,7 +388,7 @@ export default function Clients() {
                   name="address"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>Adresse</FormLabel>
+                      <FormLabel>{t('address')}</FormLabel>
                       <FormControl>
                         <Textarea 
                           placeholder="Cocody Riviera 3, Abidjan"
@@ -406,13 +408,13 @@ export default function Clients() {
                     variant="outline" 
                     onClick={() => setIsDialogOpen(false)}
                   >
-                    Annuler
+                    {t('cancel')}
                   </Button>
                   <Button 
                     type="submit" 
                     disabled={createMutation.isPending || updateMutation.isPending}
                   >
-                    {editingClient ? "Modifier" : "Créer"}
+                    {editingClient ? t('edit') : t('create')}
                   </Button>
                 </div>
               </form>

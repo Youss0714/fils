@@ -57,6 +57,28 @@ export interface Translations {
   company: string;
   newClient: string;
   editClient: string;
+  searchClient: string;
+  noClient: string;
+  noClientFound: string;
+  addFirstClient: string;
+  tryModifySearch: string;
+  manageClients: string;
+  clientCreated: string;
+  clientCreatedDesc: string;
+  clientModified: string;
+  clientModifiedDesc: string;
+  clientDeleted: string;
+  clientDeletedDesc: string;
+  confirmDeleteClient: string;
+  errorCreateClient: string;
+  errorUpdateClient: string;
+  errorDeleteClient: string;
+  unauthorized: string;
+  unauthorizedDesc: string;
+  lastSync: string;
+  minutesAgo: string;
+  fullName: string;
+  createdOn: string;
   
   // Products
   productName: string;
@@ -240,6 +262,28 @@ export const translations: Record<Language, Translations> = {
     company: "Entreprise",
     newClient: "Nouveau Client",
     editClient: "Modifier le Client",
+    searchClient: "Rechercher un client...",
+    noClient: "Aucun client",
+    noClientFound: "Aucun client trouvé",
+    addFirstClient: "Commencez par ajouter votre premier client.",
+    tryModifySearch: "Essayez de modifier votre recherche.",
+    manageClients: "Gérez vos clients et leurs informations",
+    clientCreated: "Client créé",
+    clientCreatedDesc: "Le client a été créé avec succès.",
+    clientModified: "Client modifié",
+    clientModifiedDesc: "Le client a été modifié avec succès.",
+    clientDeleted: "Client supprimé",
+    clientDeletedDesc: "Le client a été supprimé avec succès.",
+    confirmDeleteClient: "Êtes-vous sûr de vouloir supprimer ce client ?",
+    errorCreateClient: "Impossible de créer le client.",
+    errorUpdateClient: "Impossible de modifier le client.",
+    errorDeleteClient: "Impossible de supprimer le client.",
+    unauthorized: "Non autorisé",
+    unauthorizedDesc: "Vous êtes déconnecté. Reconnexion...",
+    lastSync: "Dernière synchronisation",
+    minutesAgo: "Il y a 2 minutes",
+    fullName: "Nom complet",
+    createdOn: "Créé le",
     
     // Products
     productName: "Nom du produit",
@@ -422,6 +466,28 @@ export const translations: Record<Language, Translations> = {
     company: "Company",
     newClient: "New Client",
     editClient: "Edit Client",
+    searchClient: "Search client...",
+    noClient: "No clients",
+    noClientFound: "No client found",
+    addFirstClient: "Start by adding your first client.",
+    tryModifySearch: "Try modifying your search.",
+    manageClients: "Manage your clients and their information",
+    clientCreated: "Client created",
+    clientCreatedDesc: "The client has been created successfully.",
+    clientModified: "Client modified",
+    clientModifiedDesc: "The client has been modified successfully.",
+    clientDeleted: "Client deleted",
+    clientDeletedDesc: "The client has been deleted successfully.",
+    confirmDeleteClient: "Are you sure you want to delete this client?",
+    errorCreateClient: "Unable to create client.",
+    errorUpdateClient: "Unable to update client.",
+    errorDeleteClient: "Unable to delete client.",
+    unauthorized: "Unauthorized",
+    unauthorizedDesc: "You are logged out. Reconnecting...",
+    lastSync: "Last sync",
+    minutesAgo: "2 minutes ago",
+    fullName: "Full Name",
+    createdOn: "Created on",
     
     // Products
     productName: "Product Name",
