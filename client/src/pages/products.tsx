@@ -82,11 +82,13 @@ export default function Products() {
   });
 
   // Query for specific product replenishments (conditional)
-  const { data: productReplenishments = [] } = useQuery<StockReplenishment[]>({
+  const { data: productReplenishments = [], isLoading: productReplenishmentsLoading } = useQuery<StockReplenishment[]>({
     queryKey: ["/api/products", selectedProductForReplenishment?.id, "replenishments"],
     queryFn: async () => {
       if (!selectedProductForReplenishment) return [];
+      console.log("Fetching replenishments for product:", selectedProductForReplenishment.id);
       const response = await apiRequest("GET", `/api/products/${selectedProductForReplenishment.id}/replenishments`);
+      console.log("Response received:", response);
       return response as unknown as StockReplenishment[];
     },
     enabled: !!selectedProductForReplenishment && isHistoryDialogOpen,
@@ -814,7 +816,12 @@ export default function Products() {
               </DialogTitle>
             </DialogHeader>
             <div className="space-y-4">
-              {!Array.isArray(productReplenishments) || productReplenishments.length === 0 ? (
+              {productReplenishmentsLoading ? (
+                <div className="text-center py-8">
+                  <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-gray-900 mx-auto"></div>
+                  <p className="mt-2 text-sm text-gray-500">Chargement de l'historique...</p>
+                </div>
+              ) : !Array.isArray(productReplenishments) || productReplenishments.length === 0 ? (
                 <div className="text-center py-8">
                   <Package className="mx-auto h-12 w-12 text-gray-400" />
                   <h3 className="mt-2 text-sm font-medium text-gray-900">
