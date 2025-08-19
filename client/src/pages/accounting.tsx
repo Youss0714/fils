@@ -128,7 +128,7 @@ export default function AccountingPage() {
             </div>
             {startDate && endDate && (
               <p className="text-sm text-muted-foreground mt-2">
-                Affichage des statistiques du {new Date(startDate).toLocaleDateString('fr-FR')} au {new Date(endDate).toLocaleDateString('fr-FR')}
+                {t('displaying')} {new Date(startDate).toLocaleDateString(settings?.language === 'en' ? 'en-US' : 'fr-FR')} {settings?.language === 'en' ? 'to' : 'au'} {new Date(endDate).toLocaleDateString(settings?.language === 'en' ? 'en-US' : 'fr-FR')}
               </p>
             )}
           </CardContent>
@@ -139,7 +139,7 @@ export default function AccountingPage() {
       <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-6">
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Revenus totaux</CardTitle>
+            <CardTitle className="text-sm font-medium">{t('totalRevenues')}</CardTitle>
             <TrendingUp className="h-4 w-4 text-green-600" />
           </CardHeader>
           <CardContent>
@@ -147,14 +147,14 @@ export default function AccountingPage() {
               {stats?.totalRevenues?.toLocaleString('fr-FR')} FCFA
             </div>
             <p className="text-xs text-muted-foreground">
-              {stats?.recentRevenues || 0} revenus récents
+              {stats?.recentRevenues || 0} {t('recentRevenues').toLowerCase()}
             </p>
           </CardContent>
         </Card>
 
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Dépenses totales</CardTitle>
+            <CardTitle className="text-sm font-medium">{t('totalExpenses')}</CardTitle>
             <DollarSign className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
@@ -162,40 +162,40 @@ export default function AccountingPage() {
               {stats?.totalExpenses?.toLocaleString('fr-FR')} FCFA
             </div>
             <p className="text-xs text-muted-foreground">
-              {stats?.recentExpenses?.length || 0} dépenses récentes
+              {stats?.recentExpenses?.length || 0} {settings?.language === 'en' ? 'recent expenses' : 'dépenses récentes'}
             </p>
           </CardContent>
         </Card>
 
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">En attente</CardTitle>
+            <CardTitle className="text-sm font-medium">{t('awaiting')}</CardTitle>
             <TrendingUp className="h-4 w-4 text-orange-500" />
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold">{stats?.pendingExpenses || 0}</div>
             <p className="text-xs text-muted-foreground">
-              Dépenses à approuver
+              {t('expensesToApprove')}
             </p>
           </CardContent>
         </Card>
 
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Approuvées</CardTitle>
+            <CardTitle className="text-sm font-medium">{t('approved')}</CardTitle>
             <TrendingDown className="h-4 w-4 text-green-500" />
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold">{stats?.approvedExpenses || 0}</div>
             <p className="text-xs text-muted-foreground">
-              Dépenses validées
+              {t('validatedExpenses')}
             </p>
           </CardContent>
         </Card>
 
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Fonds d'avance</CardTitle>
+            <CardTitle className="text-sm font-medium">{t('imprestFunds')}</CardTitle>
             <Wallet className="h-4 w-4 text-blue-500" />
           </CardHeader>
           <CardContent>
@@ -203,7 +203,7 @@ export default function AccountingPage() {
               {stats?.totalImprestFunds?.toLocaleString('fr-FR')} FCFA
             </div>
             <p className="text-xs text-muted-foreground">
-              {stats?.activeImprestFunds || 0} fonds actifs
+              {stats?.activeImprestFunds || 0} {t('activeFunds')}
             </p>
           </CardContent>
         </Card>
@@ -211,7 +211,7 @@ export default function AccountingPage() {
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
             <CardTitle className="text-sm font-medium">
-              Résultat Net {startDate && endDate && '(Période sélectionnée)'}
+              {t('netResult')} {startDate && endDate && `(${t('selectedPeriod')})`}
             </CardTitle>
             {(stats?.netResult || 0) >= 0 ? (
               <TrendingUp className="h-4 w-4 text-green-600" />
@@ -224,9 +224,9 @@ export default function AccountingPage() {
               {stats?.netResult?.toLocaleString('fr-FR')} FCFA
             </div>
             <p className="text-xs text-muted-foreground">
-              {(stats?.netResult || 0) >= 0 ? 'Bénéfice' : 'Perte'} (Revenus - Dépenses)
+              {(stats?.netResult || 0) >= 0 ? (settings?.language === 'en' ? 'Profit' : 'Bénéfice') : (settings?.language === 'en' ? 'Loss' : 'Perte')} ({t('revenuesMinusExpenses')})
               {startDate && endDate && (
-                <><br />Période : {new Date(startDate).toLocaleDateString('fr-FR')} au {new Date(endDate).toLocaleDateString('fr-FR')}</>
+                <><br />{settings?.language === 'en' ? 'Period' : 'Période'} : {new Date(startDate).toLocaleDateString(settings?.language === 'en' ? 'en-US' : 'fr-FR')} {settings?.language === 'en' ? 'to' : 'au'} {new Date(endDate).toLocaleDateString(settings?.language === 'en' ? 'en-US' : 'fr-FR')}</>
               )}
             </p>
           </CardContent>
@@ -237,9 +237,9 @@ export default function AccountingPage() {
       {stats?.recentExpenses && stats.recentExpenses.length > 0 && (
         <Card>
           <CardHeader>
-            <CardTitle>Dépenses récentes</CardTitle>
+            <CardTitle>{settings?.language === 'en' ? 'Recent Expenses' : 'Dépenses récentes'}</CardTitle>
             <CardDescription>
-              Aperçu de vos dernières transactions
+              {settings?.language === 'en' ? 'Overview of your latest transactions' : 'Aperçu de vos dernières transactions'}
             </CardDescription>
           </CardHeader>
           <CardContent>
@@ -279,9 +279,9 @@ export default function AccountingPage() {
       {stats?.monthlyExpensesByCategory && stats.monthlyExpensesByCategory.length > 0 && (
         <Card>
           <CardHeader>
-            <CardTitle>Aperçu des dépenses par catégorie</CardTitle>
+            <CardTitle>{settings?.language === 'en' ? 'Expense Overview by Category' : 'Aperçu des dépenses par catégorie'}</CardTitle>
             <CardDescription>
-              Répartition des dépenses du mois en cours
+              {settings?.language === 'en' ? 'Breakdown of current month expenses' : 'Répartition des dépenses du mois en cours'}
             </CardDescription>
           </CardHeader>
           <CardContent>
@@ -320,14 +320,14 @@ export default function AccountingPage() {
               className="flex items-center justify-start gap-3 w-full sm:w-auto px-6 py-3 text-sm font-medium rounded-md transition-all hover:bg-red-50 dark:hover:bg-red-900/20 data-[state=active]:bg-red-500 data-[state=active]:text-white data-[state=active]:shadow-md hover:shadow-sm"
             >
               <CreditCard className="h-5 w-5" />
-              <span className="whitespace-nowrap">Dépenses</span>
+              <span className="whitespace-nowrap">{t('expenses')}</span>
             </TabsTrigger>
             <TabsTrigger 
               value="imprest" 
               className="flex items-center justify-start gap-3 w-full sm:w-auto px-6 py-3 text-sm font-medium rounded-md transition-all hover:bg-blue-50 dark:hover:bg-blue-900/20 data-[state=active]:bg-blue-500 data-[state=active]:text-white data-[state=active]:shadow-md hover:shadow-sm"
             >
               <Wallet className="h-5 w-5" />
-              <span className="whitespace-nowrap">Fonds d'avance</span>
+              <span className="whitespace-nowrap">{t('imprestFunds')}</span>
             </TabsTrigger>
 
             <TabsTrigger 
@@ -335,14 +335,14 @@ export default function AccountingPage() {
               className="flex items-center justify-start gap-3 w-full sm:w-auto px-6 py-3 text-sm font-medium rounded-md transition-all hover:bg-green-50 dark:hover:bg-green-900/20 data-[state=active]:bg-green-500 data-[state=active]:text-white data-[state=active]:shadow-md hover:shadow-sm"
             >
               <TrendingUp className="h-5 w-5" />
-              <span className="whitespace-nowrap">Revenus</span>
+              <span className="whitespace-nowrap">{t('revenues')}</span>
             </TabsTrigger>
             <TabsTrigger 
               value="reports" 
               className="flex items-center justify-start gap-3 w-full sm:w-auto px-6 py-3 text-sm font-medium rounded-md transition-all hover:bg-purple-50 dark:hover:bg-purple-900/20 data-[state=active]:bg-purple-500 data-[state=active]:text-white data-[state=active]:shadow-md hover:shadow-sm"
             >
               <FileText className="h-5 w-5" />
-              <span className="whitespace-nowrap">Rapports</span>
+              <span className="whitespace-nowrap">{t('reports')}</span>
             </TabsTrigger>
           </TabsList>
         </div>

@@ -99,6 +99,31 @@ export interface Translations {
   to: string;
   clear: string;
   
+  // Accounting cards and tabs
+  awaiting: string;
+  approved: string;
+  imprestFunds: string;
+  expensesToApprove: string;
+  validatedExpenses: string;
+  activeFunds: string;
+  benefit: string;
+  revenuesMinusExpenses: string;
+  selectedPeriod: string;
+  displaying: string;
+  
+  // Tabs
+  expenses: string;
+  revenues: string;
+  reports: string;
+  
+  // Expense Management
+  expenseManagement: string;
+  createManageExpenses: string;
+  expenseList: string;
+  manageBusinessExpenses: string;
+  downloadCsv: string;
+  newExpense: string;
+  
   // Alerts
   alerts: string;
   lowStock: string;
@@ -238,6 +263,31 @@ export const translations: Record<Language, Translations> = {
     to: "Au",
     clear: "Effacer",
     
+    // Cartes et onglets comptabilité
+    awaiting: "En attente",
+    approved: "Approuvées",
+    imprestFunds: "Fonds d'avance",
+    expensesToApprove: "Dépenses à approuver",
+    validatedExpenses: "Dépenses validées",
+    activeFunds: "fonds actifs",
+    benefit: "Bénéfice",
+    revenuesMinusExpenses: "Revenus - Dépenses",
+    selectedPeriod: "Période sélectionnée",
+    displaying: "Affichage des statistiques du",
+    
+    // Onglets
+    expenses: "Dépenses",
+    revenues: "Revenus",
+    reports: "Reports",
+    
+    // Gestion des dépenses
+    expenseManagement: "Gestion des dépenses",
+    createManageExpenses: "Créez et gérez toutes vos dépenses d'entreprise",
+    expenseList: "Liste des dépenses",
+    manageBusinessExpenses: "Gérez toutes vos dépenses d'entreprise",
+    downloadCsv: "Télécharger CSV",
+    newExpense: "Nouvelle dépense",
+    
     // Alerts
     alerts: "Alertes",
     lowStock: "Stock faible",
@@ -375,6 +425,31 @@ export const translations: Record<Language, Translations> = {
     from: "From",
     to: "To",
     clear: "Clear",
+    
+    // Accounting cards and tabs
+    awaiting: "Pending",
+    approved: "Approved",
+    imprestFunds: "Imprest Funds",
+    expensesToApprove: "Expenses to approve",
+    validatedExpenses: "Validated expenses",
+    activeFunds: "active funds",
+    benefit: "Benefit",
+    revenuesMinusExpenses: "Revenues - Expenses",
+    selectedPeriod: "Selected Period",
+    displaying: "Displaying statistics from",
+    
+    // Tabs
+    expenses: "Expenses",
+    revenues: "Revenues",
+    reports: "Reports",
+    
+    // Expense Management
+    expenseManagement: "Expense Management",
+    createManageExpenses: "Create and manage all your business expenses",
+    expenseList: "Expense List",
+    manageBusinessExpenses: "Manage all your business expenses",
+    downloadCsv: "Download CSV",
+    newExpense: "New Expense",
     
     // Alerts
     alerts: "Alerts",
