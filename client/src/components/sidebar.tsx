@@ -75,7 +75,7 @@ export default function Sidebar() {
         <div className="flex items-center space-x-3">
           <div className="w-10 h-10 rounded-lg flex items-center justify-center">
             <img 
-              src="/logo.svg" 
+              src="/attached_assets/image_1755620962348.png" 
               alt="YGestion Logo" 
               className="w-10 h-10 object-contain"
             />
