@@ -105,7 +105,7 @@ export default function Settings() {
   }
 
   return (
-    <div className="h-screen flex flex-col bg-gray-50">
+    <div className="h-screen flex flex-col">
       <Header 
         title={t('settings')}
         subtitle="Configurez vos préférences d'application"

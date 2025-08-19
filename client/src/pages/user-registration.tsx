@@ -125,7 +125,7 @@ export default function UserRegistration() {
 
   if (authLoading) {
     return (
-      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+      <div className="min-h-screen flex items-center justify-center">
         <div className="animate-pulse">
           <div className="w-96 h-96 bg-white rounded-xl shadow-sm" />
         </div>
@@ -135,7 +135,7 @@ export default function UserRegistration() {
 
   if (!user) {
     return (
-      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+      <div className="min-h-screen flex items-center justify-center">
         <Card className="w-full max-w-md">
           <CardHeader className="text-center">
             <CardTitle>Connexion requise</CardTitle>
@@ -157,7 +157,7 @@ export default function UserRegistration() {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50 py-12 px-4">
+    <div className="min-h-screen py-12 px-4">
       <div className="max-w-2xl mx-auto">
         {/* Header */}
         <div className="text-center mb-8">

@@ -713,7 +713,7 @@ export default function Products() {
                           {...field} 
                           value={field.value || ""}
                           readOnly
-                          className="bg-gray-50 cursor-not-allowed"
+                          className="bg-white/50 dark:bg-gray-800/50 cursor-not-allowed"
                         />
                       </FormControl>
                       <FormMessage />
