@@ -12,6 +12,8 @@ import { ExpenseManager } from "../components/accounting/expense-manager";
 import { ImprestManager } from "../components/accounting/imprest-manager";
 import { ReportsManager } from "../components/accounting/reports-manager";
 import { RevenueManager } from "../components/accounting/revenue-manager";
+import { useTranslation } from "@/lib/i18n";
+import { useSettings } from "@/hooks/useSettings";
 
 import { EXPENSE_STATUS, PAYMENT_METHODS, IMPREST_STATUS } from "@shared/schema";
 
@@ -33,6 +35,8 @@ export default function AccountingPage() {
   const [startDate, setStartDate] = useState<string>("");
   const [endDate, setEndDate] = useState<string>("");
   const [showDateFilter, setShowDateFilter] = useState(false);
+  const { settings } = useSettings();
+  const { t } = useTranslation(settings?.language);
 
   const { data: stats, isLoading: statsLoading } = useQuery<AccountingStats>({
     queryKey: ["/api/accounting/stats", startDate, endDate],
@@ -68,9 +72,9 @@ export default function AccountingPage() {
     <div className="space-y-6">
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-3xl font-bold tracking-tight">Comptabilité</h1>
+          <h1 className="text-3xl font-bold tracking-tight">{t('accounting')}</h1>
           <p className="text-muted-foreground">
-            Gérez vos finances, dépenses et avances en toute sécurité
+            {t('manageFinances')}
           </p>
         </div>
         <Button 
@@ -79,7 +83,7 @@ export default function AccountingPage() {
           data-testid="button-toggle-stats-date-filter"
         >
           <Filter className="mr-2 h-4 w-4" />
-          Filtrer par période
+          {t('filterByPeriod')}
         </Button>
       </div>
 
@@ -90,7 +94,7 @@ export default function AccountingPage() {
             <div className="flex items-center gap-4">
               <div className="flex items-center gap-2">
                 <Calendar className="h-4 w-4" />
-                <Label htmlFor="stats-start-date">Du :</Label>
+                <Label htmlFor="stats-start-date">{t('from')} :</Label>
                 <Input
                   id="stats-start-date"
                   type="date"
@@ -101,7 +105,7 @@ export default function AccountingPage() {
                 />
               </div>
               <div className="flex items-center gap-2">
-                <Label htmlFor="stats-end-date">Au :</Label>
+                <Label htmlFor="stats-end-date">{t('to')} :</Label>
                 <Input
                   id="stats-end-date"
                   type="date"
@@ -119,7 +123,7 @@ export default function AccountingPage() {
                 }}
                 data-testid="button-clear-stats-filter"
               >
-                Effacer
+                {t('clear')}
               </Button>
             </div>
             {startDate && endDate && (

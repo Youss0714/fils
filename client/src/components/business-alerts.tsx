@@ -26,8 +26,10 @@ import {
   CheckCheck
 } from 'lucide-react';
 import { formatDistance } from 'date-fns';
-import { fr } from 'date-fns/locale';
+import { fr, enUS } from 'date-fns/locale';
 import { apiRequest } from '@/lib/queryClient';
+import { useTranslation } from '@/lib/i18n';
+import { useSettings } from '@/hooks/useSettings';
 import type { SelectBusinessAlert } from '@shared/schema';
 
 interface BusinessAlertsProps {
@@ -62,34 +64,38 @@ const severityConfig = {
   }
 };
 
-const typeConfig = {
+const getTypeConfig = (t: any) => ({
   low_stock: {
     icon: Package,
-    label: 'Stock faible',
+    label: t('lowStock'),
     color: 'text-yellow-600 dark:text-yellow-400'
   },
   critical_stock: {
     icon: Package,
-    label: 'Rupture de stock',
+    label: t('criticalStock'),
     color: 'text-red-600 dark:text-red-400'
   },
   overdue_invoice: {
     icon: FileText,
-    label: 'Facture échue',
+    label: t('overdueInvoice'),
     color: 'text-orange-600 dark:text-orange-400'
   },
   payment_due: {
     icon: Users,
-    label: 'Paiement dû',
+    label: t('paymentDue'),
     color: 'text-blue-600 dark:text-blue-400'
   }
-};
+});
 
 export function BusinessAlerts({ showUnreadOnly = false, compact = false }: BusinessAlertsProps) {
   const [activeTab, setActiveTab] = useState('all');
   const [unreadFilter, setUnreadFilter] = useState(showUnreadOnly);
   const { toast } = useToast();
   const queryClient = useQueryClient();
+  const { settings } = useSettings();
+  const { t } = useTranslation(settings?.language);
+  
+  const typeConfig = getTypeConfig(t);
 
   const { data: alerts, isLoading } = useQuery<SelectBusinessAlert[]>({
     queryKey: ['/api/alerts', unreadFilter],
@@ -114,13 +120,13 @@ export function BusinessAlerts({ showUnreadOnly = false, compact = false }: Busi
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['/api/alerts'] });
       toast({
-        title: "Succès",
-        description: "Alerte marquée comme lue",
+        title: t("success"),
+        description: t("markAsRead"),
       });
     },
     onError: () => {
       toast({
-        title: "Erreur",
+        title: t("error"),
         description: "Impossible de marquer l'alerte comme lue",
         variant: "destructive",
       });
@@ -138,13 +144,13 @@ export function BusinessAlerts({ showUnreadOnly = false, compact = false }: Busi
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['/api/alerts'] });
       toast({
-        title: "Succès",
+        title: t("success"),
         description: "Alerte résolue",
       });
     },
     onError: () => {
       toast({
-        title: "Erreur",
+        title: t("error"),
         description: "Impossible de résoudre l'alerte",
         variant: "destructive",
       });
@@ -162,13 +168,13 @@ export function BusinessAlerts({ showUnreadOnly = false, compact = false }: Busi
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['/api/alerts'] });
       toast({
-        title: "Succès",
-        description: "Alerte supprimée",
+        title: t("success"),
+        description: t("deleteAlert"),
       });
     },
     onError: () => {
       toast({
-        title: "Erreur",
+        title: t("error"),
         description: "Impossible de supprimer l'alerte",
         variant: "destructive",
       });
@@ -186,13 +192,13 @@ export function BusinessAlerts({ showUnreadOnly = false, compact = false }: Busi
     onSuccess: (data: { message: string }) => {
       queryClient.invalidateQueries({ queryKey: ['/api/alerts'] });
       toast({
-        title: "Succès",
+        title: t("success"),
         description: data.message,
       });
     },
     onError: () => {
       toast({
-        title: "Erreur",
+        title: t("error"),
         description: "Impossible de générer les alertes de stock",
         variant: "destructive",
       });
@@ -210,13 +216,13 @@ export function BusinessAlerts({ showUnreadOnly = false, compact = false }: Busi
     onSuccess: (data: { message: string }) => {
       queryClient.invalidateQueries({ queryKey: ['/api/alerts'] });
       toast({
-        title: "Succès",
+        title: t("success"),
         description: data.message,
       });
     },
     onError: () => {
       toast({
-        title: "Erreur",
+        title: t("error"),
         description: "Impossible de générer les alertes de factures échues",
         variant: "destructive",
       });
@@ -234,13 +240,13 @@ export function BusinessAlerts({ showUnreadOnly = false, compact = false }: Busi
     onSuccess: (data: { message: string }) => {
       queryClient.invalidateQueries({ queryKey: ['/api/alerts'] });
       toast({
-        title: "Succès",
+        title: t("success"),
         description: data.message,
       });
     },
     onError: () => {
       toast({
-        title: "Erreur",
+        title: t("error"),
         description: "Impossible de marquer toutes les alertes comme lues",
         variant: "destructive",
       });
@@ -258,13 +264,13 @@ export function BusinessAlerts({ showUnreadOnly = false, compact = false }: Busi
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['/api/alerts'] });
       toast({
-        title: "Succès",
+        title: t("success"),
         description: "Alertes nettoyées avec succès",
       });
     },
     onError: () => {
       toast({
-        title: "Erreur",
+        title: t("error"),
         description: "Impossible de nettoyer les alertes",
         variant: "destructive",
       });
@@ -326,7 +332,7 @@ export function BusinessAlerts({ showUnreadOnly = false, compact = false }: Busi
                   </Badge>
                   {!alert.isRead && (
                     <Badge variant="secondary" className="text-xs">
-                      Nouveau
+                      {settings?.language === 'en' ? 'New' : 'Nouveau'}
                     </Badge>
                   )}
                 </div>
@@ -337,7 +343,7 @@ export function BusinessAlerts({ showUnreadOnly = false, compact = false }: Busi
                   <span>
                     {formatDistance(new Date(alert.createdAt!), new Date(), {
                       addSuffix: true,
-                      locale: fr
+                      locale: settings?.language === 'en' ? enUS : fr
                     })}
                   </span>
                 </div>
@@ -386,19 +392,19 @@ export function BusinessAlerts({ showUnreadOnly = false, compact = false }: Busi
                 {typeof alert.metadata === 'object' && alert.metadata && (
                   <>
                     {(alert.metadata as any).productName && (
-                      <div>Produit: {(alert.metadata as any).productName}</div>
+                      <div>{settings?.language === 'en' ? 'Product' : 'Produit'}: {(alert.metadata as any).productName}</div>
                     )}
                     {(alert.metadata as any).invoiceNumber && (
-                      <div>Facture: {(alert.metadata as any).invoiceNumber}</div>
+                      <div>{settings?.language === 'en' ? 'Invoice' : 'Facture'}: {(alert.metadata as any).invoiceNumber}</div>
                     )}
                     {(alert.metadata as any).clientName && (
-                      <div>Client: {(alert.metadata as any).clientName}</div>
+                      <div>{t('client')}: {(alert.metadata as any).clientName}</div>
                     )}
                     {(alert.metadata as any).daysPastDue && (
-                      <div>Échéance dépassée: {(alert.metadata as any).daysPastDue} jour(s)</div>
+                      <div>{settings?.language === 'en' ? 'Days overdue' : 'Échéance dépassée'}: {String((alert.metadata as any).daysPastDue)} {settings?.language === 'en' ? 'day(s)' : 'jour(s)'}</div>
                     )}
                     {(alert.metadata as any).currentStock !== undefined && (
-                      <div>Stock actuel: {(alert.metadata as any).currentStock}</div>
+                      <div>{settings?.language === 'en' ? 'Current stock' : 'Stock actuel'}: {String((alert.metadata as any).currentStock)}</div>
                     )}
                   </>
                 )}
@@ -414,7 +420,7 @@ export function BusinessAlerts({ showUnreadOnly = false, compact = false }: Busi
     return (
       <div className="space-y-2">
         <div className="flex items-center justify-between">
-          <h3 className="text-lg font-medium">Alertes métier</h3>
+          <h3 className="text-lg font-medium">{t('alerts')}</h3>
           <div className="flex items-center space-x-2">
             {unreadCount > 0 && (
               <Badge variant="destructive" className="text-xs">
@@ -437,7 +443,7 @@ export function BusinessAlerts({ showUnreadOnly = false, compact = false }: Busi
             {getFilteredAlerts('all').length === 0 && (
               <div className="text-center py-8 text-gray-500 dark:text-gray-400">
                 <Bell className="h-8 w-8 mx-auto mb-2 opacity-50" />
-                <p>Aucune alerte</p>
+                <p>{settings?.language === 'en' ? 'No alerts' : 'Aucune alerte'}</p>
               </div>
             )}
           </div>
@@ -451,10 +457,10 @@ export function BusinessAlerts({ showUnreadOnly = false, compact = false }: Busi
       <div className="flex items-center justify-between">
         <div>
           <h1 className="text-3xl font-bold text-gray-900 dark:text-gray-100">
-            Alertes métier
+            {t('alerts')}
           </h1>
           <p className="text-gray-600 dark:text-gray-400">
-            Surveillez vos stocks et factures échues
+            {settings?.language === 'en' ? 'Monitor your stock and overdue invoices' : 'Surveillez vos stocks et factures échues'}
           </p>
         </div>
         <div className="flex items-center space-x-2">
@@ -467,17 +473,17 @@ export function BusinessAlerts({ showUnreadOnly = false, compact = false }: Busi
               data-testid="button-mark-all-read"
             >
               <CheckCheck className="h-4 w-4 mr-2" />
-              Marquer toutes comme lues
+{t('markAllAsRead')}
             </Button>
           )}
           {unreadCount > 0 && (
             <Badge variant="destructive">
-              {unreadCount} non lue(s)
+{unreadCount} {settings?.language === 'en' ? 'unread' : 'non lue(s)'}
             </Badge>
           )}
           {criticalCount > 0 && (
             <Badge variant="secondary">
-              {criticalCount} critique(s)
+{criticalCount} {settings?.language === 'en' ? 'critical' : 'critique(s)'}
             </Badge>
           )}
         </div>
@@ -492,7 +498,7 @@ export function BusinessAlerts({ showUnreadOnly = false, compact = false }: Busi
           data-testid="button-generate-stock-alerts"
         >
           <Package className="h-4 w-4 mr-2" />
-          Vérifier stocks
+{settings?.language === 'en' ? 'Check Stock' : 'Vérifier stocks'}
         </Button>
         <Button
           variant="outline"
@@ -502,7 +508,7 @@ export function BusinessAlerts({ showUnreadOnly = false, compact = false }: Busi
           data-testid="button-generate-overdue-alerts"
         >
           <FileText className="h-4 w-4 mr-2" />
-          Vérifier échéances
+{settings?.language === 'en' ? 'Check Due Dates' : 'Vérifier échéances'}
         </Button>
         <Button
           variant="outline"
@@ -512,7 +518,7 @@ export function BusinessAlerts({ showUnreadOnly = false, compact = false }: Busi
           data-testid="button-cleanup-alerts"
         >
           <Trash2 className="h-4 w-4 mr-2" />
-          Nettoyer
+{settings?.language === 'en' ? 'Cleanup' : 'Nettoyer'}
         </Button>
         <Button
           variant="outline"
@@ -523,12 +529,12 @@ export function BusinessAlerts({ showUnreadOnly = false, compact = false }: Busi
           {unreadFilter ? (
             <>
               <EyeOff className="h-4 w-4 mr-2" />
-              Afficher tout
+{settings?.language === 'en' ? 'Show All' : 'Afficher tout'}
             </>
           ) : (
             <>
               <Eye className="h-4 w-4 mr-2" />
-              Non lues seulement
+{settings?.language === 'en' ? 'Unread Only' : 'Non lues seulement'}
             </>
           )}
         </Button>
@@ -537,19 +543,19 @@ export function BusinessAlerts({ showUnreadOnly = false, compact = false }: Busi
       <Tabs value={activeTab} onValueChange={setActiveTab}>
         <TabsList className="grid w-full grid-cols-5">
           <TabsTrigger value="all" data-testid="tab-all-alerts">
-            Toutes ({filteredAlerts.length})
+            {settings?.language === 'en' ? 'All' : 'Toutes'} ({filteredAlerts.length})
           </TabsTrigger>
           <TabsTrigger value="unread" data-testid="tab-unread-alerts">
-            Non lues ({unreadCount})
+            {settings?.language === 'en' ? 'Unread' : 'Non lues'} ({unreadCount})
           </TabsTrigger>
           <TabsTrigger value="critical" data-testid="tab-critical-alerts">
-            Critiques ({criticalCount})
+            {settings?.language === 'en' ? 'Critical' : 'Critiques'} ({criticalCount})
           </TabsTrigger>
           <TabsTrigger value="stock" data-testid="tab-stock-alerts">
-            Stock ({getFilteredAlerts('stock').length})
+            {t('stock')} ({getFilteredAlerts('stock').length})
           </TabsTrigger>
           <TabsTrigger value="invoices" data-testid="tab-invoice-alerts">
-            Factures ({getFilteredAlerts('invoices').length})
+            {settings?.language === 'en' ? 'Invoices' : 'Factures'} ({getFilteredAlerts('invoices').length})
           </TabsTrigger>
         </TabsList>
 
@@ -559,10 +565,10 @@ export function BusinessAlerts({ showUnreadOnly = false, compact = false }: Busi
             <div className="text-center py-12">
               <Bell className="h-16 w-16 mx-auto mb-4 text-gray-300 dark:text-gray-600" />
               <h3 className="text-lg font-medium text-gray-900 dark:text-gray-100 mb-2">
-                Aucune alerte
+                {settings?.language === 'en' ? 'No alerts' : 'Aucune alerte'}
               </h3>
               <p className="text-gray-500 dark:text-gray-400">
-                Toutes vos alertes apparaîtront ici.
+                {settings?.language === 'en' ? 'All your alerts will appear here.' : 'Toutes vos alertes apparaîtront ici.'}
               </p>
             </div>
           )}
@@ -574,10 +580,10 @@ export function BusinessAlerts({ showUnreadOnly = false, compact = false }: Busi
             <div className="text-center py-12">
               <BellOff className="h-16 w-16 mx-auto mb-4 text-gray-300 dark:text-gray-600" />
               <h3 className="text-lg font-medium text-gray-900 dark:text-gray-100 mb-2">
-                Aucune alerte non lue
+                {settings?.language === 'en' ? 'No unread alerts' : 'Aucune alerte non lue'}
               </h3>
               <p className="text-gray-500 dark:text-gray-400">
-                Toutes vos alertes ont été lues.
+                {settings?.language === 'en' ? 'All your alerts have been read.' : 'Toutes vos alertes ont été lues.'}
               </p>
             </div>
           )}
@@ -589,10 +595,10 @@ export function BusinessAlerts({ showUnreadOnly = false, compact = false }: Busi
             <div className="text-center py-12">
               <XCircle className="h-16 w-16 mx-auto mb-4 text-gray-300 dark:text-gray-600" />
               <h3 className="text-lg font-medium text-gray-900 dark:text-gray-100 mb-2">
-                Aucune alerte critique
+                {settings?.language === 'en' ? 'No critical alerts' : 'Aucune alerte critique'}
               </h3>
               <p className="text-gray-500 dark:text-gray-400">
-                Aucune situation critique détectée.
+                {settings?.language === 'en' ? 'No critical situation detected.' : 'Aucune situation critique détectée.'}
               </p>
             </div>
           )}
@@ -604,10 +610,10 @@ export function BusinessAlerts({ showUnreadOnly = false, compact = false }: Busi
             <div className="text-center py-12">
               <Package className="h-16 w-16 mx-auto mb-4 text-gray-300 dark:text-gray-600" />
               <h3 className="text-lg font-medium text-gray-900 dark:text-gray-100 mb-2">
-                Aucune alerte de stock
+                {settings?.language === 'en' ? 'No stock alerts' : 'Aucune alerte de stock'}
               </h3>
               <p className="text-gray-500 dark:text-gray-400">
-                Tous vos stocks sont à niveau.
+                {settings?.language === 'en' ? 'All your inventory levels are good.' : 'Tous vos stocks sont à niveau.'}
               </p>
             </div>
           )}
@@ -619,10 +625,10 @@ export function BusinessAlerts({ showUnreadOnly = false, compact = false }: Busi
             <div className="text-center py-12">
               <FileText className="h-16 w-16 mx-auto mb-4 text-gray-300 dark:text-gray-600" />
               <h3 className="text-lg font-medium text-gray-900 dark:text-gray-100 mb-2">
-                Aucune facture échue
+                {settings?.language === 'en' ? 'No overdue invoices' : 'Aucune facture échue'}
               </h3>
               <p className="text-gray-500 dark:text-gray-400">
-                Toutes vos factures sont à jour.
+                {settings?.language === 'en' ? 'All your invoices are up to date.' : 'Toutes vos factures sont à jour.'}
               </p>
             </div>
           )}

@@ -54,8 +54,8 @@ export default function Sidebar() {
     { name: t('categories'), href: "/categories", icon: Tags },
     { name: t('invoices'), href: "/invoices", icon: FileText },
     { name: t('sales'), href: "/sales", icon: TrendingUp },
-    { name: "Comptabilité", href: "/accounting", icon: Calculator },
-    { name: "Alertes", href: "/alerts", icon: Bell },
+    { name: t('accounting'), href: "/accounting", icon: Calculator },
+    { name: t('alerts'), href: "/alerts", icon: Bell },
   ];
 
   const secondaryNavigation = [

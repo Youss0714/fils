@@ -82,6 +82,37 @@ export interface Translations {
   confirmDelete: string;
   noData: string;
   
+  // Accounting
+  accounting: string;
+  manageFinances: string;
+  totalExpenses: string;
+  pendingExpenses: string;
+  approvedExpenses: string;
+  totalImprestFunds: string;
+  activeImprestFunds: string;
+  totalRevenues: string;
+  monthlyRevenues: string;
+  recentRevenues: string;
+  netResult: string;
+  filterByPeriod: string;
+  from: string;
+  to: string;
+  clear: string;
+  
+  // Alerts
+  alerts: string;
+  lowStock: string;
+  criticalStock: string;
+  overdueInvoice: string;
+  paymentDue: string;
+  markAsRead: string;
+  markAllAsRead: string;
+  deleteAlert: string;
+  severity: string;
+  type: string;
+  message: string;
+  createdAt: string;
+  
   // Landing page
   appTitle: string;
   appDescription: string;
@@ -190,6 +221,37 @@ export const translations: Record<Language, Translations> = {
     confirmDelete: "Êtes-vous sûr de vouloir supprimer cet élément ?",
     noData: "Aucune donnée disponible",
     
+    // Accounting
+    accounting: "Comptabilité",
+    manageFinances: "Gérez vos finances, dépenses et avances en toute sécurité",
+    totalExpenses: "Dépenses totales",
+    pendingExpenses: "Dépenses en attente",
+    approvedExpenses: "Dépenses approuvées",
+    totalImprestFunds: "Fonds d'avance totaux",
+    activeImprestFunds: "Fonds d'avance actifs",
+    totalRevenues: "Revenus totaux",
+    monthlyRevenues: "Revenus mensuels",
+    recentRevenues: "Revenus récents",
+    netResult: "Résultat net",
+    filterByPeriod: "Filtrer par période",
+    from: "Du",
+    to: "Au",
+    clear: "Effacer",
+    
+    // Alerts
+    alerts: "Alertes",
+    lowStock: "Stock faible",
+    criticalStock: "Rupture de stock",
+    overdueInvoice: "Facture échue",
+    paymentDue: "Paiement dû",
+    markAsRead: "Marquer comme lu",
+    markAllAsRead: "Marquer toutes comme lues",
+    deleteAlert: "Supprimer l'alerte",
+    severity: "Sévérité",
+    type: "Type",
+    message: "Message",
+    createdAt: "Créé le",
+    
     // Landing page
     appTitle: "YGestion",
     appDescription: "Application complète de gestion commerciale pour optimiser vos ventes, gérer vos clients et suivre votre activité en temps réel.",
@@ -296,6 +358,37 @@ export const translations: Record<Language, Translations> = {
     error: "Error",
     confirmDelete: "Are you sure you want to delete this item?",
     noData: "No data available",
+    
+    // Accounting
+    accounting: "Accounting",
+    manageFinances: "Manage your finances, expenses and advances securely",
+    totalExpenses: "Total Expenses",
+    pendingExpenses: "Pending Expenses",
+    approvedExpenses: "Approved Expenses",
+    totalImprestFunds: "Total Imprest Funds",
+    activeImprestFunds: "Active Imprest Funds",
+    totalRevenues: "Total Revenues",
+    monthlyRevenues: "Monthly Revenues",
+    recentRevenues: "Recent Revenues",
+    netResult: "Net Result",
+    filterByPeriod: "Filter by period",
+    from: "From",
+    to: "To",
+    clear: "Clear",
+    
+    // Alerts
+    alerts: "Alerts",
+    lowStock: "Low Stock",
+    criticalStock: "Out of Stock",
+    overdueInvoice: "Overdue Invoice",
+    paymentDue: "Payment Due",
+    markAsRead: "Mark as read",
+    markAllAsRead: "Mark all as read",
+    deleteAlert: "Delete alert",
+    severity: "Severity",
+    type: "Type",
+    message: "Message",
+    createdAt: "Created at",
     
     // Landing page
     appTitle: "YGestion",
