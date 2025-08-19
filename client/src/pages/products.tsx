@@ -243,6 +243,10 @@ export default function Products() {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["/api/products"] });
       queryClient.invalidateQueries({ queryKey: ["/api/stock-replenishments"] });
+      // Invalider également l'historique du produit spécifique
+      if (selectedProductForReplenishment) {
+        queryClient.invalidateQueries({ queryKey: ["/api/products", selectedProductForReplenishment.id, "replenishments"] });
+      }
       toast({
         title: "Réapprovisionnement ajouté",
         description: "Le stock a été réapprovisionné avec succès.",
