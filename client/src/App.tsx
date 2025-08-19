@@ -96,9 +96,9 @@ function AppContent() {
   };
 
   return (
-    <div className="flex h-screen bg-gray-50">
+    <div className="flex h-screen">
       <Sidebar />
-      <div className="flex-1 overflow-hidden">
+      <div className="flex-1 overflow-hidden content-glass">
         {user && !user.licenseActivated && trialStartTime && !trialExpired && user.firstName !== "Youssouphafils" && user.email !== "youssouphafils@gmail.com" && (
           <div className="p-4">
             <TrialBanner 

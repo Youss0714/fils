@@ -69,9 +69,9 @@ export default function Sidebar() {
   ];
 
   return (
-    <div className="w-64 bg-white shadow-lg border-r border-gray-200 flex flex-col">
+    <div className="w-64 sidebar-glass flex flex-col">
       {/* Logo and Title */}
-      <div className="p-6 border-b border-gray-200">
+      <div className="p-6 border-b border-white/20 dark:border-white/10">
         <div className="flex items-center space-x-3">
           <div className="w-10 h-10 bg-primary rounded-lg flex items-center justify-center">
             <BarChart3 className="text-white text-lg" />
@@ -98,7 +98,7 @@ export default function Sidebar() {
                   "w-full justify-start relative",
                   isActive
                     ? "bg-primary text-white hover:bg-primary/90"
-                    : "text-gray-700 hover:bg-gray-100"
+                    : "text-gray-700 dark:text-gray-300 hover:bg-white/20 dark:hover:bg-white/10"
                 )}
               >
                 <Icon className="mr-3 h-4 w-4" />
@@ -116,7 +116,7 @@ export default function Sidebar() {
           );
         })}
         
-        <div className="border-t border-gray-200 pt-4 mt-4 space-y-2">
+        <div className="border-t border-white/20 dark:border-white/10 pt-4 mt-4 space-y-2">
           {secondaryNavigation.map((item) => {
             const Icon = item.icon;
             const isActive = location === item.href;
@@ -129,7 +129,7 @@ export default function Sidebar() {
                     "w-full justify-start",
                     isActive
                       ? "bg-primary text-white hover:bg-primary/90"
-                      : "text-gray-700 hover:bg-gray-100"
+                      : "text-gray-700 dark:text-gray-300 hover:bg-white/20 dark:hover:bg-white/10"
                   )}
                 >
                   <Icon className="mr-3 h-4 w-4" />
@@ -141,7 +141,7 @@ export default function Sidebar() {
 
           {/* Admin navigation for Youssouphafils */}
           {(user?.firstName?.toLowerCase() === "youssouphafils" || user?.email?.toLowerCase().includes("youssouphafils")) && (
-            <div className="border-t border-gray-200 pt-2 mt-2">
+            <div className="border-t border-white/20 dark:border-white/10 pt-2 mt-2">
               {adminNavigation.map((item) => {
                 const Icon = item.icon;
                 const isActive = location === item.href;
@@ -169,7 +169,7 @@ export default function Sidebar() {
       </nav>
 
       {/* User Profile */}
-      <div className="p-4 border-t border-gray-200">
+      <div className="p-4 border-t border-white/20 dark:border-white/10">
         <div className="flex items-center space-x-3">
           <div className="w-8 h-8 bg-gray-300 rounded-full flex items-center justify-center overflow-hidden">
             {user?.profileImageUrl ? (
