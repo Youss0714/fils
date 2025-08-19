@@ -90,8 +90,12 @@ export default function Products() {
       const response = await apiRequest("GET", `/api/products/${selectedProductForReplenishment.id}/replenishments`);
       console.log("Response received:", response);
       
+      // Parser la réponse JSON
+      const jsonData = await response.json();
+      console.log("JSON data:", jsonData);
+      
       // S'assurer que la réponse est un tableau
-      const data = Array.isArray(response) ? response : [];
+      const data = Array.isArray(jsonData) ? jsonData : [];
       console.log("Parsed data:", data, "Length:", data.length);
       return data as StockReplenishment[];
     },
