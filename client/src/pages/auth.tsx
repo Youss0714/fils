@@ -167,19 +167,8 @@ export default function AuthPage() {
       <div className="w-full max-w-md">
         {/* Header */}
         <div className="text-center mb-8">
-          <div className="w-20 h-20 mx-auto mb-4 relative">
-            {/* Rotating gradient border */}
-            <div className="absolute -inset-1 bg-gradient-to-r from-blue-400 via-purple-500 to-indigo-600 rounded-2xl opacity-75 animate-spin" style={{ animationDuration: '3s' }}></div>
-            
-            {/* Main logo background */}
-            <div className="relative w-full h-full rounded-2xl flex items-center justify-center">
-              <img 
-                src="/attached_assets/image_1755621023361.png" 
-                alt="YGestion Logo" 
-                className="w-16 h-16 object-contain animate-bounce"
-                style={{ animationDuration: '2s' }}
-              />
-            </div>
+          <div className="w-16 h-16 bg-primary rounded-full flex items-center justify-center mx-auto mb-4">
+            <Users className="w-8 h-8 text-white" />
           </div>
           <p className="text-gray-600">
             Connectez-vous à votre espace de gestion commerciale
