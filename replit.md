@@ -78,7 +78,7 @@ Preferred communication style: Simple, everyday language.
 - **UI/UX**: Consistent design system using shadcn/ui, responsive layout, React Hook Form with Zod validation, optimistic updates, and toast notifications.
 - **Data Flow**: Authenticated client-server communication, Drizzle ORM for type-safe operations, Zod schemas for runtime validation.
 - **Invoice System**: Supports 7 configurable VAT rates (including 0% for no tax), PDF export, and automatic sales creation upon payment.
-- **Stock Management**: Automatic stock deduction on paid invoices, negative stock protection, and customizable alert thresholds.
+- **Stock Management**: Automatic stock deduction on paid invoices, negative stock protection, customizable alert thresholds, and secure stock modification only through replenishments and sales (direct editing disabled for security).
 - **Multi-Currency Support**: Exclusive support for XOF and GHS.
 - **Multi-Language**: Full i18n for French and English with language persistence.
 - **Dashboard**: Real-time business metrics, revenue growth, and top product statistics.

@@ -100,7 +100,6 @@ export default function Products() {
       name: "",
       description: "",
       priceHT: "",
-      stock: 0,
       alertStock: 10,
       categoryId: undefined,
     },
@@ -283,7 +282,6 @@ export default function Products() {
         name: product.name,
         description: product.description || "",
         priceHT: product.priceHT,
-        stock: product.stock || 0,
         alertStock: product.alertStock || 10,
         categoryId: product.categoryId || undefined,
       });
@@ -293,7 +291,6 @@ export default function Products() {
         name: "",
         description: "",
         priceHT: "",
-        stock: 0,
         alertStock: 10,
         categoryId: undefined,
       });
@@ -594,49 +591,29 @@ export default function Products() {
                   />
                 </div>
 
-                <div className="grid grid-cols-2 gap-4">
-                  <FormField
-                    control={form.control}
-                    name="stock"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel>Stock actuel</FormLabel>
-                        <FormControl>
-                          <Input 
-                            type="number" 
-                            min="0"
-                            placeholder="0" 
-                            {...field}
-                            value={field.value || 0}
-                            onChange={(e) => field.onChange(Math.max(0, parseInt(e.target.value) || 0))}
-                          />
-                        </FormControl>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
-
-                  <FormField
-                    control={form.control}
-                    name="alertStock"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel>Seuil d'alerte stock</FormLabel>
-                        <FormControl>
-                          <Input 
-                            type="number" 
-                            min="1"
-                            placeholder="10" 
-                            {...field}
-                            value={field.value || 10}
-                            onChange={(e) => field.onChange(Math.max(1, parseInt(e.target.value) || 10))}
-                          />
-                        </FormControl>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
-                </div>
+                <FormField
+                  control={form.control}
+                  name="alertStock"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Seuil d'alerte stock</FormLabel>
+                      <FormControl>
+                        <Input 
+                          type="number" 
+                          min="1"
+                          placeholder="10" 
+                          {...field}
+                          value={field.value || 10}
+                          onChange={(e) => field.onChange(Math.max(1, parseInt(e.target.value) || 10))}
+                        />
+                      </FormControl>
+                      <FormMessage />
+                      <p className="text-xs text-gray-500 mt-1">
+                        Le stock est géré automatiquement via les réapprovisionnements et les ventes
+                      </p>
+                    </FormItem>
+                  )}
+                />
 
 
 
