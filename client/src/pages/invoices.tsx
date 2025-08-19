@@ -845,7 +845,7 @@ export default function Invoices() {
         <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
           <DialogContent className="sm:max-w-4xl max-h-[90vh] overflow-y-auto">
             <DialogHeader>
-              <DialogTitle>Nouvelle Facture</DialogTitle>
+              <DialogTitle>{t('newInvoice')}</DialogTitle>
             </DialogHeader>
             <Form {...form}>
               <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
@@ -855,12 +855,12 @@ export default function Invoices() {
                     name="clientId"
                     render={({ field }) => (
                       <FormItem>
-                        <FormLabel>Client *</FormLabel>
+                        <FormLabel>{t('client')} *</FormLabel>
                         <FormControl>
                           <ClientSearch
                             value={field.value}
                             onChange={field.onChange}
-                            placeholder="Rechercher ou créer un client..."
+                            placeholder={t('searchOrCreateClient')}
                             onCreateNew={(name) => createClientMutation.mutate(name)}
                           />
                         </FormControl>
@@ -874,14 +874,14 @@ export default function Invoices() {
                     name="status"
                     render={({ field }) => (
                       <FormItem>
-                        <FormLabel>Statut *</FormLabel>
+                        <FormLabel>{t('status')} *</FormLabel>
                         <Select 
                           onValueChange={field.onChange}
                           value={field.value || "en_attente"}
                         >
                           <FormControl>
                             <SelectTrigger>
-                              <SelectValue placeholder="Sélectionner statut" />
+                              <SelectValue placeholder={t('selectStatus')} />
                             </SelectTrigger>
                           </FormControl>
                           <SelectContent>
@@ -902,14 +902,14 @@ export default function Invoices() {
                     name="tvaRate"
                     render={({ field }) => (
                       <FormItem>
-                        <FormLabel>Taux de TVA *</FormLabel>
+                        <FormLabel>{t('taxRate')} *</FormLabel>
                         <Select 
                           onValueChange={field.onChange}
                           value={field.value || "18.00"}
                         >
                           <FormControl>
                             <SelectTrigger>
-                              <SelectValue placeholder="Sélectionner TVA" />
+                              <SelectValue placeholder={t('selectTaxRate')} />
                             </SelectTrigger>
                           </FormControl>
                           <SelectContent>
@@ -932,14 +932,14 @@ export default function Invoices() {
                     name="paymentMethod"
                     render={({ field }) => (
                       <FormItem>
-                        <FormLabel>Moyen de paiement *</FormLabel>
+                        <FormLabel>{t('paymentMethod')} *</FormLabel>
                         <Select 
                           onValueChange={field.onChange}
                           value={field.value || "cash"}
                         >
                           <FormControl>
                             <SelectTrigger>
-                              <SelectValue placeholder="Sélectionner le moyen de paiement" />
+                              <SelectValue placeholder={t('selectPaymentMethod')} />
                             </SelectTrigger>
                           </FormControl>
                           <SelectContent>
@@ -962,7 +962,7 @@ export default function Invoices() {
                       name="dueDate"
                       render={({ field }) => (
                         <FormItem>
-                          <FormLabel>Date d'échéance</FormLabel>
+                          <FormLabel>{t('dueDate')}</FormLabel>
                           <FormControl>
                             <Input type="date" {...field} />
                           </FormControl>
@@ -975,16 +975,16 @@ export default function Invoices() {
 
                 {/* Items */}
                 <div>
-                  <FormLabel className="text-base font-medium">Produits/Services *</FormLabel>
+                  <FormLabel className="text-base font-medium">{t('products')} *</FormLabel>
                   <div className="border border-gray-200 rounded-lg mt-2">
                     <div className="overflow-x-auto">
                       <table className="w-full">
                         <thead className="bg-gray-50">
                           <tr>
-                            <th className="px-4 py-2 text-left text-sm font-medium text-gray-700">Produit</th>
-                            <th className="px-4 py-2 text-left text-sm font-medium text-gray-700">Quantité</th>
-                            <th className="px-4 py-2 text-left text-sm font-medium text-gray-700">Prix HT</th>
-                            <th className="px-4 py-2 text-left text-sm font-medium text-gray-700">Total</th>
+                            <th className="px-4 py-2 text-left text-sm font-medium text-gray-700">{t('product')}</th>
+                            <th className="px-4 py-2 text-left text-sm font-medium text-gray-700">{t('quantity')}</th>
+                            <th className="px-4 py-2 text-left text-sm font-medium text-gray-700">{t('priceHT')}</th>
+                            <th className="px-4 py-2 text-left text-sm font-medium text-gray-700">{t('total')}</th>
                             <th className="px-4 py-2"></th>
                           </tr>
                         </thead>
@@ -1003,7 +1003,7 @@ export default function Invoices() {
                                       form.setValue(`items.${index}.priceHT`, product.priceHT);
                                       form.trigger([`items.${index}.productName`, `items.${index}.priceHT`]);
                                     }}
-                                    placeholder="Rechercher un produit..."
+                                    placeholder={t('searchProduct')}
                                   />
                                   <FormField
                                     control={form.control}
@@ -1011,7 +1011,7 @@ export default function Invoices() {
                                     render={({ field }) => (
                                       <FormItem>
                                         <FormControl>
-                                          <Input placeholder="Nom du produit/service" {...field} />
+                                          <Input placeholder={t('productServiceName')} {...field} />
                                         </FormControl>
                                         <FormMessage />
                                       </FormItem>
@@ -1087,7 +1087,7 @@ export default function Invoices() {
                         onClick={() => append({ productId: undefined, productName: "", quantity: 1, priceHT: "" })}
                       >
                         <Plus className="mr-1 w-4 h-4" />
-                        Ajouter une ligne
+                        {t('addLine')}
                       </Button>
                     </div>
                   </div>
@@ -1098,10 +1098,10 @@ export default function Invoices() {
                   name="notes"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>Notes</FormLabel>
+                      <FormLabel>{t('notes')}</FormLabel>
                       <FormControl>
                         <Textarea 
-                          placeholder="Notes additionnelles"
+                          placeholder={t('additionalNotes')}
                           rows={3}
                           {...field} 
                         />
@@ -1116,15 +1116,15 @@ export default function Invoices() {
                   <div></div>
                   <div className="space-y-2">
                     <div className="flex justify-between">
-                      <span className="text-sm text-gray-600">Total HT:</span>
+                      <span className="text-sm text-gray-600">{t('totalHT')}:</span>
                       <span className="text-sm font-medium">{formatCurrency(subtotal)}</span>
                     </div>
                     <div className="flex justify-between">
-                      <span className="text-sm text-gray-600">TVA ({tvaRateNum}%):</span>
+                      <span className="text-sm text-gray-600">{t('tva')} ({tvaRateNum}%):</span>
                       <span className="text-sm font-medium">{formatCurrency(tax)}</span>
                     </div>
                     <div className="flex justify-between border-t pt-2">
-                      <span className="text-base font-semibold">Total TTC:</span>
+                      <span className="text-base font-semibold">{t('totalTTC')}:</span>
                       <span className="text-base font-semibold">{formatCurrency(total)}</span>
                     </div>
                   </div>
@@ -1136,7 +1136,7 @@ export default function Invoices() {
                     variant="outline" 
                     onClick={() => setIsDialogOpen(false)}
                   >
-                    Annuler
+                    {t('cancel')}
                   </Button>
                   <Button 
                     type="submit" 
@@ -1145,10 +1145,10 @@ export default function Invoices() {
                     {createMutation.isPending ? (
                       <div className="flex items-center space-x-2">
                         <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-current"></div>
-                        <span>Création...</span>
+                        <span>{t('creating')}...</span>
                       </div>
                     ) : (
-                      "Créer la Facture"
+                      t('createInvoice')
                     )}
                   </Button>
                 </div>
