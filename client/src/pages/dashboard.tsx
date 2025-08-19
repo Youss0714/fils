@@ -174,8 +174,8 @@ export default function Dashboard() {
             value={formatCurrency((stats as any)?.revenue || 0)}
             change={
               (stats as any)?.revenueGrowth !== undefined && (stats as any)?.revenueGrowth !== 0
-                ? `${(stats as any).revenueGrowth >= 0 ? '+' : ''}${(stats as any).revenueGrowth}% ${settings?.language === 'en' ? 'vs last month' : 'vs mois dernier'}`
-                : settings?.language === 'en' ? "No previous data" : "Aucune donnée précédente"
+                ? `${(stats as any).revenueGrowth >= 0 ? '+' : ''}${(stats as any).revenueGrowth}% ${t('vsLastMonth')}`
+                : t('noPreviousData')
             }
             changeType={(stats as any)?.revenueGrowth >= 0 ? "positive" : "negative"}
             icon={TrendingUp}
@@ -186,20 +186,20 @@ export default function Dashboard() {
             value={(stats as any)?.invoiceCount || 0}
             change={
               (stats as any)?.recentInvoiceCount !== undefined
-                ? `+${(stats as any).recentInvoiceCount} ${settings?.language === 'en' ? 'this week' : 'cette semaine'}`
-                : settings?.language === 'en' ? "No recent invoices" : "Aucune facture récente"
+                ? `+${(stats as any).recentInvoiceCount} ${t('thisWeek')}`
+                : t('noRecentInvoices')
             }
             changeType="positive"
             icon={FileText}
             iconColor="bg-blue-50 text-blue-500"
           />
           <StatsCard
-            title={settings?.language === 'en' ? "Active Clients" : "Clients Actifs"}
+            title={t('activeClients')}
             value={(stats as any)?.clientCount || 0}
             change={
               (stats as any)?.recentClientCount !== undefined
-                ? `+${(stats as any).recentClientCount} ${settings?.language === 'en' ? 'new this month' : 'nouveaux ce mois'}`
-                : settings?.language === 'en' ? "No new clients" : "Aucun nouveau client"
+                ? `+${(stats as any).recentClientCount} ${t('newThisMonth')}`
+                : t('noNewClients')
             }
             changeType="positive"
             icon={Users}
@@ -208,9 +208,7 @@ export default function Dashboard() {
           <StatsCard
             title={t('productCount')}
             value={(stats as any)?.productCount || 0}
-            change={settings?.language === 'en' ? 
-              `${((stats as any)?.lowStockProducts || []).length} stock alerts` : 
-              `${((stats as any)?.lowStockProducts || []).length} ruptures de stock`}
+            change={`${((stats as any)?.lowStockProducts || []).length} ${t('stockAlerts')}`}
             changeType={((stats as any)?.lowStockProducts || []).length > 0 ? "negative" : "neutral"}
             icon={Package}
             iconColor="bg-orange-50 text-orange-500"
@@ -227,7 +225,7 @@ export default function Dashboard() {
                   <CardTitle>{t('recentInvoices')}</CardTitle>
                   <Link href="/invoices">
                     <Button variant="ghost" size="sm">
-                      {settings?.language === 'en' ? "View All" : "Voir toutes"}
+                      {t('viewAll')}
                     </Button>
                   </Link>
                 </div>
@@ -244,16 +242,16 @@ export default function Dashboard() {
                           {t('client')}
                         </th>
                         <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                          {settings?.language === 'en' ? "Amount" : "Montant"}
+                          {t('amount')}
                         </th>
                         <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                           {t('status')}
                         </th>
                         <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                          {settings?.language === 'en' ? "Date" : "Date"}
+                          {t('date')}
                         </th>
                         <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                          {settings?.language === 'en' ? "Actions" : "Actions"}
+                          {t('actions')}
                         </th>
                       </tr>
                     </thead>
@@ -271,7 +269,7 @@ export default function Dashboard() {
                               {invoice.number}
                             </td>
                             <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                              {invoice.client?.name || (settings?.language === 'en' ? 'Unknown client' : 'Client inconnu')}
+                              {invoice.client?.name || t('unknownClient')}
                             </td>
                             <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
                               {formatCurrency(parseFloat(invoice.totalTTC || invoice.total || "0"))}
@@ -310,31 +308,31 @@ export default function Dashboard() {
             {/* Quick Actions */}
             <Card>
               <CardHeader>
-                <CardTitle>Actions Rapides</CardTitle>
+                <CardTitle>{t('quickActions')}</CardTitle>
               </CardHeader>
               <CardContent className="space-y-3">
                 <Link href="/clients">
                   <Button variant="ghost" className="w-full justify-start bg-gradient-to-r from-blue-50 to-indigo-50 hover:from-blue-100 hover:to-indigo-100 border border-blue-200 hover:border-blue-300 shadow-sm">
                     <UserPlus className="mr-3 w-4 h-4 text-blue-600" />
-                    <span className="text-blue-800 font-medium">Nouveau Client</span>
+                    <span className="text-blue-800 font-medium">{t('newClient')}</span>
                   </Button>
                 </Link>
                 <Link href="/products">
                   <Button variant="ghost" className="w-full justify-start bg-green-50 hover:bg-green-100">
                     <Plus className="mr-3 w-4 h-4 text-green-500" />
-                    Nouveau Produit
+                    {t('newProduct')}
                   </Button>
                 </Link>
                 <Link href="/sales">
                   <Button variant="ghost" className="w-full justify-start bg-blue-50 hover:bg-blue-100">
                     <BarChart3 className="mr-3 w-4 h-4 text-blue-500" />
-                    Générer Rapport
+                    {t('generateReport')}
                   </Button>
                 </Link>
                 <Link href="/export">
                   <Button variant="ghost" className="w-full justify-start bg-purple-50 hover:bg-purple-100">
                     <FolderOutput className="mr-3 w-4 h-4 text-purple-500" />
-                    Exporter Données
+                    {t('exportData')}
                   </Button>
                 </Link>
               </CardContent>
@@ -343,11 +341,11 @@ export default function Dashboard() {
             {/* Top Products */}
             <Card>
               <CardHeader>
-                <CardTitle>Produits les Plus Vendus</CardTitle>
+                <CardTitle>{t('bestSellingProducts')}</CardTitle>
               </CardHeader>
               <CardContent className="space-y-4">
                 {((stats as any)?.topProducts || []).length === 0 ? (
-                  <p className="text-center text-gray-500 py-4">Aucune vente enregistrée</p>
+                  <p className="text-center text-gray-500 py-4">{t('noSalesRecorded')}</p>
                 ) : (
                   ((stats as any)?.topProducts || []).map((product: any, index: number) => (
                     <div key={product.id} className="flex items-center justify-between">
@@ -362,7 +360,7 @@ export default function Dashboard() {
                       </div>
                       <div className="text-right">
                         <p className="text-sm font-medium text-gray-900">{product.salesCount}</p>
-                        <p className="text-xs text-gray-500">vendus</p>
+                        <p className="text-xs text-gray-500">{t('sold')}</p>
                       </div>
                     </div>
                   ))

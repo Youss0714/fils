@@ -29,6 +29,25 @@ export interface Translations {
   productCount: string;
   recentInvoices: string;
   topProducts: string;
+  quickActions: string;
+  generateReport: string;
+  exportData: string;
+  viewAll: string;
+  amount: string;
+  date: string;
+  actions: string;
+  unknownClient: string;
+  noSalesRecorded: string;
+  sold: string;
+  activeClients: string;
+  newThisMonth: string;
+  noNewClients: string;
+  stockAlerts: string;
+  vsLastMonth: string;
+  noPreviousData: string;
+  thisWeek: string;
+  noRecentInvoices: string;
+  bestSellingProducts: string;
   
   // Clients
   clientName: string;
@@ -193,6 +212,25 @@ export const translations: Record<Language, Translations> = {
     productCount: "Produits",
     recentInvoices: "Factures récentes",
     topProducts: "Produits populaires",
+    quickActions: "Actions Rapides",
+    generateReport: "Générer Rapport",
+    exportData: "Exporter Données",
+    viewAll: "Voir toutes",
+    amount: "Montant",
+    date: "Date",
+    actions: "Actions",
+    unknownClient: "Client inconnu",
+    noSalesRecorded: "Aucune vente enregistrée",
+    sold: "vendus",
+    activeClients: "Clients Actifs",
+    newThisMonth: "nouveaux ce mois",
+    noNewClients: "Aucun nouveau client",
+    stockAlerts: "ruptures de stock",
+    vsLastMonth: "vs mois dernier",
+    noPreviousData: "Aucune donnée précédente",
+    thisWeek: "cette semaine",
+    noRecentInvoices: "Aucune facture récente",
+    bestSellingProducts: "Produits les Plus Vendus",
     
     // Clients
     clientName: "Nom du client",
@@ -356,6 +394,25 @@ export const translations: Record<Language, Translations> = {
     productCount: "Products",
     recentInvoices: "Recent Invoices",
     topProducts: "Top Products",
+    quickActions: "Quick Actions",
+    generateReport: "Generate Report",
+    exportData: "Export Data",
+    viewAll: "View All",
+    amount: "Amount",
+    date: "Date",
+    actions: "Actions",
+    unknownClient: "Unknown client",
+    noSalesRecorded: "No sales recorded",
+    sold: "sold",
+    activeClients: "Active Clients",
+    newThisMonth: "new this month",
+    noNewClients: "No new clients",
+    stockAlerts: "stock alerts",
+    vsLastMonth: "vs last month",
+    noPreviousData: "No previous data",
+    thisWeek: "this week",
+    noRecentInvoices: "No recent invoices",
+    bestSellingProducts: "Best Selling Products",
     
     // Clients
     clientName: "Client Name",
