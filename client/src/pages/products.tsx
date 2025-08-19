@@ -86,18 +86,9 @@ export default function Products() {
     queryKey: ["/api/products", selectedProductForReplenishment?.id, "replenishments"],
     queryFn: async () => {
       if (!selectedProductForReplenishment) return [];
-      console.log("Fetching replenishments for product:", selectedProductForReplenishment.id);
       const response = await apiRequest("GET", `/api/products/${selectedProductForReplenishment.id}/replenishments`);
-      console.log("Response received:", response);
-      
-      // Parser la réponse JSON
       const jsonData = await response.json();
-      console.log("JSON data:", jsonData);
-      
-      // S'assurer que la réponse est un tableau
-      const data = Array.isArray(jsonData) ? jsonData : [];
-      console.log("Parsed data:", data, "Length:", data.length);
-      return data as StockReplenishment[];
+      return Array.isArray(jsonData) ? jsonData as StockReplenishment[] : [];
     },
     enabled: !!selectedProductForReplenishment && isHistoryDialogOpen,
     retry: false,
