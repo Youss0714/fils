@@ -19,6 +19,7 @@ import {
   Package
 } from "lucide-react";
 import { insertCategorySchema, insertProductSchema, type Category, type InsertCategory, type InsertProduct } from "@shared/schema";
+import { useTranslation } from "@/lib/i18n";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
@@ -26,6 +27,7 @@ import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "
 export default function Categories() {
   const { toast } = useToast();
   const { isAuthenticated, isLoading } = useAuth();
+  const { t } = useTranslation();
   const [searchTerm, setSearchTerm] = useState("");
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [editingCategory, setEditingCategory] = useState<Category | null>(null);
@@ -36,8 +38,8 @@ export default function Categories() {
   useEffect(() => {
     if (!isLoading && !isAuthenticated) {
       toast({
-        title: "Non autorisé",
-        description: "Vous êtes déconnecté. Reconnexion...",
+        title: t('unauthorized'),
+        description: t('unauthorizedDesc'),
         variant: "destructive",
       });
       setTimeout(() => {
@@ -270,10 +272,10 @@ export default function Categories() {
   return (
     <div className="flex-1 flex flex-col overflow-hidden">
       <Header 
-        title="Catégories" 
-        subtitle="Organisez vos produits par catégories"
+        title={t('categories')} 
+        subtitle={t('organizeProductsByCategories')}
         action={{
-          label: "Nouvelle Catégorie",
+          label: t('newCategory'),
           onClick: () => handleOpenDialog()
         }}
       />
@@ -284,7 +286,7 @@ export default function Categories() {
           <div className="relative">
             <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4" />
             <Input
-              placeholder="Rechercher une catégorie..."
+              placeholder={t('searchCategory')}
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
               className="pl-10"
@@ -298,18 +300,18 @@ export default function Categories() {
             <CardContent className="py-12 text-center">
               <Tags className="w-12 h-12 text-gray-400 mx-auto mb-4" />
               <h3 className="text-lg font-medium text-gray-900 mb-2">
-                {searchTerm ? "Aucune catégorie trouvée" : "Aucune catégorie"}
+                {searchTerm ? t('noCategoryFound') : t('noCategory')}
               </h3>
               <p className="text-gray-500 mb-4">
                 {searchTerm 
-                  ? "Essayez de modifier votre recherche."
-                  : "Commencez par créer votre première catégorie."
+                  ? t('tryModifySearch')
+                  : t('createFirstCategory')
                 }
               </p>
               {!searchTerm && (
                 <Button onClick={() => handleOpenDialog()}>
                   <Plus className="mr-2 h-4 w-4" />
-                  Nouvelle Catégorie
+{t('newCategory')}
                 </Button>
               )}
             </CardContent>
@@ -350,7 +352,7 @@ export default function Categories() {
                   )}
                   <div className="flex justify-between items-center pt-2">
                     <div className="text-xs text-gray-500">
-                      Créée le {category.createdAt && new Date(category.createdAt).toLocaleDateString('fr-FR')}
+{t('createdOn')} {category.createdAt && new Date(category.createdAt).toLocaleDateString()}
                     </div>
                     <Button
                       variant="outline"
@@ -360,7 +362,7 @@ export default function Categories() {
                       data-testid={`button-add-product-${category.id}`}
                     >
                       <Package className="w-3 h-3 mr-1" />
-                      Ajouter Produit
+{t('addProduct')}
                     </Button>
                   </div>
                 </CardContent>
@@ -374,7 +376,7 @@ export default function Categories() {
           <DialogContent className="sm:max-w-[500px]">
             <DialogHeader>
               <DialogTitle>
-                {editingCategory ? "Modifier la Catégorie" : "Nouvelle Catégorie"}
+{editingCategory ? t('editCategory') : t('newCategory')}
               </DialogTitle>
             </DialogHeader>
             <Form {...form}>
@@ -384,9 +386,9 @@ export default function Categories() {
                   name="name"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>Nom de la catégorie *</FormLabel>
+                      <FormLabel>{t('categoryName')} *</FormLabel>
                       <FormControl>
-                        <Input placeholder="Électronique" {...field} />
+                        <Input placeholder={t('categoryNamePlaceholder')} {...field} />
                       </FormControl>
                       <FormMessage />
                     </FormItem>
@@ -398,10 +400,10 @@ export default function Categories() {
                   name="description"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>Description</FormLabel>
+                      <FormLabel>{t('description')}</FormLabel>
                       <FormControl>
                         <Textarea 
-                          placeholder="Description de la catégorie"
+                          placeholder={t('categoryDescriptionPlaceholder')}
                           rows={4}
                           {...field}
                           value={field.value || ""}
