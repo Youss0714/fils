@@ -89,7 +89,11 @@ export default function Products() {
       console.log("Fetching replenishments for product:", selectedProductForReplenishment.id);
       const response = await apiRequest("GET", `/api/products/${selectedProductForReplenishment.id}/replenishments`);
       console.log("Response received:", response);
-      return response as unknown as StockReplenishment[];
+      
+      // S'assurer que la réponse est un tableau
+      const data = Array.isArray(response) ? response : [];
+      console.log("Parsed data:", data, "Length:", data.length);
+      return data as StockReplenishment[];
     },
     enabled: !!selectedProductForReplenishment && isHistoryDialogOpen,
     retry: false,
