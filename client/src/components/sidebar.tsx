@@ -73,8 +73,12 @@ export default function Sidebar() {
       {/* Logo and Title */}
       <div className="p-6 border-b border-white/20 dark:border-white/10">
         <div className="flex items-center space-x-3">
-          <div className="w-10 h-10 bg-primary rounded-lg flex items-center justify-center">
-            <BarChart3 className="text-white text-lg" />
+          <div className="w-10 h-10 rounded-lg flex items-center justify-center">
+            <img 
+              src="/logo.svg" 
+              alt="YGestion Logo" 
+              className="w-10 h-10 object-contain"
+            />
           </div>
           <div>
             <h1 className="text-xl font-bold text-gray-900">YGestion</h1>

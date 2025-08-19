@@ -176,7 +176,7 @@ export default function AuthPage() {
               {/* White background for logo */}
               <div className="w-16 h-16 bg-white rounded-xl flex items-center justify-center shadow-inner m-1">
                 <img 
-                  src="/attached_assets/image_1755620675522.png" 
+                  src="/logo.svg" 
                   alt="YGestion Logo" 
                   className="w-12 h-12 object-contain animate-bounce"
                   style={{ animationDuration: '2s' }}
