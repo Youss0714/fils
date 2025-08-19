@@ -25,7 +25,7 @@ import {
   History
 } from "lucide-react";
 import { insertProductSchema, insertStockReplenishmentSchema, type Product, type InsertProduct, type Category, type StockReplenishment, type InsertStockReplenishment } from "@shared/schema";
-import { formatPrice } from "@/lib/i18n";
+import { formatPrice, useTranslation } from "@/lib/i18n";
 import { useSettings } from "@/hooks/useSettings";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -36,6 +36,7 @@ export default function Products() {
   const { toast } = useToast();
   const { isAuthenticated, isLoading } = useAuth();
   const { settings } = useSettings();
+  const { t } = useTranslation();
   const [searchTerm, setSearchTerm] = useState("");
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [editingProduct, setEditingProduct] = useState<Product | null>(null);
@@ -47,8 +48,8 @@ export default function Products() {
   useEffect(() => {
     if (!isLoading && !isAuthenticated) {
       toast({
-        title: "Non autorisé",
-        description: "Vous êtes déconnecté. Reconnexion...",
+        title: t('unauthorized'),
+        description: t('unauthorizedDesc'),
         variant: "destructive",
       });
       setTimeout(() => {
@@ -61,7 +62,7 @@ export default function Products() {
   const { data: products = [], isLoading: productsLoading } = useQuery<Product[]>({
     queryKey: ["/api/products"],
     retry: false,
-    refetchInterval: 60000, // Rafraîchit toutes les 60 secondes
+    refetchInterval: 60000, // Refresh every 60 seconds
     refetchIntervalInBackground: true,
     staleTime: 30000,
   });
@@ -69,7 +70,7 @@ export default function Products() {
   const { data: categories = [] } = useQuery<Category[]>({
     queryKey: ["/api/categories"],
     retry: false,
-    refetchInterval: 120000, // Rafraîchit toutes les 2 minutes
+    refetchInterval: 120000, // Refresh every 2 minutes
     staleTime: 60000,
   });
 
@@ -139,8 +140,8 @@ export default function Products() {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["/api/products"] });
       toast({
-        title: "Produit créé",
-        description: "Le produit a été créé avec succès.",
+        title: t('productCreated'),
+        description: t('productCreatedDesc'),
       });
       setIsDialogOpen(false);
       form.reset();
@@ -158,8 +159,8 @@ export default function Products() {
         return;
       }
       toast({
-        title: "Erreur",
-        description: "Impossible de créer le produit.",
+        title: t('error'),
+        description: t('errorCreateProduct'),
         variant: "destructive",
       });
     },
@@ -173,8 +174,8 @@ export default function Products() {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["/api/products"] });
       toast({
-        title: "Produit modifié",
-        description: "Le produit a été modifié avec succès.",
+        title: t('productModified'),
+        description: t('productModifiedDesc'),
       });
       setIsDialogOpen(false);
       setEditingProduct(null);
@@ -193,8 +194,8 @@ export default function Products() {
         return;
       }
       toast({
-        title: "Erreur",
-        description: "Impossible de modifier le produit.",
+        title: t('error'),
+        description: t('errorUpdateProduct'),
         variant: "destructive",
       });
     },
@@ -207,8 +208,8 @@ export default function Products() {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["/api/products"] });
       toast({
-        title: "Produit supprimé",
-        description: "Le produit a été supprimé avec succès.",
+        title: t('productDeleted'),
+        description: t('productDeletedDesc'),
       });
     },
     onError: (error) => {
@@ -224,8 +225,8 @@ export default function Products() {
         return;
       }
       toast({
-        title: "Erreur",
-        description: "Impossible de supprimer le produit.",
+        title: t('error'),
+        description: t('errorDeleteProduct'),
         variant: "destructive",
       });
     },
@@ -243,13 +244,13 @@ export default function Products() {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["/api/products"] });
       queryClient.invalidateQueries({ queryKey: ["/api/stock-replenishments"] });
-      // Invalider également l'historique du produit spécifique
+      // Also invalidate the specific product history
       if (selectedProductForReplenishment) {
         queryClient.invalidateQueries({ queryKey: ["/api/products", selectedProductForReplenishment.id, "replenishments"] });
       }
       toast({
-        title: "Réapprovisionnement ajouté",
-        description: "Le stock a été réapprovisionné avec succès.",
+        title: t('replenishmentAdded'),
+        description: t('replenishmentAddedDesc'),
       });
       setIsReplenishmentDialogOpen(false);
       setSelectedProductForReplenishment(null);
@@ -268,8 +269,8 @@ export default function Products() {
         return;
       }
       toast({
-        title: "Erreur",
-        description: "Impossible d'ajouter le réapprovisionnement.",
+        title: t('error'),
+        description: t('errorAddReplenishment'),
         variant: "destructive",
       });
     },
@@ -334,9 +335,9 @@ export default function Products() {
   );
 
   const getCategoryName = (categoryId: number | null) => {
-    if (!categoryId) return "Sans catégorie";
+    if (!categoryId) return t('noCategory');
     const category = categories.find((cat: Category) => cat.id === categoryId);
-    return category?.name || "Catégorie inconnue";
+    return category?.name || t('unknownCategory');
   };
 
   const formatProductPrice = (price: string) => {
@@ -348,11 +349,11 @@ export default function Products() {
     const stockValue = stock || 0;
     const alertValue = alertStock || 10;
     if (stockValue === 0) {
-      return { label: "Rupture", variant: "destructive" as const, icon: AlertTriangle };
+      return { label: t('outOfStock'), variant: "destructive" as const, icon: AlertTriangle };
     } else if (stockValue <= alertValue) {
-      return { label: "Stock faible", variant: "secondary" as const, icon: AlertTriangle };
+      return { label: t('lowStock'), variant: "secondary" as const, icon: AlertTriangle };
     }
-    return { label: "En stock", variant: "secondary" as const, icon: null };
+    return { label: t('inStock'), variant: "secondary" as const, icon: null };
   };
 
   if (isLoading || productsLoading) {
@@ -362,10 +363,10 @@ export default function Products() {
   return (
     <div className="flex-1 flex flex-col overflow-hidden">
       <Header 
-        title="Produits" 
-        subtitle="Gérez votre catalogue de produits"
+        title={t('products')} 
+        subtitle={t('manageProducts')}
         action={{
-          label: "Nouveau Produit",
+          label: t('newProduct'),
           onClick: () => handleOpenDialog()
         }}
       />
@@ -376,7 +377,7 @@ export default function Products() {
           <div className="relative">
             <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4" />
             <Input
-              placeholder="Rechercher un produit..."
+              placeholder={t('searchProduct')}
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
               className="pl-10"
@@ -390,18 +391,18 @@ export default function Products() {
             <CardContent className="py-12 text-center">
               <Package className="w-12 h-12 text-gray-400 mx-auto mb-4" />
               <h3 className="text-lg font-medium text-gray-900 mb-2">
-                {searchTerm ? "Aucun produit trouvé" : "Aucun produit"}
+                {searchTerm ? t('noProductFound') : t('noProduct')}
               </h3>
               <p className="text-gray-500 mb-4">
                 {searchTerm 
-                  ? "Essayez de modifier votre recherche."
-                  : "Commencez par ajouter votre premier produit."
+                  ? t('tryModifySearch')
+                  : t('addFirstProduct')
                 }
               </p>
               {!searchTerm && (
                 <Button onClick={() => handleOpenDialog()}>
                   <Plus className="mr-2 h-4 w-4" />
-                  Nouveau Produit
+                  {t('newProduct')}
                 </Button>
               )}
             </CardContent>
@@ -434,7 +435,7 @@ export default function Products() {
                             variant="ghost"
                             size="sm"
                             onClick={() => handleOpenReplenishmentDialog(product)}
-                            title="Réapprovisionner le stock"
+                            title={t('replenishStock')}
                           >
                             <TrendingUp className="w-4 h-4" />
                           </Button>
@@ -442,7 +443,7 @@ export default function Products() {
                             variant="ghost"
                             size="sm"
                             onClick={() => handleOpenHistoryDialog(product)}
-                            title="Historique des réapprovisionnements"
+                            title={t('replenishmentHistory')}
                           >
                             <History className="w-4 h-4" />
                           </Button>
@@ -452,7 +453,7 @@ export default function Products() {
                             variant="ghost"
                             size="sm"
                             onClick={() => handleOpenDialog(product)}
-                            title="Modifier le produit"
+                            title={t('editProduct')}
                           >
                             <Edit className="w-4 h-4" />
                           </Button>
@@ -462,7 +463,7 @@ export default function Products() {
                             onClick={() => deleteMutation.mutate(product.id)}
                             disabled={deleteMutation.isPending}
                             className="text-red-600 hover:text-red-700 hover:bg-red-50"
-                            title="Supprimer le produit"
+                            title={t('deleteProduct')}
                           >
                             <Trash2 className="w-4 h-4" />
                           </Button>
