@@ -412,6 +412,14 @@ export const translations: Record<Language, Translations> = {
     replenishStock: "Réapprovisionner le stock",
     replenishmentHistory: "Historique des réapprovisionnements",
     deleteProduct: "Supprimer le produit",
+    productNamePlaceholder: "Attiéké complet",
+    descriptionPlaceholder: "Plat traditionnel ivoirien à base de manioc",
+    selectCategory: "Sélectionner une catégorie",
+    stockAlertThreshold: "Seuil d'alerte stock",
+    stockManagedAutomatically: "Le stock est géré automatiquement via les réapprovisionnements et les ventes",
+    modify: "Modifier",
+    create: "Créer",
+    units: "unités",
     
     // Invoice Status
     pending: "En attente",
@@ -692,6 +700,14 @@ export const translations: Record<Language, Translations> = {
     replenishStock: "Replenish stock",
     replenishmentHistory: "Replenishment history",
     deleteProduct: "Delete product",
+    productNamePlaceholder: "Complete attiéké",
+    descriptionPlaceholder: "Traditional Ivorian dish made from cassava",
+    selectCategory: "Select a category",
+    stockAlertThreshold: "Stock alert threshold",
+    stockManagedAutomatically: "Stock is managed automatically via replenishments and sales",
+    modify: "Modify",
+    create: "Create",
+    units: "units",
     
     // Invoice Status
     pending: "Pending",

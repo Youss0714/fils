@@ -483,13 +483,13 @@ export default function Products() {
                           {formatProductPrice(product.priceHT)} HT
                         </p>
                         <div className="text-sm text-gray-500 space-y-1">
-                          <p>Stock: {product.stock || 0} unités</p>
-                          <p>Seuil d'alerte: {product.alertStock || 10} unités</p>
+                          <p>{t('stock')}: {product.stock || 0} {t('units')}</p>
+                          <p>{t('stockAlertThreshold')}: {product.alertStock || 10} {t('units')}</p>
                         </div>
                       </div>
                     </div>
                     <div className="pt-2 text-xs text-gray-500">
-                      Créé le {product.createdAt && new Date(product.createdAt).toLocaleDateString('fr-FR')}
+                      {t('createdOn')} {product.createdAt && new Date(product.createdAt).toLocaleDateString()}
                     </div>
                   </CardContent>
                 </Card>
@@ -503,7 +503,7 @@ export default function Products() {
           <DialogContent className="sm:max-w-[500px]">
             <DialogHeader>
               <DialogTitle>
-                {editingProduct ? "Modifier le Produit" : "Nouveau Produit"}
+                {editingProduct ? t('editProduct') : t('newProduct')}
               </DialogTitle>
             </DialogHeader>
             <Form {...form}>
@@ -513,9 +513,9 @@ export default function Products() {
                   name="name"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>Nom du produit *</FormLabel>
+                      <FormLabel>{t('productName')} *</FormLabel>
                       <FormControl>
-                        <Input placeholder="Attiéké complet" {...field} />
+                        <Input placeholder={t('productNamePlaceholder')} {...field} />
                       </FormControl>
                       <FormMessage />
                     </FormItem>
@@ -527,10 +527,10 @@ export default function Products() {
                   name="description"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>Description</FormLabel>
+                      <FormLabel>{t('description')}</FormLabel>
                       <FormControl>
                         <Textarea 
-                          placeholder="Plat traditionnel ivoirien à base de manioc"
+                          placeholder={t('descriptionPlaceholder')}
                           rows={3}
                           {...field}
                           value={field.value || ""}
@@ -547,7 +547,7 @@ export default function Products() {
                     name="priceHT"
                     render={({ field }) => (
                       <FormItem>
-                        <FormLabel>Prix HT ({settings?.currency === 'GHS' ? 'GH₵' : 'XOF'}) *</FormLabel>
+                        <FormLabel>{t('priceHT')} ({settings?.currency === 'GHS' ? 'GH₵' : 'XOF'}) *</FormLabel>
                         <FormControl>
                           <Input 
                             type="number" 
@@ -567,18 +567,18 @@ export default function Products() {
                     name="categoryId"
                     render={({ field }) => (
                       <FormItem>
-                        <FormLabel>Catégorie</FormLabel>
+                        <FormLabel>{t('category')}</FormLabel>
                         <Select 
                           onValueChange={(value) => field.onChange(value === "none" ? undefined : value ? parseInt(value) : undefined)}
                           value={field.value?.toString() || "none"}
                         >
                           <FormControl>
                             <SelectTrigger>
-                              <SelectValue placeholder="Sélectionner une catégorie" />
+                              <SelectValue placeholder={t('selectCategory')} />
                             </SelectTrigger>
                           </FormControl>
                           <SelectContent>
-                            <SelectItem value="none">Aucune catégorie</SelectItem>
+                            <SelectItem value="none">{t('noCategory')}</SelectItem>
                             {categories.map((category: Category) => (
                               <SelectItem key={category.id} value={category.id.toString()}>
                                 {category.name}
@@ -597,7 +597,7 @@ export default function Products() {
                   name="alertStock"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>Seuil d'alerte stock</FormLabel>
+                      <FormLabel>{t('stockAlertThreshold')}</FormLabel>
                       <FormControl>
                         <Input 
                           type="number" 
@@ -610,7 +610,7 @@ export default function Products() {
                       </FormControl>
                       <FormMessage />
                       <p className="text-xs text-gray-500 mt-1">
-                        Le stock est géré automatiquement via les réapprovisionnements et les ventes
+{t('stockManagedAutomatically')}
                       </p>
                     </FormItem>
                   )}
@@ -626,13 +626,13 @@ export default function Products() {
                     variant="outline" 
                     onClick={() => setIsDialogOpen(false)}
                   >
-                    Annuler
+                    {t('cancel')}
                   </Button>
                   <Button 
                     type="submit" 
                     disabled={createMutation.isPending || updateMutation.isPending}
                   >
-                    {editingProduct ? "Modifier" : "Créer"}
+                    {editingProduct ? t('modify') : t('create')}
                   </Button>
                 </div>
               </form>
