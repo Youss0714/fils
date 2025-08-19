@@ -46,18 +46,43 @@ export default function LoadingScreen({ onComplete }: LoadingScreenProps) {
   return (
     <div className={`fixed inset-0 bg-gradient-to-br from-blue-50 to-indigo-100 flex items-center justify-center z-50 transition-opacity duration-500 ${isComplete ? 'opacity-0' : 'opacity-100'}`}>
       <div className="text-center">
-        {/* Logo Animation */}
+        {/* Logo Animation Ultra Pro */}
         <div className="mb-8 relative">
-          <div className="w-24 h-24 bg-primary rounded-2xl flex items-center justify-center mx-auto shadow-lg animate-pulse">
-            <BarChart3 className="text-white text-4xl animate-bounce" />
+          {/* Main logo container with gradient border and shadow */}
+          <div className="w-28 h-28 mx-auto relative">
+            {/* Rotating gradient border */}
+            <div className="absolute -inset-2 bg-gradient-to-r from-blue-400 via-purple-500 via-indigo-500 to-blue-600 rounded-3xl opacity-75 animate-spin" style={{ animationDuration: '4s' }}></div>
+            
+            {/* Inner glow effect */}
+            <div className="absolute -inset-1 bg-gradient-to-br from-blue-300 to-indigo-400 rounded-2xl opacity-60 animate-pulse" style={{ animationDuration: '2s' }}></div>
+            
+            {/* Main logo background */}
+            <div className="relative w-full h-full rounded-2xl flex items-center justify-center">
+              <img 
+                src="/attached_assets/image_1755621023361.png" 
+                alt="YGestion Logo" 
+                className="w-20 h-20 object-contain animate-bounce"
+                style={{ animationDuration: '2.5s', animationTimingFunction: 'cubic-bezier(0.4, 0, 0.2, 1)' }}
+              />
+            </div>
           </div>
           
-          {/* Animated rings around logo */}
+          {/* Multiple animated rings with different speeds and colors */}
           <div className="absolute inset-0 flex items-center justify-center">
-            <div className="w-32 h-32 border-4 border-primary/20 rounded-full animate-spin"></div>
+            <div className="w-36 h-36 border-4 border-blue-400/30 rounded-full animate-spin" style={{ animationDuration: '3s' }}></div>
           </div>
           <div className="absolute inset-0 flex items-center justify-center">
-            <div className="w-40 h-40 border-2 border-primary/10 rounded-full animate-ping"></div>
+            <div className="w-44 h-44 border-2 border-indigo-400/20 rounded-full animate-spin" style={{ animationDuration: '5s', animationDirection: 'reverse' }}></div>
+          </div>
+          <div className="absolute inset-0 flex items-center justify-center">
+            <div className="w-52 h-52 border border-purple-400/15 rounded-full animate-ping" style={{ animationDuration: '3s' }}></div>
+          </div>
+          
+          {/* Floating particles effect */}
+          <div className="absolute inset-0 flex items-center justify-center">
+            <div className="w-2 h-2 bg-blue-400 rounded-full absolute animate-bounce" style={{ top: '20%', left: '30%', animationDelay: '0.5s', animationDuration: '2s' }}></div>
+            <div className="w-1 h-1 bg-indigo-400 rounded-full absolute animate-bounce" style={{ top: '70%', right: '25%', animationDelay: '1s', animationDuration: '2.5s' }}></div>
+            <div className="w-1.5 h-1.5 bg-purple-400 rounded-full absolute animate-bounce" style={{ bottom: '60%', left: '20%', animationDelay: '1.5s', animationDuration: '3s' }}></div>
           </div>
         </div>
 
