@@ -95,10 +95,10 @@ export default function Sidebar() {
               <Button
                 variant="ghost"
                 className={cn(
-                  "w-full justify-start relative",
+                  "w-full justify-start relative transition-all duration-200 ease-in-out transform hover:scale-[1.02] hover:shadow-sm",
                   isActive
-                    ? "bg-primary text-white hover:bg-primary/90"
-                    : "text-gray-700 dark:text-gray-300 hover:bg-white/20 dark:hover:bg-white/10"
+                    ? "bg-primary text-white hover:bg-primary/90 shadow-sm"
+                    : "text-gray-700 dark:text-gray-300 hover:bg-white/30 dark:hover:bg-white/20 hover:text-gray-900 dark:hover:text-white"
                 )}
               >
                 <Icon className="mr-3 h-4 w-4" />
@@ -126,10 +126,10 @@ export default function Sidebar() {
                 <Button
                   variant="ghost"
                   className={cn(
-                    "w-full justify-start",
+                    "w-full justify-start transition-all duration-200 ease-in-out transform hover:scale-[1.02] hover:shadow-sm",
                     isActive
-                      ? "bg-primary text-white hover:bg-primary/90"
-                      : "text-gray-700 dark:text-gray-300 hover:bg-white/20 dark:hover:bg-white/10"
+                      ? "bg-primary text-white hover:bg-primary/90 shadow-sm"
+                      : "text-gray-700 dark:text-gray-300 hover:bg-white/30 dark:hover:bg-white/20 hover:text-gray-900 dark:hover:text-white"
                   )}
                 >
                   <Icon className="mr-3 h-4 w-4" />
@@ -151,10 +151,10 @@ export default function Sidebar() {
                     <Button
                       variant="ghost"
                       className={cn(
-                        "w-full justify-start",
+                        "w-full justify-start transition-all duration-200 ease-in-out transform hover:scale-[1.02] hover:shadow-sm",
                         isActive
-                          ? "bg-purple-600 text-white hover:bg-purple-700"
-                          : "text-purple-700 hover:bg-purple-50"
+                          ? "bg-purple-600 text-white hover:bg-purple-700 shadow-sm"
+                          : "text-purple-700 hover:bg-purple-100 hover:text-purple-800"
                       )}
                     >
                       <Icon className="mr-3 h-4 w-4" />
@@ -195,7 +195,7 @@ export default function Sidebar() {
             <Button
               variant="ghost"
               size="sm"
-              className="text-gray-400 hover:text-red-600"
+              className="text-gray-400 hover:text-red-600 hover:bg-red-50 transition-all duration-200 ease-in-out transform hover:scale-105"
               onClick={() => {
                 if (confirm(settings?.language === 'en' 
                   ? 'Are you sure you want to close the application?' 
@@ -211,7 +211,7 @@ export default function Sidebar() {
             <Button
               variant="ghost"
               size="sm"
-              className="text-gray-400 hover:text-gray-600"
+              className="text-gray-400 hover:text-gray-600 hover:bg-gray-50 transition-all duration-200 ease-in-out transform hover:scale-105"
               onClick={async () => {
                 try {
                   await fetch('/api/logout', { method: 'POST' });
