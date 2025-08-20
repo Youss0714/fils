@@ -17,6 +17,8 @@ import { Plus, Edit, Trash2, Check, X, Eye, DollarSign, Printer, Download, Calen
 import { ExpensePDF } from "./expense-pdf";
 import { useToast } from "@/hooks/use-toast";
 import { apiRequest } from "@/lib/queryClient";
+import { useTranslation, formatPrice } from "@/lib/i18n";
+import { useSettings } from "@/hooks/useSettings";
 import { 
   insertExpenseSchema, 
   insertExpenseCategorySchema, 
@@ -27,6 +29,8 @@ import {
 } from "@shared/schema";
 
 export function ExpenseManager() {
+  const { settings } = useSettings();
+  const { t } = useTranslation(settings?.language);
   const [selectedExpense, setSelectedExpense] = useState<any>(null);
   const [isExpenseDialogOpen, setIsExpenseDialogOpen] = useState(false);
   const [isCategoryDialogOpen, setIsCategoryDialogOpen] = useState(false);
@@ -235,7 +239,7 @@ export function ExpenseManager() {
               <tr>
                 <th>Date</th>
                 <th>Description</th>
-                <th>Montant (FCFA)</th>
+                <th>Montant ({settings?.currency === 'GHS' ? 'GHS' : 'FCFA'})</th>
               </tr>
             </thead>
             <tbody>
@@ -251,7 +255,7 @@ export function ExpenseManager() {
 
           <div class="summary">
             <div class="total">
-              <p>TOTAL: ${totalAmount.toLocaleString('fr-FR', { useGrouping: true }).replace(/\s/g, ' ')} FCFA</p>
+              <p>TOTAL: {formatPrice(totalAmount, settings?.currency)}</p>
             </div>
             <p><em>Nombre de dépenses approuvées: ${approvedExpenses.length}</em></p>
           </div>
@@ -329,7 +333,7 @@ export function ExpenseManager() {
 
         pdf.setFont('helvetica', 'bold');
         pdf.text(expense.description, margin, yPos);
-        pdf.text(`${parseFloat(expense.amount).toLocaleString('fr-FR', { useGrouping: true }).replace(/\s/g, ' ')} FCFA`, pageWidth - margin, yPos, { align: 'right' });
+        pdf.text(`${formatPrice(parseFloat(expense.amount), settings?.currency)}`, pageWidth - margin, yPos, { align: 'right' });
         
         yPos += 7;
         pdf.setFont('helvetica', 'normal');
@@ -362,7 +366,7 @@ export function ExpenseManager() {
       pdf.text('Résumé', margin, yPos);
       yPos += 10;
       pdf.setFontSize(12);
-      pdf.text(`Total général: ${totalAmount.toLocaleString('fr-FR', { useGrouping: true }).replace(/\s/g, ' ')} FCFA`, margin, yPos);
+      pdf.text(`Total général: ${formatPrice(totalAmount, settings?.currency)}`, margin, yPos);
       yPos += 8;
       pdf.setFontSize(10);
       pdf.text(`Dépenses approuvées: ${expenses.filter((e: any) => e.status === 'approved').length}`, margin, yPos);
@@ -405,7 +409,7 @@ export function ExpenseManager() {
       'Description', 
       'Catégorie',
       'Mode de paiement',
-      'Montant (FCFA)',
+      `Montant (${settings?.currency === 'GHS' ? 'GHS' : 'FCFA'})`,
       'Statut',
       'Notes'
     ];
@@ -628,7 +632,7 @@ export function ExpenseManager() {
                       name="amount"
                       render={({ field }) => (
                         <FormItem>
-                          <FormLabel>Montant (FCFA)</FormLabel>
+                          <FormLabel>Montant ({settings?.currency === 'GHS' ? 'GHS' : 'FCFA'})</FormLabel>
                           <FormControl>
                             <Input type="number" min="0" step="0.01" placeholder="25000" {...field} />
                           </FormControl>
@@ -741,7 +745,7 @@ export function ExpenseManager() {
                               <SelectItem value="none">Aucun fonds</SelectItem>
                               {imprestFunds.map((fund: any) => (
                                 <SelectItem key={fund.id} value={fund.id.toString()}>
-                                  {fund.accountHolder} - {parseFloat(fund.currentBalance).toLocaleString('fr-FR')} FCFA
+                                  {fund.accountHolder} - {formatPrice(parseFloat(fund.currentBalance), settings?.currency)}
                                 </SelectItem>
                               ))}
                             </SelectContent>
@@ -918,7 +922,7 @@ export function ExpenseManager() {
                     <div className="flex items-center gap-4">
                       <div className="text-right">
                         <p className="font-medium">
-                          {parseFloat(expense.amount).toLocaleString('fr-FR')} FCFA
+                          {formatPrice(parseFloat(expense.amount), settings?.currency)}
                         </p>
                         <Badge variant="secondary" className={status?.color}>
                           {status?.icon} {status?.label}
@@ -969,7 +973,7 @@ export function ExpenseManager() {
                                 </div>
                                 <div>
                                   <Label className="text-sm font-medium text-muted-foreground">Montant</Label>
-                                  <p className="text-sm font-semibold">{parseFloat(expense.amount).toLocaleString('fr-FR')} FCFA</p>
+                                  <p className="text-sm font-semibold">{formatPrice(parseFloat(expense.amount), settings?.currency)}</p>
                                 </div>
                               </div>
                               <div className="grid grid-cols-2 gap-4">

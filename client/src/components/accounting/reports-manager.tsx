@@ -11,6 +11,8 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { Plus, FileText, Download, Trash2, Calendar, BarChart3 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { apiRequest } from "@/lib/queryClient";
+import { useTranslation, formatPrice } from "@/lib/i18n";
+import { useSettings } from "@/hooks/useSettings";
 import { 
   insertAccountingReportSchema,
   REPORT_TYPES,
@@ -18,6 +20,8 @@ import {
 } from "@shared/schema";
 
 export function ReportsManager() {
+  const { settings } = useSettings();
+  const { t } = useTranslation(settings?.language);
   const [isReportDialogOpen, setIsReportDialogOpen] = useState(false);
   const queryClient = useQueryClient();
   const { toast } = useToast();
@@ -176,13 +180,13 @@ export function ReportsManager() {
             <div className="text-center p-4 bg-green-50 dark:bg-green-900/20 rounded-lg">
               <div className="text-sm text-green-600 dark:text-green-400 font-medium mb-1">Revenus Totaux</div>
               <div className="text-2xl font-bold text-green-700 dark:text-green-300">
-                {stats?.totalRevenues?.toLocaleString('fr-FR') || '0'} FCFA
+                {formatPrice(stats?.totalRevenues || 0, settings?.currency)}
               </div>
             </div>
             <div className="text-center p-4 bg-red-50 dark:bg-red-900/20 rounded-lg">
               <div className="text-sm text-red-600 dark:text-red-400 font-medium mb-1">Dépenses Totales</div>
               <div className="text-2xl font-bold text-red-700 dark:text-red-300">
-                {stats?.totalExpenses?.toLocaleString('fr-FR') || '0'} FCFA
+                {formatPrice(stats?.totalExpenses || 0, settings?.currency)}
               </div>
             </div>
             <div className={`text-center p-4 rounded-lg ${(stats?.netResult || 0) >= 0 ? 'bg-blue-50 dark:bg-blue-900/20' : 'bg-orange-50 dark:bg-orange-900/20'}`}>
@@ -190,7 +194,7 @@ export function ReportsManager() {
                 {(stats?.netResult || 0) >= 0 ? 'Bénéfice Net' : 'Perte Nette'}
               </div>
               <div className={`text-2xl font-bold ${(stats?.netResult || 0) >= 0 ? 'text-blue-700 dark:text-blue-300' : 'text-orange-700 dark:text-orange-300'}`}>
-                {Math.abs(stats?.netResult || 0)?.toLocaleString('fr-FR')} FCFA
+                {formatPrice(Math.abs(stats?.netResult || 0), settings?.currency)}
               </div>
             </div>
           </div>
@@ -305,7 +309,7 @@ export function ReportsManager() {
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold">
-              {stats?.monthlyExpensesByCategory?.reduce((sum: number, cat: any) => sum + cat.amount, 0)?.toLocaleString('fr-FR') || 0} FCFA
+              {formatPrice(stats?.monthlyExpensesByCategory?.reduce((sum: number, cat: any) => sum + cat.amount, 0) || 0, settings?.currency)}
             </div>
             <p className="text-xs text-muted-foreground">
               {stats?.monthlyExpensesByCategory?.length || 0} catégories
@@ -320,7 +324,7 @@ export function ReportsManager() {
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold">
-              {stats?.totalImprestFunds?.toLocaleString('fr-FR') || 0} FCFA
+              {formatPrice(stats?.totalImprestFunds || 0, settings?.currency)}
             </div>
             <p className="text-xs text-muted-foreground">
               {stats?.activeImprestFunds || 0} fonds actifs
@@ -427,7 +431,7 @@ export function ReportsManager() {
                     <div className="flex justify-between text-sm">
                       <span className="font-medium">{category.category}</span>
                       <span className="text-muted-foreground">
-                        {category.amount.toLocaleString('fr-FR')} FCFA / {category.allocatedAmount.toLocaleString('fr-FR')} FCFA ({percentage.toFixed(1)}%)
+                        {formatPrice(category.amount, settings?.currency)} / {formatPrice(category.allocatedAmount, settings?.currency)} ({percentage.toFixed(1)}%)
                       </span>
                     </div>
                     <div className="w-full bg-muted rounded-full h-2">

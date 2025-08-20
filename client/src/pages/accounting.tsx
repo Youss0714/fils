@@ -12,7 +12,7 @@ import { ExpenseManager } from "../components/accounting/expense-manager";
 import { ImprestManager } from "../components/accounting/imprest-manager";
 import { ReportsManager } from "../components/accounting/reports-manager";
 import { RevenueManager } from "../components/accounting/revenue-manager";
-import { useTranslation } from "@/lib/i18n";
+import { useTranslation, formatPrice } from "@/lib/i18n";
 import { useSettings } from "@/hooks/useSettings";
 
 import { EXPENSE_STATUS, PAYMENT_METHODS, IMPREST_STATUS } from "@shared/schema";
@@ -144,7 +144,7 @@ export default function AccountingPage() {
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold">
-              {stats?.totalRevenues?.toLocaleString('fr-FR')} FCFA
+              {formatPrice(stats?.totalRevenues || 0, settings?.currency)}
             </div>
             <p className="text-xs text-muted-foreground">
               {stats?.recentRevenues || 0} {t('recentRevenues').toLowerCase()}
@@ -159,7 +159,7 @@ export default function AccountingPage() {
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold">
-              {stats?.totalExpenses?.toLocaleString('fr-FR')} FCFA
+              {formatPrice(stats?.totalExpenses || 0, settings?.currency)}
             </div>
             <p className="text-xs text-muted-foreground">
               {stats?.recentExpenses?.length || 0} {settings?.language === 'en' ? 'recent expenses' : 'dépenses récentes'}
@@ -200,7 +200,7 @@ export default function AccountingPage() {
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold">
-              {stats?.totalImprestFunds?.toLocaleString('fr-FR')} FCFA
+              {formatPrice(stats?.totalImprestFunds || 0, settings?.currency)}
             </div>
             <p className="text-xs text-muted-foreground">
               {stats?.activeImprestFunds || 0} {t('activeFunds')}
@@ -221,7 +221,7 @@ export default function AccountingPage() {
           </CardHeader>
           <CardContent>
             <div className={`text-2xl font-bold ${(stats?.netResult || 0) >= 0 ? 'text-green-600' : 'text-red-600'}`}>
-              {stats?.netResult?.toLocaleString('fr-FR')} FCFA
+              {formatPrice(stats?.netResult || 0, settings?.currency)}
             </div>
             <p className="text-xs text-muted-foreground">
               {(stats?.netResult || 0) >= 0 ? (settings?.language === 'en' ? 'Profit' : 'Bénéfice') : (settings?.language === 'en' ? 'Loss' : 'Perte')} ({t('revenuesMinusExpenses')})
@@ -261,7 +261,7 @@ export default function AccountingPage() {
                     </div>
                     <div className="flex items-center space-x-2">
                       <span className="text-sm font-medium">
-                        {parseFloat(expense.amount).toLocaleString('fr-FR')} FCFA
+                        {formatPrice(parseFloat(expense.amount), settings?.currency)}
                       </span>
                       <Badge variant="secondary" className={status?.color}>
                         {status?.icon} {status?.label}
@@ -294,7 +294,7 @@ export default function AccountingPage() {
                     <div className="flex justify-between text-sm">
                       <span className="font-medium">{item.category}</span>
                       <span className="text-muted-foreground">
-                        {item.amount.toLocaleString('fr-FR')} FCFA / {item.allocatedAmount.toLocaleString('fr-FR')} FCFA ({percentage.toFixed(1)}%)
+                        {formatPrice(item.amount, settings?.currency)} / {formatPrice(item.allocatedAmount, settings?.currency)} ({percentage.toFixed(1)}%)
                       </span>
                     </div>
                     <div className="w-full bg-muted rounded-full h-2">

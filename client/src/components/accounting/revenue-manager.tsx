@@ -40,6 +40,8 @@ import {
 } from '@/components/ui/form';
 import { toast } from '@/hooks/use-toast';
 import { apiRequest } from '@/lib/queryClient';
+import { useTranslation, formatPrice } from '@/lib/i18n';
+import { useSettings } from '@/hooks/useSettings';
 import { insertRevenueCategorySchema, insertRevenueSchema, type RevenueCategory, type Revenue } from '@shared/schema';
 import { z } from 'zod';
 import { format } from 'date-fns';
@@ -49,6 +51,8 @@ import html2canvas from 'html2canvas';
 
 // Composant pour la gestion des revenus
 export function RevenueManager() {
+  const { settings } = useSettings();
+  const { t } = useTranslation(settings?.language);
   const [activeTab, setActiveTab] = useState('revenues');
   const [isCategoryDialogOpen, setIsCategoryDialogOpen] = useState(false);
   const [isRevenueDialogOpen, setIsRevenueDialogOpen] = useState(false);
@@ -334,7 +338,7 @@ export function RevenueManager() {
             
             <div class="amount-section">
               <div class="label">MONTANT</div>
-              <div class="amount">${parseFloat(revenue.amount).toLocaleString('fr-FR')} FCFA</div>
+              <div class="amount">${formatPrice(parseFloat(revenue.amount), settings?.currency)}</div>
             </div>
             
             <div class="footer">
@@ -378,7 +382,7 @@ export function RevenueManager() {
       'Description',
       'Catégorie', 
       'Mode de paiement',
-      'Montant (FCFA)',
+      `Montant (${settings?.currency === 'GHS' ? 'GHS' : 'FCFA'})`,
       'Source',
       'Notes'
     ];
@@ -519,7 +523,7 @@ export function RevenueManager() {
                       name="amount"
                       render={({ field }) => (
                         <FormItem>
-                          <FormLabel>Montant (FCFA)</FormLabel>
+                          <FormLabel>Montant ({settings?.currency === 'GHS' ? 'GHS' : 'FCFA'})</FormLabel>
                           <FormControl>
                             <Input {...field} type="number" step="0.01" min="0" data-testid="input-revenue-amount" />
                           </FormControl>
@@ -748,7 +752,7 @@ export function RevenueManager() {
                               {revenue.description}
                             </td>
                             <td className="px-6 py-4 whitespace-nowrap text-sm font-bold text-green-600 dark:text-green-400">
-                              {parseFloat(revenue.amount).toLocaleString('fr-FR')} FCFA
+                              {formatPrice(parseFloat(revenue.amount), settings?.currency)}
                             </td>
                             <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400">
                               {revenue.category?.name || 'Sans catégorie'}
@@ -988,7 +992,7 @@ export function RevenueManager() {
                 <div>
                   <Label className="text-sm font-medium">Montant</Label>
                   <p className="text-sm font-bold text-green-600">
-                    {parseFloat(selectedRevenue.amount).toLocaleString('fr-FR')} FCFA
+                    {formatPrice(parseFloat(selectedRevenue.amount), settings?.currency)}
                   </p>
                 </div>
                 <div>

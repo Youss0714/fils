@@ -16,6 +16,8 @@ import { Plus, Wallet, ArrowUp, ArrowDown, Eye, DollarSign } from "lucide-react"
 import { ImprestFundPDF } from "./imprest-fund-pdf";
 import { useToast } from "@/hooks/use-toast";
 import { apiRequest } from "@/lib/queryClient";
+import { useTranslation, formatPrice } from "@/lib/i18n";
+import { useSettings } from "@/hooks/useSettings";
 import { 
   insertImprestFundSchema,
   insertImprestTransactionSchema,
@@ -26,6 +28,8 @@ import {
 } from "@shared/schema";
 
 export function ImprestManager() {
+  const { settings } = useSettings();
+  const { t } = useTranslation(settings?.language);
   const [selectedFund, setSelectedFund] = useState<any>(null);
   const [isFundDialogOpen, setIsFundDialogOpen] = useState(false);
   const [isTransactionDialogOpen, setIsTransactionDialogOpen] = useState(false);
@@ -188,7 +192,7 @@ export function ImprestManager() {
                   name="initialAmount"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>Montant initial (FCFA)</FormLabel>
+                      <FormLabel>Montant initial ({settings?.currency === 'GHS' ? 'GHS' : 'FCFA'})</FormLabel>
                       <FormControl>
                         <Input type="number" min="0" step="0.01" placeholder="100000" {...field} />
                       </FormControl>
@@ -291,12 +295,12 @@ export function ImprestManager() {
                         <div className="flex justify-between text-sm">
                           <span>Solde actuel</span>
                           <span className="font-medium">
-                            {balance.toLocaleString('fr-FR')} FCFA
+                            {formatPrice(balance, settings?.currency)}
                           </span>
                         </div>
                         <div className="flex justify-between text-sm text-muted-foreground">
                           <span>Montant initial</span>
-                          <span>{initial.toLocaleString('fr-FR')} FCFA</span>
+                          <span>{formatPrice(initial, settings?.currency)}</span>
                         </div>
                         <div className="mt-2 w-full bg-muted rounded-full h-2">
                           <div 
@@ -408,7 +412,7 @@ export function ImprestManager() {
                           name="amount"
                           render={({ field }) => (
                             <FormItem>
-                              <FormLabel>Montant (FCFA)</FormLabel>
+                              <FormLabel>Montant ({settings?.currency === 'GHS' ? 'GHS' : 'FCFA'})</FormLabel>
                               <FormControl>
                                 <Input type="number" min="0" step="0.01" placeholder="25000" {...field} />
                               </FormControl>
@@ -460,13 +464,13 @@ export function ImprestManager() {
                   <div>
                     <p className="text-sm text-muted-foreground">Solde actuel</p>
                     <p className="text-lg font-semibold">
-                      {parseFloat(selectedFund.currentBalance).toLocaleString('fr-FR')} FCFA
+                      {formatPrice(parseFloat(selectedFund.currentBalance), settings?.currency)}
                     </p>
                   </div>
                   <div>
                     <p className="text-sm text-muted-foreground">Montant initial</p>
                     <p className="text-lg font-semibold">
-                      {parseFloat(selectedFund.initialAmount).toLocaleString('fr-FR')} FCFA
+                      {formatPrice(parseFloat(selectedFund.initialAmount), settings?.currency)}
                     </p>
                   </div>
                 </div>
@@ -512,10 +516,10 @@ export function ImprestManager() {
                                 transaction.type === 'deposit' ? 'text-green-600' : 'text-red-600'
                               }`}>
                                 {transaction.type === 'deposit' ? '+' : '-'}
-                                {amount.toLocaleString('fr-FR')} FCFA
+                                {formatPrice(amount, settings?.currency)}
                               </p>
                               <p className="text-xs text-muted-foreground">
-                                Solde: {parseFloat(transaction.balanceAfter).toLocaleString('fr-FR')} FCFA
+                                Solde: {formatPrice(parseFloat(transaction.balanceAfter), settings?.currency)}
                               </p>
                             </div>
                           </div>
