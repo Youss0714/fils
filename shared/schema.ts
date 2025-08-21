@@ -70,7 +70,7 @@ export const products = pgTable("products", {
   id: serial("id").primaryKey(),
   name: varchar("name", { length: 255 }).notNull(),
   description: text("description"),
-  priceHT: decimal("price_ht", { precision: 10, scale: 2 }).notNull(), // Prix HT uniquement
+  priceHT: decimal("price_ht", { precision: 15, scale: 2 }).notNull(), // Prix HT uniquement
   stock: integer("stock").default(0),
   alertStock: integer("alert_stock").default(10), // Seuil d'alerte pour le stock
   categoryId: integer("category_id").references(() => categories.id),
@@ -83,10 +83,10 @@ export const invoices = pgTable("invoices", {
   number: varchar("number", { length: 50 }).notNull(),
   clientId: integer("client_id").notNull().references(() => clients.id),
   status: varchar("status", { length: 50 }).notNull().default("en_attente"), // en_attente, payee, partiellement_reglee
-  totalHT: decimal("total_ht", { precision: 10, scale: 2 }).notNull(), // Total HT
+  totalHT: decimal("total_ht", { precision: 15, scale: 2 }).notNull(), // Total HT
   tvaRate: decimal("tva_rate", { precision: 5, scale: 2 }).notNull(), // Taux TVA choisi (3%, 5%, 10%, 15%, 18%, 21%)
-  totalTVA: decimal("total_tva", { precision: 10, scale: 2 }).notNull(), // Montant TVA calculé
-  totalTTC: decimal("total_ttc", { precision: 10, scale: 2 }).notNull(), // Total TTC final
+  totalTVA: decimal("total_tva", { precision: 15, scale: 2 }).notNull(), // Montant TVA calculé
+  totalTTC: decimal("total_ttc", { precision: 15, scale: 2 }).notNull(), // Total TTC final
   paymentMethod: varchar("payment_method", { length: 50 }).notNull().default("cash"), // cash, bank_transfer, check, card, mobile_money
   dueDate: timestamp("due_date"),
   notes: text("notes"),
@@ -100,8 +100,8 @@ export const invoiceItems = pgTable("invoice_items", {
   productId: integer("product_id").references(() => products.id),
   productName: varchar("product_name", { length: 255 }).notNull(),
   quantity: integer("quantity").notNull(),
-  priceHT: decimal("price_ht", { precision: 10, scale: 2 }).notNull(), // Prix HT unitaire
-  totalHT: decimal("total_ht", { precision: 10, scale: 2 }).notNull(), // Total HT ligne (quantity * priceHT)
+  priceHT: decimal("price_ht", { precision: 15, scale: 2 }).notNull(), // Prix HT unitaire
+  totalHT: decimal("total_ht", { precision: 15, scale: 2 }).notNull(), // Total HT ligne (quantity * priceHT)
 });
 
 export const sales = pgTable("sales", {
@@ -109,8 +109,8 @@ export const sales = pgTable("sales", {
   invoiceId: integer("invoice_id").notNull().references(() => invoices.id),
   productId: integer("product_id").notNull().references(() => products.id),
   quantity: integer("quantity").notNull(),
-  unitPrice: decimal("unit_price", { precision: 10, scale: 2 }).notNull(),
-  total: decimal("total", { precision: 10, scale: 2 }).notNull(),
+  unitPrice: decimal("unit_price", { precision: 15, scale: 2 }).notNull(),
+  total: decimal("total", { precision: 15, scale: 2 }).notNull(),
   userId: varchar("user_id").notNull().references(() => users.id),
   createdAt: timestamp("created_at").defaultNow(),
 });
@@ -120,8 +120,8 @@ export const stockReplenishments = pgTable("stock_replenishments", {
   id: serial("id").primaryKey(),
   productId: integer("product_id").notNull().references(() => products.id),
   quantity: integer("quantity").notNull(),
-  costPerUnit: decimal("cost_per_unit", { precision: 10, scale: 2 }), // Coût d'achat par unité
-  totalCost: decimal("total_cost", { precision: 10, scale: 2 }), // Coût total du réapprovisionnement
+  costPerUnit: decimal("cost_per_unit", { precision: 15, scale: 2 }), // Coût d'achat par unité
+  totalCost: decimal("total_cost", { precision: 15, scale: 2 }), // Coût total du réapprovisionnement
   supplier: varchar("supplier", { length: 255 }), // Nom du fournisseur
   reference: varchar("reference", { length: 100 }), // Référence de la commande/livraison
   notes: text("notes"), // Notes sur le réapprovisionnement
@@ -156,7 +156,7 @@ export const expenses = pgTable("expenses", {
   id: serial("id").primaryKey(),
   reference: varchar("reference", { length: 100 }).notNull(), // Référence unique
   description: text("description").notNull(),
-  amount: decimal("amount", { precision: 10, scale: 2 }).notNull(),
+  amount: decimal("amount", { precision: 15, scale: 2 }).notNull(),
   categoryId: integer("category_id").notNull().references(() => expenseCategories.id),
   accountId: integer("account_id").references(() => chartOfAccounts.id), // Lien vers le plan comptable
   expenseDate: timestamp("expense_date").notNull(),
@@ -175,8 +175,8 @@ export const imprestFunds = pgTable("imprest_funds", {
   id: serial("id").primaryKey(),
   reference: varchar("reference", { length: 100 }).notNull().unique(),
   accountHolder: varchar("account_holder", { length: 255 }).notNull(), // Détenteur du compte
-  initialAmount: decimal("initial_amount", { precision: 10, scale: 2 }).notNull(),
-  currentBalance: decimal("current_balance", { precision: 10, scale: 2 }).notNull(),
+  initialAmount: decimal("initial_amount", { precision: 15, scale: 2 }).notNull(),
+  currentBalance: decimal("current_balance", { precision: 15, scale: 2 }).notNull(),
   purpose: text("purpose").notNull(), // Objectif du fonds
   status: varchar("status", { length: 50 }).notNull().default("active"), // active, suspended, closed
   userId: varchar("user_id").notNull().references(() => users.id),
@@ -189,9 +189,9 @@ export const imprestTransactions = pgTable("imprest_transactions", {
   reference: varchar("reference", { length: 100 }).notNull(),
   imprestId: integer("imprest_id").notNull().references(() => imprestFunds.id),
   type: varchar("type", { length: 50 }).notNull(), // deposit, withdrawal, expense
-  amount: decimal("amount", { precision: 10, scale: 2 }).notNull(),
+  amount: decimal("amount", { precision: 15, scale: 2 }).notNull(),
   description: text("description").notNull(),
-  balanceAfter: decimal("balance_after", { precision: 10, scale: 2 }).notNull(),
+  balanceAfter: decimal("balance_after", { precision: 15, scale: 2 }).notNull(),
   expenseId: integer("expense_id").references(() => expenses.id), // Lié à une dépense si applicable
   receiptUrl: varchar("receipt_url", { length: 500 }),
   notes: text("notes"),
@@ -297,7 +297,7 @@ export const revenues = pgTable("revenues", {
   id: serial("id").primaryKey(),
   reference: varchar("reference", { length: 100 }).notNull(),
   description: text("description").notNull(),
-  amount: decimal("amount", { precision: 10, scale: 2 }).notNull(),
+  amount: decimal("amount", { precision: 15, scale: 2 }).notNull(),
   categoryId: integer("category_id").notNull().references(() => revenueCategories.id),
   revenueDate: timestamp("revenue_date").notNull(),
   paymentMethod: varchar("payment_method", { length: 50 }).notNull(), // cash, bank_transfer, check, card
