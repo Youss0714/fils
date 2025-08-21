@@ -8,6 +8,11 @@ on:
 jobs:
   sync-schema:
     runs-on: ubuntu-latest
+
+    env:
+      DATABASE_URL: ${{ secrets.DATABASE_URL }}
+      SUPABASE_ACCESS_TOKEN: ${{ secrets.SUPABASE_ACCESS_TOKEN }}
+
     steps:
       - name: Checkout code
         uses: actions/checkout@v3
@@ -18,13 +23,10 @@ jobs:
           node-version: 20
 
       - name: Install dependencies
-        run: npm install
+        run: npm ci
 
       - name: Generate schema.sql
         run: npx drizzle-kit generate:pg
 
       - name: Push to Supabase
-        run: |
-          npx supabase db push
-        env:
-          SUPABASE_ACCESS_TOKEN: ${{ secrets.SUPABASE_ACCESS_TOKEN }}
+        run: npx supabase db push
