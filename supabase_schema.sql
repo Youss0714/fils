@@ -358,42 +358,21 @@ CREATE INDEX IF NOT EXISTS idx_sales_created_at ON sales(created_at);
 CREATE INDEX IF NOT EXISTS idx_expenses_expense_date ON expenses(expense_date);
 CREATE INDEX IF NOT EXISTS idx_revenues_revenue_date ON revenues(revenue_date);
 
--- INSERT DEFAULT DATA --
+-- DEFAULT DATA TEMPLATES --
+-- Note: These templates will be created when the first user registers
+-- The application will automatically create these default categories for each new user
 
--- Default expense categories
-INSERT INTO expense_categories (name, description, is_major, user_id) VALUES
-('Frais de bureau', 'Fournitures de bureau, papeterie, etc.', false, 'system'),
-('Transport', 'Frais de déplacement, carburant, etc.', false, 'system'),
-('Communication', 'Téléphone, internet, courrier', false, 'system'),
-('Formation', 'Formations, séminaires, documentation', true, 'system'),
-('Équipement', 'Achat d''équipements, matériel informatique', true, 'system'),
-('Maintenance', 'Réparations, entretien des équipements', false, 'system'),
-('Marketing', 'Publicité, promotion, événements', true, 'system'),
-('Salaires', 'Rémunérations du personnel', true, 'system'),
-('Charges sociales', 'Cotisations sociales, assurances', true, 'system'),
-('Loyer', 'Location de locaux, charges locatives', true, 'system');
+-- Template for default expense categories (created by application logic):
+-- 'Frais de bureau', 'Transport', 'Communication', 'Formation', 'Équipement', 
+-- 'Maintenance', 'Marketing', 'Salaires', 'Charges sociales', 'Loyer'
 
--- Default revenue categories
-INSERT INTO revenue_categories (name, description, user_id) VALUES
-('Ventes de produits', 'Revenus des ventes de produits', 'system'),
-('Prestations de services', 'Revenus des services rendus', 'system'),
-('Commissions', 'Commissions reçues', 'system'),
-('Autres revenus', 'Revenus divers non classifiés', 'system');
+-- Template for default revenue categories (created by application logic):
+-- 'Ventes de produits', 'Prestations de services', 'Commissions', 'Autres revenus'
 
--- Default chart of accounts (basic OHADA structure)
-INSERT INTO chart_of_accounts (code, name, account_type, description, user_id) VALUES
-('411', 'Clients', 'asset', 'Créances clients', 'system'),
-('401', 'Fournisseurs', 'liability', 'Dettes fournisseurs', 'system'),
-('421', 'Personnel', 'liability', 'Dettes envers le personnel', 'system'),
-('431', 'Sécurité Sociale', 'liability', 'Dettes sociales', 'system'),
-('512', 'Banque', 'asset', 'Comptes bancaires', 'system'),
-('531', 'Caisse', 'asset', 'Caisse centrale', 'system'),
-('701', 'Ventes', 'revenue', 'Ventes de marchandises', 'system'),
-('706', 'Services', 'revenue', 'Prestations de services', 'system'),
-('601', 'Achats', 'expense', 'Achats de marchandises', 'system'),
-('624', 'Transport', 'expense', 'Frais de transport', 'system'),
-('626', 'Publicité', 'expense', 'Frais de publicité', 'system'),
-('661', 'Salaires', 'expense', 'Rémunérations du personnel', 'system');
+-- Template for default chart of accounts - OHADA structure (created by application logic):
+-- '411-Clients', '401-Fournisseurs', '421-Personnel', '431-Sécurité Sociale',
+-- '512-Banque', '531-Caisse', '701-Ventes', '706-Services', '601-Achats', 
+-- '624-Transport', '626-Publicité', '661-Salaires'
 
 -- COMMENTS FOR DOCUMENTATION --
 
