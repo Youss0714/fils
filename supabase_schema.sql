@@ -447,6 +447,43 @@ CREATE POLICY "Users can view own invoices" ON invoices FOR ALL USING (auth.uid(
 CREATE POLICY "Users can view own sales" ON sales FOR ALL USING (auth.uid()::text = user_id);
 CREATE POLICY "Users can view own expenses" ON expenses FOR ALL USING (auth.uid()::text = user_id);
 CREATE POLICY "Users can view own alerts" ON business_alerts FOR ALL USING (auth.uid()::text = user_id);
+-- RLS for licenses
+ALTER TABLE licenses ENABLE ROW LEVEL SECURITY;
+
+CREATE POLICY "Users can view own licenses"
+  ON licenses FOR SELECT
+  USING (auth.uid()::text = user_id);
+
+CREATE POLICY "Users can insert own licenses"
+  ON licenses FOR INSERT
+  WITH CHECK (auth.uid()::text = user_id);
+
+CREATE POLICY "Users can update own licenses"
+  ON licenses FOR UPDATE
+  USING (auth.uid()::text = user_id);
+
+CREATE POLICY "Users can delete own licenses"
+  ON licenses FOR DELETE
+  USING (auth.uid()::text = user_id);
+
+-- RLS for sessions
+ALTER TABLE sessions ENABLE ROW LEVEL SECURITY;
+
+CREATE POLICY "Users can view own sessions"
+  ON sessions FOR SELECT
+  USING (auth.uid()::text = user_id);
+
+CREATE POLICY "Users can insert own sessions"
+  ON sessions FOR INSERT
+  WITH CHECK (auth.uid()::text = user_id);
+
+CREATE POLICY "Users can update own sessions"
+  ON sessions FOR UPDATE
+  USING (auth.uid()::text = user_id);
+
+CREATE POLICY "Users can delete own sessions"
+  ON sessions FOR DELETE
+  USING (auth.uid()::text = user_id);
 
 -- Note: Adjust these policies based on your specific authentication setup with Supabase Auth
 
