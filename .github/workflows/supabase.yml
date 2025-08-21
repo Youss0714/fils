@@ -7,6 +7,7 @@ on:
 
 jobs:
   sync-schema:
+    name: Sync Supabase Schema
     runs-on: ubuntu-latest
 
     env:
@@ -30,3 +31,21 @@ jobs:
 
       - name: Push to Supabase
         run: npx supabase db push
+
+  audit-search-path:
+    name: Audit & Fix Function Search Path
+    runs-on: ubuntu-latest
+    needs: sync-schema
+
+    env:
+      DATABASE_URL: ${{ secrets.DATABASE_URL }}
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      - name: Install PostgreSQL client
+        run: sudo apt-get install postgresql-client
+
+      - name: Run audit script
+        run: psql "$DATABASE_URL" -f supabase/audit/audit_search_path.sql
