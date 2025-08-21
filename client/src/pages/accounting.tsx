@@ -136,14 +136,14 @@ export default function AccountingPage() {
       )}
 
       {/* Statistics Cards */}
-      <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-6">
+      <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
             <CardTitle className="text-sm font-medium">{t('totalRevenues')}</CardTitle>
             <TrendingUp className="h-4 w-4 text-green-600" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">
+            <div className="text-xl font-bold break-words">
               {formatPrice(stats?.totalRevenues || 0, settings?.currency)}
             </div>
             <p className="text-xs text-muted-foreground">
@@ -158,7 +158,7 @@ export default function AccountingPage() {
             <DollarSign className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">
+            <div className="text-xl font-bold break-words">
               {formatPrice(stats?.totalExpenses || 0, settings?.currency)}
             </div>
             <p className="text-xs text-muted-foreground">
@@ -199,7 +199,7 @@ export default function AccountingPage() {
             <Wallet className="h-4 w-4 text-blue-500" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">
+            <div className="text-xl font-bold break-words">
               {formatPrice(stats?.totalImprestFunds || 0, settings?.currency)}
             </div>
             <p className="text-xs text-muted-foreground">
@@ -220,7 +220,7 @@ export default function AccountingPage() {
             )}
           </CardHeader>
           <CardContent>
-            <div className={`text-2xl font-bold ${(stats?.netResult || 0) >= 0 ? 'text-green-600' : 'text-red-600'}`}>
+            <div className={`text-xl font-bold break-words ${(stats?.netResult || 0) >= 0 ? 'text-green-600' : 'text-red-600'}`}>
               {formatPrice(stats?.netResult || 0, settings?.currency)}
             </div>
             <p className="text-xs text-muted-foreground">
