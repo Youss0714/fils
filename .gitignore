@@ -3,3 +3,11 @@ dist
 .DS_Store
 *.tar.gz
  .local/
+ # Ignorer les fichiers d'état Replit
+.local/state/replit/agent/*.bin
+
+# Nettoyage Replit
+cookies.txt
+replit.md
+components.json
+attached_assets/
