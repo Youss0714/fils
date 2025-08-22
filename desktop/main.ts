@@ -66,8 +66,8 @@ app.on('window-all-closed', () => {
 });
 
 // Security: Prevent new window creation
-app.on('web-contents-created', (event, contents) => {
-  contents.on('new-window', (event, navigationUrl) => {
+app.on('web-contents-created', (event: any, contents: any) => {
+  contents.on('new-window', (event: any, navigationUrl: any) => {
     event.preventDefault();
   });
 });
