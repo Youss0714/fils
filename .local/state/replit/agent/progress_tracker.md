@@ -13,8 +13,8 @@ This tracks the migration from Replit Agent to standard Replit environment.
   [x] 3d. Push database schema using `npm run db:push`
   [x] 3e. Remove Supabase dependencies and code
 [x] 4. Verify client/server security separation
-[ ] 5. Test application functionality end-to-end
-[ ] 6. Mark migration as complete
+[x] 5. Test application functionality end-to-end
+[x] 6. Mark migration as complete
 
 ## Notes
 - Database environment variables already configured
