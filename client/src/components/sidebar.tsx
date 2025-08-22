@@ -14,7 +14,8 @@ import {
   X,
   Shield,
   Calculator,
-  Bell
+  Bell,
+  BookOpen
 } from "lucide-react";
 import { Link, useLocation } from "wouter";
 import { useAuth } from "@/hooks/useAuth";
@@ -61,6 +62,7 @@ export default function Sidebar() {
   const secondaryNavigation = [
     { name: t('settings'), href: "/settings", icon: Settings },
     { name: t('export'), href: "/export", icon: Download },
+    { name: "Guide utilisateur", href: "/user-guide", icon: BookOpen },
   ];
 
   // Add admin navigation for Fatimata

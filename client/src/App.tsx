@@ -25,6 +25,7 @@ import AdminLicenses from "@/pages/admin-licenses";
 import Accounting from "@/pages/accounting";
 
 import AlertsPage from "@/pages/alerts";
+import UserGuide from "@/pages/user-guide";
 import Sidebar from "@/components/sidebar";
 import TrialBanner from "@/components/trial-banner";
 
@@ -120,6 +121,7 @@ function AppContent() {
             <Route path="/settings" component={Settings} />
             <Route path="/alerts" component={AlertsPage} />
             <Route path="/export" component={Export} />
+            <Route path="/user-guide" component={UserGuide} />
             <Route path="/complete-profile" component={UserRegistration} />
             <Route component={NotFound} />
           </Switch>
