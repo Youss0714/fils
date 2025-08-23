@@ -9,7 +9,7 @@
     "strict": true,
     "forceConsistentCasingInFileNames": true,
     "skipLibCheck": true,
-    "outDir": "../dist/electron",
+    "outDir": "./dist",
     "rootDir": ".",
     "declaration": false,
     "sourceMap": true,

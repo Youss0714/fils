@@ -2,7 +2,7 @@
   "name": "ygestion-desktop",
   "version": "1.0.0",
   "description": "YGestion Desktop Application - Gestion Commerciale et Comptable",
-  "main": "../dist/electron/main.js",
+  "main": "./dist/main.js",
   "type": "module",
   "author": "YGestion Team",
   "license": "MIT",
@@ -15,8 +15,8 @@
   },
   "scripts": {
     "build": "tsc -p tsconfig.electron.json",
-    "start": "npm run build && electron ../dist/electron/main.js",
-    "dev": "npm run build && electron ../dist/electron/main.js --dev",
+    "start": "npm run build && electron ./dist/main.js",
+    "dev": "npm run build && electron ./dist/main.js --dev",
     "dist": "npm run build && electron-builder",
     "dist:windows": "npm run build && electron-builder --windows --x64",
     "dist:portable": "npm run build && electron-builder --windows portable",
@@ -30,15 +30,9 @@
       "output": "../dist/setup"
     },
     "files": [
-      "../dist/**/*",
-      "!../dist/setup"
-    ],
-    "extraFiles": [
-      {
-        "from": "../dist",
-        "to": ".",
-        "filter": ["**/*", "!setup/**/*"]
-      }
+      "dist/**/*",
+      "../dist/index.html",
+      "../dist/assets/**/*"
     ],
     "win": {
       "target": [
