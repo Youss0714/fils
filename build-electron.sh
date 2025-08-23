@@ -32,13 +32,13 @@ rm -rf dist/
 rm -rf desktop/dist/
 mkdir -p dist/
 
-# Step 2: Build the web application
-print_status "Construction de l'application web..."
+# Step 2: Build the web application and server
+print_status "Construction de l'application web et serveur..."
 if ! npm run build; then
-    print_error "Échec de la construction de l'application web"
+    print_error "Échec de la construction de l'application web et serveur"
     exit 1
 fi
-print_success "Application web construite avec succès"
+print_success "Application web et serveur construits avec succès"
 
 # Step 3: Install desktop dependencies if needed
 print_status "Vérification des dépendances Electron..."

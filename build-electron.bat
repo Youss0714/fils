@@ -7,8 +7,8 @@ if exist dist rmdir /s /q dist
 if exist desktop\dist rmdir /s /q desktop\dist
 mkdir dist
 
-REM Step 2: Build the web application
-echo 📦 Construction de l'application web...
+REM Step 2: Build the web application and server
+echo 📦 Construction de l'application web et serveur...
 call npm run build
 if %ERRORLEVEL% neq 0 (
     echo ❌ Échec de la construction de l'application web

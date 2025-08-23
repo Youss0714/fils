@@ -6,7 +6,9 @@
   "type": "module",
   "author": "YGestion Team",
   "license": "MIT",
-  "dependencies": {},
+  "dependencies": {
+    "express": "^4.21.2"
+  },
   "devDependencies": {
     "@types/node": "^20.10.0",
     "typescript": "^5.9.2",
@@ -35,6 +37,11 @@
         "from": "../dist",
         "to": "web",
         "filter": ["**/*"]
+      },
+      {
+        "from": "../dist",
+        "to": "server",
+        "filter": ["index.js"]
       }
     ],
     "win": {

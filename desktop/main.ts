@@ -1,15 +1,49 @@
-import { app, BrowserWindow, Menu } from 'electron';
+import { app, BrowserWindow } from 'electron';
 import path from 'path';
 import { fileURLToPath } from 'url';
+import express from 'express';
+import { createRequire } from 'module';
 
+const require = createRequire(import.meta.url);
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
 // Keep a global reference of the window object
 let mainWindow: BrowserWindow | null = null;
+let server: any = null;
 const isDev = process.env.NODE_ENV === 'development';
+const PORT = isDev ? 5000 : 5001;
 
-const createWindow = (): void => {
+// Start Express server for production
+const startServer = async () => {
+  if (isDev) return; // In development, use external server
+  
+  try {
+    // Import the server module
+    const serverModule = await import(path.join(__dirname, 'server', 'index.js'));
+    console.log('✅ Server started on port', PORT);
+  } catch (error) {
+    console.error('❌ Failed to start server:', error);
+    // Fallback: serve static files only
+    const app = express();
+    app.use(express.static(path.join(__dirname, 'web')));
+    app.get('*', (req, res) => {
+      res.sendFile(path.join(__dirname, 'web', 'index.html'));
+    });
+    server = app.listen(PORT, () => {
+      console.log('✅ Static server started on port', PORT);
+    });
+  }
+};
+
+const createWindow = async (): Promise<void> => {
+  // Start server first in production
+  if (!isDev) {
+    await startServer();
+    // Wait a moment for server to be ready
+    await new Promise(resolve => setTimeout(resolve, 1000));
+  }
+
   // Create the browser window
   mainWindow = new BrowserWindow({
     width: 1200,
@@ -19,22 +53,19 @@ const createWindow = (): void => {
     webPreferences: {
       nodeIntegration: false,
       contextIsolation: true,
-      webSecurity: true,
+      webSecurity: false, // Allow local connections
     },
-    show: false, // Don't show until ready-to-show
+    show: false,
     titleBarStyle: 'default',
     title: 'YGestion - Gestion Commerciale et Comptable'
   });
 
   // Load the app
+  const appUrl = `http://localhost:${PORT}`;
+  mainWindow.loadURL(appUrl);
+  
   if (isDev) {
-    mainWindow.loadURL('http://localhost:5000');
-    // Open DevTools in development
     mainWindow.webContents.openDevTools();
-  } else {
-    // In production, serve the built files
-    const indexPath = path.join(__dirname, 'web', 'index.html');
-    mainWindow.loadFile(indexPath);
   }
 
   // Show window when ready to prevent visual flash
@@ -67,15 +98,20 @@ app.whenReady().then(() => {
 
 // Quit when all windows are closed
 app.on('window-all-closed', () => {
+  // Close server if running
+  if (server) {
+    server.close();
+  }
+  
   // On OS X, keep the app running even when all windows are closed
   if (process.platform !== 'darwin') {
     app.quit();
   }
 });
 
-// Security: Prevent new window creation
-app.on('web-contents-created', (event: any, contents: any) => {
-  contents.on('new-window', (event: any, navigationUrl: any) => {
-    event.preventDefault();
-  });
+// Before quit, clean up
+app.on('before-quit', () => {
+  if (server) {
+    server.close();
+  }
 });
