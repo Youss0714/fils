@@ -32,16 +32,13 @@
       "output": "../dist/setup"
     },
     "files": [
-      "dist/**/*",
+      "dist/**/*"
+    ],
+    "extraResources": [
       {
         "from": "../dist",
         "to": "web",
         "filter": ["**/*"]
-      },
-      {
-        "from": "../dist",
-        "to": "server",
-        "filter": ["index.js"]
       }
     ],
     "win": {

@@ -18,22 +18,25 @@ const PORT = isDev ? 5000 : 5001;
 const startServer = async () => {
   if (isDev) return; // In development, use external server
   
-  try {
-    // Import the server module
-    const serverModule = await import(path.join(__dirname, 'server', 'index.js'));
-    console.log('✅ Server started on port', PORT);
-  } catch (error) {
-    console.error('❌ Failed to start server:', error);
-    // Fallback: serve static files only
-    const app = express();
-    app.use(express.static(path.join(__dirname, 'web')));
-    app.get('*', (req, res) => {
-      res.sendFile(path.join(__dirname, 'web', 'index.html'));
-    });
-    server = app.listen(PORT, () => {
-      console.log('✅ Static server started on port', PORT);
-    });
-  }
+  // Simple static server for now
+  const app = express();
+  
+  // Path to resources in packaged app
+  const webPath = path.join(process.resourcesPath, 'web');
+  
+  // Serve static files from the web directory
+  app.use(express.static(webPath));
+  
+  // Catch all handler: send back index.html
+  app.get('*', (req, res) => {
+    const indexPath = path.join(webPath, 'index.html');
+    res.sendFile(indexPath);
+  });
+  
+  server = app.listen(PORT, () => {
+    console.log('✅ Static server started on port', PORT);
+    console.log('📁 Serving files from:', webPath);
+  });
 };
 
 const createWindow = async (): Promise<void> => {
