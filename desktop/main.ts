@@ -33,7 +33,7 @@ const createWindow = (): void => {
     mainWindow.webContents.openDevTools();
   } else {
     // In production, serve the built files
-    const indexPath = path.join(__dirname, '..', '..', 'dist', 'index.html');
+    const indexPath = path.join(__dirname, 'web', 'index.html');
     mainWindow.loadFile(indexPath);
   }
 

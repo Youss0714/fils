@@ -31,8 +31,11 @@
     },
     "files": [
       "dist/**/*",
-      "../dist/index.html",
-      "../dist/assets/**/*"
+      {
+        "from": "../dist",
+        "to": "web",
+        "filter": ["**/*"]
+      }
     ],
     "win": {
       "target": [
