@@ -7,6 +7,7 @@ const __dirname = path.dirname(__filename);
 
 // Keep a global reference of the window object
 let mainWindow: BrowserWindow | null = null;
+const isDev = process.env.NODE_ENV === 'development';
 
 const createWindow = (): void => {
   // Create the browser window
@@ -20,18 +21,20 @@ const createWindow = (): void => {
       contextIsolation: true,
       webSecurity: true,
     },
-    icon: path.join(__dirname, 'assets', 'icon.png'),
     show: false, // Don't show until ready-to-show
     titleBarStyle: 'default',
+    title: 'YGestion - Gestion Commerciale et Comptable'
   });
 
   // Load the app
-  if (process.env.NODE_ENV === 'development') {
+  if (isDev) {
     mainWindow.loadURL('http://localhost:5000');
     // Open DevTools in development
     mainWindow.webContents.openDevTools();
   } else {
-    mainWindow.loadFile(path.join(__dirname, '..', 'dist', 'public', 'index.html'));
+    // In production, serve the built files
+    const indexPath = path.join(__dirname, '..', 'index.html');
+    mainWindow.loadFile(indexPath);
   }
 
   // Show window when ready to prevent visual flash
@@ -39,9 +42,14 @@ const createWindow = (): void => {
     mainWindow?.show();
   });
 
-  // Emitted when the window is closed
+  // Handle window closed
   mainWindow.on('closed', () => {
     mainWindow = null;
+  });
+
+  // Security: prevent new window creation
+  mainWindow.webContents.setWindowOpenHandler(() => {
+    return { action: 'deny' };
   });
 };
 
