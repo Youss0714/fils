@@ -6,13 +6,12 @@
   "type": "module",
   "author": "YGestion Team",
   "license": "MIT",
-  "dependencies": {
-    "electron": "^37.3.1"
-  },
+  "dependencies": {},
   "devDependencies": {
     "@types/node": "^20.10.0",
     "typescript": "^5.9.2",
-    "electron-builder": "^25.1.8"
+    "electron-builder": "^25.1.8",
+    "electron": "^37.3.1"
   },
   "scripts": {
     "build": "tsc -p tsconfig.electron.json",
