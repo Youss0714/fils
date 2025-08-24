@@ -81,11 +81,27 @@ const startFallbackServer = () => {
 };
 
 const createWindow = async (): Promise<void> => {
+  let serverReady = false;
+  
   // Start server first in production
   if (!isDev) {
+    console.log('🚀 Production mode: starting embedded server...');
     await startServer();
     // Wait a moment for server to be ready
     await new Promise(resolve => setTimeout(resolve, 1000));
+    serverReady = true;
+  } else {
+    console.log('🔧 Development mode: connecting to existing server...');
+    // In development, assume the server is running on port 5000
+    // We can test if it's available
+    try {
+      const response = await fetch('http://localhost:5000/api/user');
+      serverReady = true;
+      console.log('✅ Development server is running and responding');
+    } catch (error) {
+      console.log('⚠️ Development server not responding, you may need to start it first');
+      console.log('💡 Run "npm run dev" in the main directory to start the server');
+    }
   }
 
   // Create the browser window
@@ -113,7 +129,53 @@ const createWindow = async (): Promise<void> => {
     console.log('✅ Application loaded successfully');
   } catch (error) {
     console.error('❌ Failed to load application:', error);
-    // Show error dialog or fallback page
+    
+    if (isDev) {
+      // In development mode, show a helpful error page
+      const errorHtml = `
+        <!DOCTYPE html>
+        <html>
+        <head>
+          <title>YGestion - Server Error</title>
+          <style>
+            body { 
+              font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+              display: flex; align-items: center; justify-content: center; 
+              height: 100vh; margin: 0; background: #f5f5f5; color: #333;
+            }
+            .container { 
+              text-align: center; padding: 2rem; background: white; 
+              border-radius: 8px; box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+              max-width: 500px;
+            }
+            .error-icon { font-size: 4rem; margin-bottom: 1rem; }
+            h1 { color: #e74c3c; margin-bottom: 1rem; }
+            .instructions { 
+              background: #f8f9fa; padding: 1rem; border-radius: 4px; 
+              margin: 1rem 0; text-align: left; font-family: monospace;
+            }
+          </style>
+        </head>
+        <body>
+          <div class="container">
+            <div class="error-icon">⚠️</div>
+            <h1>Server Not Running</h1>
+            <p>The development server is not running on port 5000.</p>
+            <p><strong>To fix this:</strong></p>
+            <div class="instructions">
+              1. Open a terminal in the main project directory<br>
+              2. Run: <strong>npm run dev</strong><br>
+              3. Wait for the server to start<br>
+              4. Restart this Electron app
+            </div>
+            <p>Once the server is running, refresh this window or restart the app.</p>
+          </div>
+        </body>
+        </html>
+      `;
+      
+      await mainWindow.loadURL(`data:text/html;charset=utf-8,${encodeURIComponent(errorHtml)}`);
+    }
   }
   
   if (isDev) {
