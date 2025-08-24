@@ -36,9 +36,13 @@
     ],
     "extraResources": [
       {
-        "from": "../dist",
-        "to": "web",
-        "filter": ["**/*", "!setup/**"]
+        "from": "../dist/public",
+        "to": "backend/public",
+        "filter": ["**/*"]
+      },
+      {
+        "from": "../dist/index.js",
+        "to": "backend/index.js"
       }
     ],
     "win": {

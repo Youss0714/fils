@@ -3,6 +3,7 @@ import path from 'path';
 import { fileURLToPath } from 'url';
 import express from 'express';
 import { createRequire } from 'module';
+import { spawn, ChildProcess } from 'child_process';
 
 const require = createRequire(import.meta.url);
 const __filename = fileURLToPath(import.meta.url);
@@ -11,6 +12,7 @@ const __dirname = path.dirname(__filename);
 // Keep a global reference of the window object
 let mainWindow: BrowserWindow | null = null;
 let server: any = null;
+let backendProcess: ChildProcess | null = null;
 const isDev = process.env.NODE_ENV === 'development';
 const PORT = isDev ? 5000 : 5001;
 
@@ -18,23 +20,74 @@ const PORT = isDev ? 5000 : 5001;
 const startServer = async () => {
   if (isDev) return; // In development, use external server
   
-  // Simple static server for now
+  try {
+    // Check if backend server exists
+    const serverPath = path.join(process.resourcesPath, 'backend', 'index.js');
+    
+    if (require('fs').existsSync(serverPath)) {
+      // Start the full backend server as a separate process
+      console.log('🚀 Starting full backend server...');
+      
+      const serverEnv = {
+        ...process.env,
+        NODE_ENV: 'production',
+        PORT: PORT.toString()
+      };
+      
+      backendProcess = spawn('node', [serverPath], {
+        env: serverEnv,
+        stdio: ['inherit', 'pipe', 'pipe']
+      });
+      
+      backendProcess.stdout?.on('data', (data) => {
+        console.log('📡 Backend:', data.toString().trim());
+      });
+      
+      backendProcess.stderr?.on('data', (data) => {
+        console.error('🚨 Backend Error:', data.toString().trim());
+      });
+      
+      backendProcess.on('error', (error) => {
+        console.error('❌ Failed to start backend process:', error);
+        startFallbackServer();
+      });
+      
+      backendProcess.on('exit', (code) => {
+        console.log(`Backend process exited with code ${code}`);
+        if (code !== 0) {
+          startFallbackServer();
+        }
+      });
+      
+      console.log('✅ Backend server process started on port', PORT);
+      
+      // Wait a moment for the server to start up
+      await new Promise(resolve => setTimeout(resolve, 2000));
+      
+    } else {
+      console.log('⚠️ Backend server not found, using static server fallback');
+      startFallbackServer();
+    }
+  } catch (error) {
+    console.error('❌ Error starting server:', error);
+    startFallbackServer();
+  }
+};
+
+const startFallbackServer = () => {
+  console.log('🔄 Starting fallback static server...');
   const app = express();
   
-  // Path to resources in packaged app
-  const webPath = path.join(process.resourcesPath, 'web');
-  
-  // Serve static files from the web directory
+  const webPath = path.join(process.resourcesPath, 'backend', 'public');
   app.use(express.static(webPath));
   
-  // Catch all handler: send back index.html
   app.get('*', (req, res) => {
     const indexPath = path.join(webPath, 'index.html');
     res.sendFile(indexPath);
   });
   
   server = app.listen(PORT, () => {
-    console.log('✅ Static server started on port', PORT);
+    console.log('✅ Fallback static server started on port', PORT);
     console.log('📁 Serving files from:', webPath);
   });
 };
@@ -106,6 +159,11 @@ app.on('window-all-closed', () => {
     server.close();
   }
   
+  // Kill backend process if running
+  if (backendProcess) {
+    backendProcess.kill();
+  }
+  
   // On OS X, keep the app running even when all windows are closed
   if (process.platform !== 'darwin') {
     app.quit();
@@ -116,5 +174,9 @@ app.on('window-all-closed', () => {
 app.on('before-quit', () => {
   if (server) {
     server.close();
+  }
+  
+  if (backendProcess) {
+    backendProcess.kill();
   }
 });
