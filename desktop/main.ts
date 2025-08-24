@@ -1,7 +1,6 @@
 import { app, BrowserWindow } from 'electron';
 import path from 'path';
 import { fileURLToPath } from 'url';
-import express from 'express';
 import { createRequire } from 'module';
 import { spawn, ChildProcess } from 'child_process';
 
@@ -65,8 +64,9 @@ const startServer = async () => {
       await new Promise(resolve => setTimeout(resolve, 2000));
       
     } else {
-      console.log('⚠️ Backend server not found, using static server fallback');
+      console.log('⚠️ Backend server not found');
       startFallbackServer();
+      return; // Don't try to load the app if no backend
     }
   } catch (error) {
     console.error('❌ Error starting server:', error);
@@ -75,21 +75,9 @@ const startServer = async () => {
 };
 
 const startFallbackServer = () => {
-  console.log('🔄 Starting fallback static server...');
-  const app = express();
-  
-  const webPath = path.join(process.resourcesPath, 'backend', 'public');
-  app.use(express.static(webPath));
-  
-  app.get('*', (req, res) => {
-    const indexPath = path.join(webPath, 'index.html');
-    res.sendFile(indexPath);
-  });
-  
-  server = app.listen(PORT, () => {
-    console.log('✅ Fallback static server started on port', PORT);
-    console.log('📁 Serving files from:', webPath);
-  });
+  console.log('🔄 Starting fallback mode...');
+  console.log('⚠️ Backend server could not be started. The app will work in limited mode.');
+  // In fallback mode, we'll just show an error page or basic functionality
 };
 
 const createWindow = async (): Promise<void> => {
@@ -118,7 +106,15 @@ const createWindow = async (): Promise<void> => {
 
   // Load the app
   const appUrl = `http://localhost:${PORT}`;
-  mainWindow.loadURL(appUrl);
+  console.log(`📱 Loading application from: ${appUrl}`);
+  
+  try {
+    await mainWindow.loadURL(appUrl);
+    console.log('✅ Application loaded successfully');
+  } catch (error) {
+    console.error('❌ Failed to load application:', error);
+    // Show error dialog or fallback page
+  }
   
   if (isDev) {
     mainWindow.webContents.openDevTools();
