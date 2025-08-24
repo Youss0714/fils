@@ -29,7 +29,7 @@
     "productName": "YGestion",
     "copyright": "Copyright © 2024 YGestion Team",
     "directories": {
-      "output": "../dist/setup"
+      "output": "build"
     },
     "files": [
       "dist/**/*"
@@ -38,7 +38,7 @@
       {
         "from": "../dist",
         "to": "web",
-        "filter": ["**/*"]
+        "filter": ["**/*", "!setup/**"]
       }
     ],
     "win": {

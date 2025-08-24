@@ -30,6 +30,7 @@ print_error() {
 print_status "Nettoyage des builds précédents..."
 rm -rf dist/
 rm -rf desktop/dist/
+rm -rf desktop/build/
 mkdir -p dist/
 
 # Step 2: Build the web application and server
@@ -68,12 +69,12 @@ fi
 
 cd ..
 print_success "🎉 Exécutable Windows créé avec succès!"
-print_success "📁 Fichiers disponibles dans: dist/setup/"
+print_success "📁 Fichiers disponibles dans: desktop/build/"
 
 # List created files
-if [ -d "dist/setup" ]; then
+if [ -d "desktop/build" ]; then
     print_status "Fichiers créés:"
-    ls -la dist/setup/ | grep -E '\.(exe|AppImage|dmg)$' || echo "Aucun fichier exécutable trouvé"
+    ls -la desktop/build/ | grep -E '\.(exe|AppImage|dmg)$' || echo "Aucun fichier exécutable trouvé"
 fi
 
 echo ""

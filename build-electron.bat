@@ -5,6 +5,7 @@ REM Step 1: Clean previous builds
 echo 📦 Nettoyage des builds précédents...
 if exist dist rmdir /s /q dist
 if exist desktop\dist rmdir /s /q desktop\dist
+if exist desktop\build rmdir /s /q desktop\build
 mkdir dist
 
 REM Step 2: Build the web application and server
@@ -47,14 +48,14 @@ if %ERRORLEVEL% neq 0 (
 
 cd ..
 echo ✅ 🎉 Exécutable Windows créé avec succès!
-echo ✅ 📁 Fichiers disponibles dans: dist/setup/
+echo ✅ 📁 Fichiers disponibles dans: desktop/build/
 
 REM List created files
-if exist dist\setup (
+if exist desktop\build (
     echo 📦 Fichiers créés:
-    dir dist\setup\*.exe /b 2>nul
-    dir dist\setup\*.AppImage /b 2>nul
-    dir dist\setup\*.dmg /b 2>nul
+    dir desktop\build\*.exe /b 2>nul
+    dir desktop\build\*.AppImage /b 2>nul
+    dir desktop\build\*.dmg /b 2>nul
 )
 
 echo.
