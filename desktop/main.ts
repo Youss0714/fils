@@ -12,7 +12,7 @@ const __dirname = path.dirname(__filename);
 let mainWindow: BrowserWindow | null = null;
 let server: any = null;
 let backendProcess: ChildProcess | null = null;
-const isDev = process.env.NODE_ENV === 'development';
+const isDev = process.env.NODE_ENV === 'development' || process.argv.includes('--dev');
 const PORT = isDev ? 5000 : 5001;
 
 // Start Express server for production
