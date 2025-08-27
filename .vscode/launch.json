@@ -1,0 +1,32 @@
+{
+  "version": "0.2.0",
+  "configurations": [
+    {
+      "name": "🚀 Launch YGestion Desktop",
+      "type": "node",
+      "request": "launch",
+      "cwd": "${workspaceFolder}/desktop",
+      "program": "${workspaceFolder}/desktop/dist/main.js",
+      "preLaunchTask": "🔧 Build Electron",
+      "env": {
+        "NODE_ENV": "development"
+      },
+      "console": "integratedTerminal",
+      "outputCapture": "std"
+    },
+    {
+      "name": "🔧 Debug Electron Main",
+      "type": "node",
+      "request": "launch",
+      "cwd": "${workspaceFolder}/desktop",
+      "program": "${workspaceFolder}/desktop/dist/main.js",
+      "env": {
+        "NODE_ENV": "development",
+        "DEBUG": "true"
+      },
+      "console": "integratedTerminal",
+      "outputCapture": "std",
+      "runtimeArgs": ["--inspect=9229"]
+    }
+  ]
+}

@@ -1,0 +1,147 @@
+{
+  "version": "2.0.0",
+  "tasks": [
+    {
+      "label": "🚀 Build Desktop App (Windows .exe)",
+      "type": "shell",
+      "command": "npm",
+      "args": ["run", "build"],
+      "group": "build",
+      "presentation": {
+        "echo": true,
+        "reveal": "always",
+        "focus": false,
+        "panel": "shared",
+        "showReuseMessage": true,
+        "clear": false
+      },
+      "options": {
+        "cwd": "${workspaceFolder}"
+      },
+      "dependsOrder": "sequence",
+      "dependsOn": ["📦 Build Web App", "🔧 Build Electron"],
+      "problemMatcher": []
+    },
+    {
+      "label": "📦 Build Web App",
+      "type": "shell",
+      "command": "npm",
+      "args": ["run", "build"],
+      "group": "build",
+      "presentation": {
+        "echo": true,
+        "reveal": "always",
+        "focus": false,
+        "panel": "shared"
+      },
+      "options": {
+        "cwd": "${workspaceFolder}"
+      },
+      "problemMatcher": []
+    },
+    {
+      "label": "🔧 Build Electron",
+      "type": "shell",
+      "command": "npm",
+      "args": ["install"],
+      "group": "build",
+      "presentation": {
+        "echo": true,
+        "reveal": "always",
+        "focus": false,
+        "panel": "shared"
+      },
+      "options": {
+        "cwd": "${workspaceFolder}/desktop"
+      },
+      "problemMatcher": []
+    },
+    {
+      "label": "💻 Generate Windows .exe",
+      "type": "shell",
+      "command": "npm",
+      "args": ["run", "dist:windows"],
+      "group": "build",
+      "presentation": {
+        "echo": true,
+        "reveal": "always",
+        "focus": false,
+        "panel": "shared"
+      },
+      "options": {
+        "cwd": "${workspaceFolder}/desktop"
+      },
+      "dependsOn": ["📦 Build Web App", "🔧 Build Electron"],
+      "problemMatcher": []
+    },
+    {
+      "label": "📱 Generate Portable .exe",
+      "type": "shell",
+      "command": "npm",
+      "args": ["run", "dist:portable"],
+      "group": "build",
+      "presentation": {
+        "echo": true,
+        "reveal": "always",
+        "focus": false,
+        "panel": "shared"
+      },
+      "options": {
+        "cwd": "${workspaceFolder}/desktop"
+      },
+      "dependsOn": ["📦 Build Web App", "🔧 Build Electron"],
+      "problemMatcher": []
+    },
+    {
+      "label": "⚡ Quick .exe (Skip Web Build)",
+      "type": "shell",
+      "command": "npm",
+      "args": ["run", "dist:windows"],
+      "group": "build",
+      "presentation": {
+        "echo": true,
+        "reveal": "always",
+        "focus": false,
+        "panel": "shared"
+      },
+      "options": {
+        "cwd": "${workspaceFolder}/desktop"
+      },
+      "problemMatcher": []
+    },
+    {
+      "label": "🧹 Clean Build",
+      "type": "shell",
+      "command": "rm",
+      "args": ["-rf", "dist", "desktop/dist", "desktop/build"],
+      "group": "build",
+      "presentation": {
+        "echo": true,
+        "reveal": "always",
+        "focus": false,
+        "panel": "shared"
+      },
+      "options": {
+        "cwd": "${workspaceFolder}"
+      },
+      "problemMatcher": []
+    },
+    {
+      "label": "🔍 Test Electron (Development)",
+      "type": "shell",
+      "command": "npm",
+      "args": ["run", "dev"],
+      "group": "test",
+      "presentation": {
+        "echo": true,
+        "reveal": "always",
+        "focus": false,
+        "panel": "shared"
+      },
+      "options": {
+        "cwd": "${workspaceFolder}/desktop"
+      },
+      "problemMatcher": []
+    }
+  ]
+}
