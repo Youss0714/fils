@@ -11,7 +11,7 @@ declare global {
   namespace Express {
     interface User extends UserType {}
     interface Request {
-      session: any;
+      session: session.Session & Partial<session.SessionData>;
     }
   }
 }
