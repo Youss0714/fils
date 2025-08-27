@@ -84,7 +84,13 @@ export const clientInsertSchema = createInsertSchema(clients);
 export const productInsertSchema = createInsertSchema(products);
 export const invoiceInsertSchema = createInsertSchema(invoices);
 export const invoiceItemInsertSchema = createInsertSchema(invoiceItems);
-export const expenseInsertSchema = createInsertSchema(expenses);
+export const expenseInsertSchema = createInsertSchema(expenses).omit({ 
+  reference: true,
+  id: true,
+  createdAt: true,
+  approvedBy: true,
+  approvedAt: true 
+});
 export const revenueInsertSchema = createInsertSchema(revenues);
 export const insertAccountingReportSchema = createInsertSchema(accountingReports);
 export const insertBusinessAlertSchema = createInsertSchema(businessAlerts);

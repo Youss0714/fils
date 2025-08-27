@@ -743,7 +743,18 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.post("/api/accounting/expenses", isAuthenticated, async (req: any, res) => {
     try {
       const userId = req.user.id;
-      const expenseData = insertExpenseSchema.parse({ ...req.body, userId });
+      
+      // Générer une référence unique
+      const reference = `EXP-${Date.now()}-${Math.random().toString(36).substr(2, 5).toUpperCase()}`;
+      
+      // Convertir la date string en objet Date
+      const expenseData = insertExpenseSchema.parse({ 
+        ...req.body, 
+        userId,
+        reference,
+        expenseDate: req.body.expenseDate ? new Date(req.body.expenseDate) : new Date()
+      });
+      
       const expense = await storage.createExpense(expenseData);
       res.json(expense);
     } catch (error) {
