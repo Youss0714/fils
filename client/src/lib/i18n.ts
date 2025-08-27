@@ -81,7 +81,6 @@ export interface Translations {
   createdOn: string;
 
   // Invoices
-  invoices: string;
   newInvoice: string;
   manageInvoices: string;
   searchInvoice: string;
@@ -92,11 +91,7 @@ export interface Translations {
   allStatuses: string;
   invoiceNumber: string;
   client: string;
-  amount: string;
   status: string;
-  actions: string;
-  edit: string;
-  delete: string;
   dueDate: string;
   createInvoice: string;
   editInvoice: string;
@@ -322,7 +317,6 @@ export const translations: Record<Language, Translations> = {
     createdOn: "Créé le",
 
     // Invoices
-    invoices: "Factures",
     newInvoice: "Nouvelle Facture",
     manageInvoices: "Gérez vos factures et paiements",
     searchInvoice: "Rechercher une facture...",
@@ -333,11 +327,6 @@ export const translations: Record<Language, Translations> = {
     allStatuses: "Tous les statuts",
     invoiceNumber: "Numéro",
     client: "Client",
-    amount: "Montant",
-    status: "Statut",
-    actions: "Actions",
-    edit: "Modifier",
-    delete: "Supprimer",
     dueDate: "Date d'échéance",
     createInvoice: "Créer une facture",
     editInvoice: "Modifier la facture",
@@ -357,7 +346,7 @@ export const translations: Record<Language, Translations> = {
     selectStatus: "Sélectionner statut",
     selectTaxRate: "Sélectionner TVA",
     selectPaymentMethod: "Sélectionner le moyen de paiement",
-    products: "Produits/Services",
+    productsServices: "Produits/Services",
     priceHT: "Prix HT",
     searchProduct: "Rechercher un produit...",
     productServiceName: "Nom du produit/service",
@@ -366,7 +355,6 @@ export const translations: Record<Language, Translations> = {
     totalHT: "Total HT",
     tva: "TVA",
     totalTTC: "Total TTC",
-    cancel: "Annuler",
     creating: "Création",
     invoiceCreated: "Facture créée",
     invoiceCreatedDesc: "La facture a été créée avec succès.",
@@ -380,7 +368,6 @@ export const translations: Record<Language, Translations> = {
     errorDeleteInvoice: "Impossible de supprimer la facture.",
     
     // Products
-    products: "Produits",
     manageProducts: "Gérez votre catalogue de produits",
     productName: "Nom du produit",
     description: "Description",
@@ -418,7 +405,6 @@ export const translations: Record<Language, Translations> = {
     stockAlertThreshold: "Seuil d'alerte stock",
     stockManagedAutomatically: "Le stock est géré automatiquement via les réapprovisionnements et les ventes",
     modify: "Modifier",
-    create: "Créer",
     units: "unités",
     
     // Invoice Status
@@ -492,7 +478,6 @@ export const translations: Record<Language, Translations> = {
     
     // Alerts
     alerts: "Alertes",
-    lowStock: "Stock faible",
     criticalStock: "Rupture de stock",
     overdueInvoice: "Facture échue",
     paymentDue: "Paiement dû",
@@ -610,7 +595,6 @@ export const translations: Record<Language, Translations> = {
     createdOn: "Created on",
 
     // Invoices
-    invoices: "Invoices",
     newInvoice: "New Invoice",
     manageInvoices: "Manage your invoices and payments",
     searchInvoice: "Search invoice...",
@@ -621,11 +605,6 @@ export const translations: Record<Language, Translations> = {
     allStatuses: "All statuses",
     invoiceNumber: "Number",
     client: "Client",
-    amount: "Amount",
-    status: "Status",
-    actions: "Actions",
-    edit: "Edit",
-    delete: "Delete",
     dueDate: "Due Date",
     createInvoice: "Create Invoice",
     editInvoice: "Edit Invoice",
@@ -645,7 +624,7 @@ export const translations: Record<Language, Translations> = {
     selectStatus: "Select status",
     selectTaxRate: "Select tax rate",
     selectPaymentMethod: "Select payment method",
-    products: "Products/Services",
+    productsServices: "Products/Services",
     priceHT: "Price (excl. tax)",
     searchProduct: "Search product...",
     productServiceName: "Product/service name",
@@ -654,7 +633,6 @@ export const translations: Record<Language, Translations> = {
     totalHT: "Total (excl. tax)",
     tva: "Tax",
     totalTTC: "Total (incl. tax)",
-    cancel: "Cancel",
     creating: "Creating",
     invoiceCreated: "Invoice created",
     invoiceCreatedDesc: "The invoice has been created successfully.",
@@ -668,7 +646,6 @@ export const translations: Record<Language, Translations> = {
     errorDeleteInvoice: "Unable to delete invoice.",
     
     // Products
-    products: "Products",
     manageProducts: "Manage your product catalog",
     productName: "Product Name",
     description: "Description",
@@ -706,7 +683,6 @@ export const translations: Record<Language, Translations> = {
     stockAlertThreshold: "Stock alert threshold",
     stockManagedAutomatically: "Stock is managed automatically via replenishments and sales",
     modify: "Modify",
-    create: "Create",
     units: "units",
     
     // Invoice Status
@@ -780,7 +756,6 @@ export const translations: Record<Language, Translations> = {
     
     // Alerts
     alerts: "Alerts",
-    lowStock: "Low Stock",
     criticalStock: "Out of Stock",
     overdueInvoice: "Overdue Invoice",
     paymentDue: "Payment Due",
