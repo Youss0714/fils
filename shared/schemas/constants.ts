@@ -57,3 +57,32 @@ export const SEVERITY_LEVELS = [
   { value: "high", label: "Élevé", color: "bg-orange-100 text-orange-800" },
   { value: "critical", label: "Critique", color: "bg-red-100 text-red-800" },
 ] as const;
+
+// Imprest fund status
+export const IMPREST_STATUS = [
+  { value: "active", label: "Actif", icon: "✅", color: "bg-green-100 text-green-800" },
+  { value: "suspended", label: "Suspendu", icon: "⏸️", color: "bg-orange-100 text-orange-800" },
+  { value: "closed", label: "Fermé", icon: "🔒", color: "bg-red-100 text-red-800" },
+] as const;
+
+// Imprest transaction types
+export const IMPREST_TRANSACTION_TYPES = [
+  { value: "deposit", label: "Dépôt", icon: "⬇️", color: "bg-green-100 text-green-800" },
+  { value: "withdrawal", label: "Retrait", icon: "⬆️", color: "bg-blue-100 text-blue-800" },
+  { value: "expense", label: "Dépense", icon: "💰", color: "bg-red-100 text-red-800" },
+] as const;
+
+// Report types
+export const REPORT_TYPES = [
+  { value: "expense_summary", label: "Résumé des dépenses" },
+  { value: "imprest_summary", label: "Résumé des avances" },
+  { value: "monthly_report", label: "Rapport mensuel" },
+  { value: "yearly_report", label: "Rapport annuel" },
+] as const;
+
+// Cash book types
+export const CASH_BOOK_TYPES = [
+  { value: "income", label: "Recette", icon: "⬇️", color: "bg-green-100 text-green-800" },
+  { value: "expense", label: "Dépense", icon: "⬆️", color: "bg-red-100 text-red-800" },
+  { value: "transfer", label: "Transfert", icon: "↔️", color: "bg-blue-100 text-blue-800" },
+] as const;
