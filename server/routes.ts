@@ -832,7 +832,18 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.post("/api/accounting/imprest-funds", isAuthenticated, async (req: any, res) => {
     try {
       const userId = req.user.id;
-      const fundData = insertImprestFundSchema.parse({ ...req.body, userId });
+      
+      // Générer une référence unique
+      const reference = `FA-${Date.now()}-${Math.random().toString(36).substr(2, 5).toUpperCase()}`;
+      
+      // Préparer les données avec les champs requis
+      const fundData = insertImprestFundSchema.parse({ 
+        ...req.body, 
+        userId,
+        reference,
+        currentBalance: req.body.initialAmount || '0' // currentBalance = initialAmount au début
+      });
+      
       const fund = await storage.createImprestFund(fundData);
       res.json(fund);
     } catch (error) {
