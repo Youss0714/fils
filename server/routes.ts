@@ -928,11 +928,16 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.post("/api/accounting/reports", isAuthenticated, async (req: any, res) => {
     try {
       const userId = req.user.id;
+      
+      // Convertir les dates string en objets Date
       const reportData = insertAccountingReportSchema.parse({ 
         ...req.body, 
         userId,
         generatedBy: userId,
+        periodStart: req.body.periodStart ? new Date(req.body.periodStart) : new Date(),
+        periodEnd: req.body.periodEnd ? new Date(req.body.periodEnd) : new Date()
       });
+      
       const report = await storage.createAccountingReport(reportData);
       res.json(report);
     } catch (error) {

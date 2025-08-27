@@ -96,7 +96,10 @@ export const revenueInsertSchema = createInsertSchema(revenues).omit({
   id: true,
   createdAt: true 
 });
-export const insertAccountingReportSchema = createInsertSchema(accountingReports);
+export const insertAccountingReportSchema = createInsertSchema(accountingReports).omit({ 
+  id: true,
+  createdAt: true 
+});
 export const insertBusinessAlertSchema = createInsertSchema(businessAlerts);
 export const insertCashBookEntrySchema = createInsertSchema(cashBookEntries);
 export const insertPettyCashEntrySchema = createInsertSchema(pettyCashEntries);
