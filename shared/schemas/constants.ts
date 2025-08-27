@@ -18,19 +18,19 @@ export const INVOICE_STATUS = [
 
 // Accounting constants
 export const EXPENSE_STATUS = [
-  { value: "pending", label: "En attente", color: "bg-yellow-100 text-yellow-800" },
-  { value: "approved", label: "Approuvée", color: "bg-blue-100 text-blue-800" },
-  { value: "paid", label: "Payée", color: "bg-green-100 text-green-800" },
-  { value: "rejected", label: "Rejetée", color: "bg-red-100 text-red-800" },
+  { value: "pending", label: "En attente", icon: "⏳", color: "bg-yellow-100 text-yellow-800" },
+  { value: "approved", label: "Approuvée", icon: "✅", color: "bg-blue-100 text-blue-800" },
+  { value: "paid", label: "Payée", icon: "💰", color: "bg-green-100 text-green-800" },
+  { value: "rejected", label: "Rejetée", icon: "❌", color: "bg-red-100 text-red-800" },
 ] as const;
 
 // Payment methods
 export const PAYMENT_METHODS = [
-  { value: "cash", label: "Espèces" },
-  { value: "bank_transfer", label: "Virement bancaire" },
-  { value: "check", label: "Chèque" },
-  { value: "card", label: "Carte" },
-  { value: "mobile_money", label: "Mobile Money" },
+  { value: "cash", label: "Espèces", icon: "💵" },
+  { value: "bank_transfer", label: "Virement bancaire", icon: "🏦" },
+  { value: "check", label: "Chèque", icon: "🧾" },
+  { value: "card", label: "Carte", icon: "💳" },
+  { value: "mobile_money", label: "Mobile Money", icon: "📱" },
 ] as const;
 
 // Account types for chart of accounts

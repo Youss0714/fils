@@ -24,8 +24,8 @@ import {
   insertExpenseCategorySchema, 
   EXPENSE_STATUS, 
   PAYMENT_METHODS,
-  type InsertExpense,
-  type InsertExpenseCategory 
+  type NewExpense,
+  type NewExpenseCategory 
 } from "@shared/schema";
 
 export function ExpenseManager() {

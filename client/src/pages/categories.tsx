@@ -18,7 +18,7 @@ import {
   Search,
   Package
 } from "lucide-react";
-import { insertCategorySchema, insertProductSchema, type Category, type InsertCategory, type InsertProduct } from "@shared/schema";
+import { insertCategorySchema, insertProductSchema, type Category, type NewCategory, type NewProduct } from "@shared/schema";
 import { useTranslation } from "@/lib/i18n";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -54,7 +54,7 @@ export default function Categories() {
     retry: false,
   });
 
-  const form = useForm<InsertCategory>({
+  const form = useForm<NewCategory>({
     resolver: zodResolver(insertCategorySchema.omit({ userId: true })),
     defaultValues: {
       name: "",
@@ -62,7 +62,7 @@ export default function Categories() {
     },
   });
 
-  const productForm = useForm<InsertProduct>({
+  const productForm = useForm<NewProduct>({
     resolver: zodResolver(insertProductSchema.omit({ userId: true })),
     defaultValues: {
       name: "",
@@ -75,7 +75,7 @@ export default function Categories() {
   });
 
   const createMutation = useMutation({
-    mutationFn: async (data: InsertCategory) => {
+    mutationFn: async (data: NewCategory) => {
       await apiRequest("POST", "/api/categories", data);
     },
     onSuccess: () => {
@@ -108,7 +108,7 @@ export default function Categories() {
   });
 
   const updateMutation = useMutation({
-    mutationFn: async (data: InsertCategory) => {
+    mutationFn: async (data: NewCategory) => {
       if (!editingCategory) throw new Error("No category to update");
       await apiRequest("PUT", `/api/categories/${editingCategory.id}`, data);
     },
@@ -174,7 +174,7 @@ export default function Categories() {
   });
 
   const createProductMutation = useMutation({
-    mutationFn: async (data: InsertProduct) => {
+    mutationFn: async (data: NewProduct) => {
       await apiRequest("POST", "/api/products", data);
     },
     onSuccess: () => {
@@ -234,7 +234,7 @@ export default function Categories() {
     setIsProductDialogOpen(true);
   };
 
-  const onSubmit = (data: InsertCategory) => {
+  const onSubmit = (data: NewCategory) => {
     if (editingCategory) {
       updateMutation.mutate(data);
     } else {
@@ -242,7 +242,7 @@ export default function Categories() {
     }
   };
 
-  const onProductSubmit = (data: InsertProduct) => {
+  const onProductSubmit = (data: NewProduct) => {
     createProductMutation.mutate(data);
   };
 
