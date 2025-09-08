@@ -9,7 +9,7 @@ const isElectron = process.env.npm_config_user_config?.includes('electron') ||
                  process.argv.some(arg => arg.includes('electron'));
 
 const envPath = isElectron && process.env.NODE_ENV === "production"
-  ? process.resourcesPath ? `${process.resourcesPath}/.env` : "./.env"
+  ? (process as any).resourcesPath ? `${(process as any).resourcesPath}/.env` : "./.env"
   : process.env.NODE_ENV === "production" ? "./.env.production" : "./.env";
 
 console.log('🔧 Loading environment from:', envPath);

@@ -70,16 +70,17 @@ try {
     console.log('⚠️  splash.html non trouvé, ignoré');
   }
 
-  // Copier le fichier .env pour l'application Electron
-  const envSource = '.env';
+  // Créer un fichier .env pour l'application Electron avec les variables de production
   const envDest = path.join('dist', '.env');
+  const envContent = `# Variables d'environnement pour YGestion Desktop
+DATABASE_URL=postgresql://postgres.pciuxfjqtxbrpjyhbcxe:YOUSS05462629@aws-1-eu-west-3.pooler.supabase.com:5432/postgres
+SESSION_SECRET=ygestion_session_key_2025_ultra_secure_random_string_for_production
+ADMIN_TOKEN=ygestion_admin_token_secure_2025_production
+NODE_ENV=production
+PORT=5001`;
   
-  if (existsSync(envSource)) {
-    copyFileSync(envSource, envDest);
-    console.log('✅ .env copié pour Electron');
-  } else {
-    console.log('⚠️  .env non trouvé - créez-le depuis .env.example');
-  }
+  writeFileSync(envDest, envContent);
+  console.log('✅ .env créé pour l\'application Electron');
 
   // Créer un fichier de version
   const buildInfo = {
