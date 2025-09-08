@@ -64,6 +64,17 @@ try {
     console.log('⚠️  splash.html non trouvé, ignoré');
   }
 
+  // Copier le fichier .env pour l'application Electron
+  const envSource = '.env';
+  const envDest = path.join('dist', '.env');
+  
+  if (existsSync(envSource)) {
+    copyFileSync(envSource, envDest);
+    console.log('✅ .env copié pour Electron');
+  } else {
+    console.log('⚠️  .env non trouvé - créez-le depuis .env.example');
+  }
+
   // Créer un fichier de version
   const buildInfo = {
     version: '1.0.0',
