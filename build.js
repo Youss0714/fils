@@ -53,6 +53,12 @@ try {
   // 5. Copier les assets nécessaires
   console.log('📁 Copie des assets...');
   
+  // Créer le répertoire electron s'il n'existe pas
+  const electronDir = path.join('dist', 'electron');
+  if (!existsSync(electronDir)) {
+    mkdirSync(electronDir, { recursive: true });
+  }
+  
   // Copier le splash.html vers dist/electron pour Electron
   const splashSource = path.join('desktop', 'splash.html');
   const splashDest = path.join('dist', 'electron', 'splash.html');
