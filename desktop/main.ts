@@ -3,10 +3,19 @@ import path from 'path';
 import { fileURLToPath } from 'url';
 import { createRequire } from 'module';
 import { spawn, ChildProcess } from 'child_process';
+import dotenv from 'dotenv';
 
 const require = createRequire(import.meta.url);
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
+
+// Load environment variables from .env file
+const envPath = app.isPackaged 
+  ? path.join(process.resourcesPath, '.env')
+  : path.join(__dirname, '..', '.env');
+
+console.log('🔧 Loading environment from:', envPath);
+dotenv.config({ path: envPath });
 
 // Keep a global reference of the window object
 let mainWindow: BrowserWindow | null = null;
@@ -21,7 +30,11 @@ const startServer = async () => {
   
   try {
     // Check if backend server exists
-    const serverPath = path.join(process.resourcesPath, 'backend', 'index.js');
+    const serverPath = app.isPackaged 
+      ? path.join(process.resourcesPath, 'backend', 'index.js')
+      : path.join(__dirname, '..', 'dist', 'index.js');
+    
+    console.log('🔍 Looking for backend server at:', serverPath);
     
     if (require('fs').existsSync(serverPath)) {
       // Start the full backend server as a separate process
@@ -30,8 +43,14 @@ const startServer = async () => {
       const serverEnv = {
         ...process.env,
         NODE_ENV: 'production',
-        PORT: PORT.toString()
+        PORT: PORT.toString(),
+        DATABASE_URL: process.env.DATABASE_URL,
+        SESSION_SECRET: process.env.SESSION_SECRET,
+        ADMIN_TOKEN: process.env.ADMIN_TOKEN
       };
+      
+      console.log('🌍 Server environment configured with DATABASE_URL:', 
+        process.env.DATABASE_URL ? 'Found' : 'Missing');
       
       backendProcess = spawn('node', [serverPath], {
         env: serverEnv,
@@ -77,7 +96,49 @@ const startServer = async () => {
 const startFallbackServer = () => {
   console.log('🔄 Starting fallback mode...');
   console.log('⚠️ Backend server could not be started. The app will work in limited mode.');
-  // In fallback mode, we'll just show an error page or basic functionality
+  
+  // Show an error dialog to the user
+  if (mainWindow) {
+    const errorHtml = `
+      <!DOCTYPE html>
+      <html>
+      <head>
+        <title>YGestion - Erreur</title>
+        <style>
+          body { 
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            display: flex; align-items: center; justify-content: center; 
+            height: 100vh; margin: 0; background: #f5f5f5; color: #333;
+          }
+          .container { 
+            text-align: center; padding: 2rem; background: white; 
+            border-radius: 8px; box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            max-width: 500px;
+          }
+          .error-icon { font-size: 4rem; color: #e74c3c; margin-bottom: 1rem; }
+          h1 { color: #e74c3c; margin-bottom: 1rem; }
+          p { margin-bottom: 0.5rem; line-height: 1.6; }
+          .details { background: #f8f9fa; padding: 1rem; border-radius: 4px; margin-top: 1rem; }
+        </style>
+      </head>
+      <body>
+        <div class="container">
+          <div class="error-icon">⚠️</div>
+          <h1>Erreur de démarrage</h1>
+          <p>Le serveur backend n'a pas pu démarrer.</p>
+          <p>Vérifiez que le fichier .env est présent et contient les bonnes configurations.</p>
+          <div class="details">
+            <strong>Variables requises :</strong><br>
+            • DATABASE_URL<br>
+            • SESSION_SECRET<br>
+            • ADMIN_TOKEN
+          </div>
+        </div>
+      </body>
+      </html>
+    `;
+    mainWindow.loadURL(`data:text/html;charset=utf-8,${encodeURIComponent(errorHtml)}`);
+  }
 };
 
 const createWindow = async (): Promise<void> => {

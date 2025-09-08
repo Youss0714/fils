@@ -6,7 +6,9 @@
   "type": "module",
   "author": "YGestion Team",
   "license": "MIT",
-  "dependencies": {},
+  "dependencies": {
+    "dotenv": "^17.2.1"
+  },
   "devDependencies": {
     "@types/node": "^20.10.0",
     "typescript": "^5.9.2",

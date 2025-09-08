@@ -4,9 +4,16 @@ import { setupVite, serveStatic, log } from "./vite";
 import dotenv from "dotenv";
 
 // Charge les variables d'environnement
-dotenv.config({
-  path: process.env.NODE_ENV === "production" ? "./.env.production" : "./.env",
-});
+// En mode Electron packagé, chercher le .env dans le dossier resources
+const isElectron = process.env.npm_config_user_config?.includes('electron') || 
+                 process.argv.some(arg => arg.includes('electron'));
+
+const envPath = isElectron && process.env.NODE_ENV === "production"
+  ? process.resourcesPath ? `${process.resourcesPath}/.env` : "./.env"
+  : process.env.NODE_ENV === "production" ? "./.env.production" : "./.env";
+
+console.log('🔧 Loading environment from:', envPath);
+dotenv.config({ path: envPath });
 
 const app = express();
 app.use(express.json());
