@@ -138,69 +138,129 @@ export function ReportsManager() {
     createReportMutation.mutate(data);
   };
 
+  // Fonction utilitaire pour échapper les valeurs CSV
+  const escapeCSVField = (field: any) => {
+    if (field === null || field === undefined) return '';
+    
+    let value = String(field);
+    
+    // Protection contre l'injection de formules CSV (CVE-2014-3524)
+    // Inclut la protection contre les espaces de début
+    if (value.length > 0 && /^\s*[=+\-@]/.test(value)) {
+      value = "'" + value;
+    }
+    
+    // Échapper les guillemets internes en les doublant
+    value = value.replace(/"/g, '""');
+    
+    return `"${value}"`;
+  };
+
   const downloadReportCSV = (report: any) => {
-    // Convert report data to CSV format
-    let csvContent = '';
     const reportData = report.data;
+    const currency = settings?.currency === 'GHS' ? 'GHS' : 'FCFA';
     
-    // Add header with report information
-    csvContent += `Rapport,${report.name}\n`;
-    csvContent += `Type,${REPORT_TYPES.find(t => t.value === report.type)?.label || report.type}\n`;
-    csvContent += `Période,"${new Date(report.periodStart).toLocaleDateString('fr-FR')} - ${new Date(report.periodEnd).toLocaleDateString('fr-FR')}"\n`;
-    csvContent += `Généré le,${new Date(report.createdAt).toLocaleDateString('fr-FR')}\n`;
-    csvContent += '\n'; // Empty line
+    if (!reportData || Object.keys(reportData).length === 0) {
+      toast({
+        title: "Aucune donnée",
+        description: "Ce rapport ne contient aucune donnée à exporter.",
+        variant: "destructive"
+      });
+      return;
+    }
+
+    const csvRows = [];
     
-    // Add report data based on type
+    // En-tête du rapport
+    csvRows.push(["RAPPORT COMPTABLE"]);
+    csvRows.push(["Nom", report.name || 'Rapport sans nom']);
+    csvRows.push(["Type", REPORT_TYPES.find(t => t.value === report.type)?.label || report.type]);
+    
+    // Gestion robuste des dates
+    const periodStart = report.periodStart ? new Date(report.periodStart).toLocaleDateString('fr-FR') : 'Non définie';
+    const periodEnd = report.periodEnd ? new Date(report.periodEnd).toLocaleDateString('fr-FR') : 'Non définie';
+    const createdDate = report.createdAt ? new Date(report.createdAt).toLocaleDateString('fr-FR') : new Date().toLocaleDateString('fr-FR');
+    
+    csvRows.push(["Période", `${periodStart} - ${periodEnd}`]);
+    csvRows.push(["Généré le", createdDate]);
+    csvRows.push([""]); // Ligne vide
+    
+    // Résumé
     if (reportData.summary) {
-      csvContent += 'Résumé\n';
+      csvRows.push(["RÉSUMÉ"]);
+      csvRows.push(["Indicateur", `Montant (${currency})`]);
+      
       Object.entries(reportData.summary).forEach(([key, value]) => {
         const label = key === 'totalExpenses' ? 'Dépenses totales' :
                       key === 'totalFunds' ? 'Fonds totaux' :
                       key === 'activeFunds' ? 'Fonds actifs' :
                       key === 'pendingExpenses' ? 'Dépenses en attente' :
                       key === 'approvedExpenses' ? 'Dépenses approuvées' : key;
-        csvContent += `${label},${value}\n`;
+        
+        // Formatage des nombres avec 2 décimales comme dans les autres exports
+        const formattedValue = typeof value === 'number' 
+          ? parseFloat(value.toString()).toFixed(2).replace(/\B(?=(\d{3})+(?!\d))/g, ' ')
+          : value;
+        csvRows.push([label, formattedValue]);
       });
-      csvContent += '\n';
+      csvRows.push([""]); // Ligne vide
     }
     
-    // Add expenses by category if available
-    if (reportData.expensesByCategory && reportData.expensesByCategory.length > 0) {
-      csvContent += 'Dépenses par catégorie\n';
-      csvContent += 'Catégorie,Montant\n';
-      reportData.expensesByCategory.forEach((category: any) => {
-        csvContent += `${category.category},${category.amount}\n`;
+    // Dépenses par catégorie
+    const expensesByCategory = reportData.expensesByCategory || 
+                              (reportData.expenses && reportData.expenses.byCategory);
+    
+    if (expensesByCategory && expensesByCategory.length > 0) {
+      csvRows.push(["DÉPENSES PAR CATÉGORIE"]);
+      csvRows.push(["Catégorie", `Montant (${currency})`]);
+      
+      expensesByCategory.forEach((category: any) => {
+        const formattedAmount = parseFloat(category.amount || 0)
+          .toFixed(2).replace(/\B(?=(\d{3})+(?!\d))/g, ' ');
+        csvRows.push([category.category || 'Sans catégorie', formattedAmount]);
       });
-      csvContent += '\n';
+      csvRows.push([""]); // Ligne vide
     }
     
-    // Add expenses data if available
-    if (reportData.expenses && reportData.expenses.byCategory) {
-      csvContent += 'Dépenses par catégorie\n';
-      csvContent += 'Catégorie,Montant\n';
-      reportData.expenses.byCategory.forEach((category: any) => {
-        csvContent += `${category.category},${category.amount}\n`;
-      });
-      csvContent += '\n';
-    }
-    
-    // Add imprest fund data if available  
+    // Fonds d'avance
     if (reportData.imprest) {
-      csvContent += 'Fonds d\'avance\n';
-      csvContent += `Fonds totaux,${reportData.imprest.totalFunds}\n`;
-      csvContent += `Fonds actifs,${reportData.imprest.activeFunds}\n`;
-      csvContent += '\n';
+      csvRows.push(["FONDS D'AVANCE"]);
+      csvRows.push(["Type", `Montant (${currency})`]);
+      
+      const totalFunds = parseFloat(reportData.imprest.totalFunds || 0)
+        .toFixed(2).replace(/\B(?=(\d{3})+(?!\d))/g, ' ');
+      const activeFunds = parseFloat(reportData.imprest.activeFunds || 0)
+        .toFixed(2).replace(/\B(?=(\d{3})+(?!\d))/g, ' ');
+        
+      csvRows.push(["Fonds totaux", totalFunds]);
+      csvRows.push(["Fonds actifs", activeFunds]);
     }
+
+    // Créer le contenu CSV avec échappement proper et BOM pour Windows
+    const csvContent = csvRows.map(row => 
+      row.map(field => escapeCSVField(field)).join(',')
+    ).join('\n');
     
-    const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+    // Télécharger le fichier avec BOM UTF-8
+    const BOM = '\uFEFF';
+    const blob = new Blob([BOM + csvContent], { type: 'text/csv;charset=utf-8;' });
+    const link = document.createElement('a');
     const url = URL.createObjectURL(blob);
-    const a = document.createElement('a');
-    a.href = url;
-    a.download = `${report.name}.csv`;
-    document.body.appendChild(a);
-    a.click();
-    document.body.removeChild(a);
+    link.setAttribute('href', url);
+    
+    // Nom de fichier sécurisé
+    const safeReportName = (report.name || 'rapport').replace(/[^a-zA-Z0-9_\-]/g, '_');
+    link.setAttribute('download', `rapport_${safeReportName}_${new Date().toISOString().split('T')[0]}.csv`);
+    link.style.visibility = 'hidden';
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
     URL.revokeObjectURL(url);
+
+    toast({
+      title: "Export réussi",
+      description: `Rapport "${report.name || 'Sans nom'}" exporté en CSV.`
+    });
   };
 
   if (reportsLoading) {
