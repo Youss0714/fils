@@ -68,7 +68,8 @@ import {
 } from "@shared/schema";
 import { db } from "./db";
 import { eq, desc, and, sum, count, sql, like, or, gte, lte, isNotNull, ne } from "drizzle-orm";
-import { randomBytes } from "crypto";
+import { randomBytes, scrypt, timingSafeEqual } from "crypto";
+import { promisify } from "util";
 
 export interface IStorage {
   // User operations
@@ -87,7 +88,7 @@ export interface IStorage {
   isAccountLocked(email: string): Promise<boolean>;
   checkUserForLogin(email: string): Promise<{ user: User | undefined; isLocked: boolean }>;
   setPasswordResetToken(email: string, tokenHash: string, expiresAt: Date): Promise<void>;
-  verifyPasswordResetToken(tokenHash: string): Promise<User | undefined>;
+  verifyPasswordResetToken(token: string, email: string): Promise<User | undefined>;
   clearPasswordResetToken(email: string): Promise<void>;
 
   
@@ -408,17 +409,34 @@ export class DatabaseStorage implements IStorage {
       .where(eq(users.email, email));
   }
 
-  async verifyPasswordResetToken(tokenHash: string): Promise<User | undefined> {
+  async verifyPasswordResetToken(token: string, email: string): Promise<User | undefined> {
+    // Récupérer l'utilisateur spécifique avec un token non expiré
     const [user] = await db
       .select()
       .from(users)
       .where(
         and(
-          eq(users.resetPasswordTokenHash, tokenHash),
+          eq(users.email, email),
+          isNotNull(users.resetPasswordTokenHash),
           gte(users.resetPasswordExpires, new Date())
         )
       );
-    return user;
+
+    if (!user || !user.resetPasswordTokenHash) {
+      return undefined;
+    }
+
+    // Vérifier le token contre le hash stocké pour cet utilisateur
+    const [hashedStored, saltStored] = user.resetPasswordTokenHash.split(".");
+    if (hashedStored && saltStored) {
+      const scryptAsync = promisify(scrypt);
+      const tokenHashBuf = (await scryptAsync(token, saltStored, 64)) as Buffer;
+      if (timingSafeEqual(tokenHashBuf, Buffer.from(hashedStored, "hex"))) {
+        return user;
+      }
+    }
+    
+    return undefined;
   }
 
   async clearPasswordResetToken(email: string): Promise<void> {
