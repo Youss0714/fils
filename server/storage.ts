@@ -87,51 +87,48 @@ export interface IStorage {
   lockAccount(email: string, lockDuration: number): Promise<void>;
   isAccountLocked(email: string): Promise<boolean>;
   checkUserForLogin(email: string): Promise<{ user: User | undefined; isLocked: boolean }>;
-  setPasswordResetToken(email: string, tokenHash: string, expiresAt: Date): Promise<void>;
-  verifyPasswordResetToken(token: string, email: string): Promise<User | undefined>;
-  clearPasswordResetToken(email: string): Promise<void>;
 
   
   // Client operations
   getClients(userId: string): Promise<Client[]>;
   getClient(id: number, userId: string): Promise<Client | undefined>;
-  createClient(client: InsertClient): Promise<Client>;
-  updateClient(id: number, client: Partial<InsertClient>, userId: string): Promise<Client>;
+  createClient(client: NewClient): Promise<Client>;
+  updateClient(id: number, client: Partial<NewClient>, userId: string): Promise<Client>;
   deleteClient(id: number, userId: string): Promise<void>;
   searchClients(userId: string, query: string): Promise<Client[]>;
   
   // Product operations
   getProducts(userId: string): Promise<Product[]>;
   getProduct(id: number, userId: string): Promise<Product | undefined>;
-  createProduct(product: InsertProduct): Promise<Product>;
-  updateProduct(id: number, product: Partial<InsertProduct>, userId: string): Promise<Product>;
+  createProduct(product: NewProduct): Promise<Product>;
+  updateProduct(id: number, product: Partial<NewProduct>, userId: string): Promise<Product>;
   deleteProduct(id: number, userId: string): Promise<void>;
   searchProducts(userId: string, query: string): Promise<Product[]>;
   
   // Stock replenishment operations
   getStockReplenishments(userId: string): Promise<StockReplenishment[]>;
   getStockReplenishmentsByProduct(productId: number, userId: string): Promise<StockReplenishment[]>;
-  createStockReplenishment(replenishment: InsertStockReplenishment): Promise<StockReplenishment>;
+  createStockReplenishment(replenishment: NewStockReplenishment): Promise<StockReplenishment>;
   deleteStockReplenishment(id: number): Promise<void>;
   
   // Category operations
   getCategories(userId: string): Promise<Category[]>;
   getCategory(id: number, userId: string): Promise<Category | undefined>;
-  createCategory(category: InsertCategory): Promise<Category>;
-  updateCategory(id: number, category: Partial<InsertCategory>, userId: string): Promise<Category>;
+  createCategory(category: NewCategory): Promise<Category>;
+  updateCategory(id: number, category: Partial<NewCategory>, userId: string): Promise<Category>;
   deleteCategory(id: number, userId: string): Promise<void>;
   
   // Invoice operations
   getInvoices(userId: string): Promise<Invoice[]>;
   getInvoice(id: number, userId: string): Promise<Invoice | undefined>;
   getInvoiceWithItems(id: number, userId: string): Promise<(Invoice & { items: InvoiceItem[]; client: Client }) | undefined>;
-  createInvoice(invoice: InsertInvoice, items: Omit<InsertInvoiceItem, 'invoiceId'>[]): Promise<Invoice>;
-  updateInvoice(id: number, invoice: Partial<InsertInvoice>, userId: string): Promise<Invoice>;
+  createInvoice(invoice: NewInvoice, items: Omit<NewInvoiceItem, 'invoiceId'>[]): Promise<Invoice>;
+  updateInvoice(id: number, invoice: Partial<NewInvoice>, userId: string): Promise<Invoice>;
   deleteInvoice(id: number, userId: string): Promise<void>;
   
   // Sales operations
   getSales(userId: string): Promise<Sale[]>;
-  createSale(sale: InsertSale): Promise<Sale>;
+  createSale(sale: NewSale): Promise<Sale>;
   
   // Dashboard statistics
   getDashboardStats(userId: string): Promise<{
@@ -147,7 +144,7 @@ export interface IStorage {
   // License operations
   getLicenseByKey(key: string): Promise<License | undefined>;
   getAllLicenses(): Promise<License[]>;
-  createLicense(license: InsertLicense): Promise<License>;
+  createLicense(license: NewLicense): Promise<License>;
   activateLicense(key: string, clientName?: string, deviceId?: string): Promise<License>;
   revokeLicense(key: string): Promise<License>;
 
@@ -156,16 +153,16 @@ export interface IStorage {
   // Expense Categories
   getExpenseCategories(userId: string): Promise<ExpenseCategory[]>;
   getExpenseCategory(id: number, userId: string): Promise<ExpenseCategory | undefined>;
-  createExpenseCategory(category: InsertExpenseCategory): Promise<ExpenseCategory>;
-  updateExpenseCategory(id: number, category: Partial<InsertExpenseCategory>, userId: string): Promise<ExpenseCategory>;
+  createExpenseCategory(category: NewExpenseCategory): Promise<ExpenseCategory>;
+  updateExpenseCategory(id: number, category: Partial<NewExpenseCategory>, userId: string): Promise<ExpenseCategory>;
   deleteExpenseCategory(id: number, userId: string): Promise<void>;
 
   // Expenses
   getExpenses(userId: string): Promise<(Expense & { category: ExpenseCategory })[]>;
   getExpensesByPeriod(userId: string, startDate: Date, endDate: Date): Promise<(Expense & { category: ExpenseCategory })[]>;
   getExpense(id: number, userId: string): Promise<(Expense & { category: ExpenseCategory }) | undefined>;
-  createExpense(expense: InsertExpense): Promise<Expense>;
-  updateExpense(id: number, expense: Partial<InsertExpense>, userId: string): Promise<Expense>;
+  createExpense(expense: NewExpense): Promise<Expense>;
+  updateExpense(id: number, expense: Partial<NewExpense>, userId: string): Promise<Expense>;
   deleteExpense(id: number, userId: string): Promise<void>;
   approveExpense(id: number, approvedBy: string, userId: string): Promise<Expense>;
   rejectExpense(id: number, userId: string): Promise<Expense>;
@@ -173,17 +170,17 @@ export interface IStorage {
   // Imprest Funds
   getImprestFunds(userId: string): Promise<ImprestFund[]>;
   getImprestFund(id: number, userId: string): Promise<ImprestFund | undefined>;
-  createImprestFund(fund: InsertImprestFund): Promise<ImprestFund>;
-  updateImprestFund(id: number, fund: Partial<InsertImprestFund>, userId: string): Promise<ImprestFund>;
+  createImprestFund(fund: NewImprestFund): Promise<ImprestFund>;
+  updateImprestFund(id: number, fund: Partial<NewImprestFund>, userId: string): Promise<ImprestFund>;
   deleteImprestFund(id: number, userId: string): Promise<void>;
 
   // Imprest Transactions
   getImprestTransactions(imprestId: number, userId: string): Promise<ImprestTransaction[]>;
-  createImprestTransaction(transaction: InsertImprestTransaction): Promise<ImprestTransaction>;
+  createImprestTransaction(transaction: NewImprestTransaction): Promise<ImprestTransaction>;
   
   // Accounting Reports
   getAccountingReports(userId: string): Promise<AccountingReport[]>;
-  createAccountingReport(report: InsertAccountingReport): Promise<AccountingReport>;
+  createAccountingReport(report: NewAccountingReport): Promise<AccountingReport>;
   deleteAccountingReport(id: number, userId: string): Promise<void>;
 
   // Accounting Statistics
@@ -217,23 +214,23 @@ export interface IStorage {
   // Cash Book operations
   getCashBookEntries(userId: string): Promise<CashBookEntry[]>;
   getCashBookEntry(id: number, userId: string): Promise<CashBookEntry | undefined>;
-  createCashBookEntry(data: InsertCashBookEntry): Promise<CashBookEntry>;
-  updateCashBookEntry(id: number, data: Partial<InsertCashBookEntry>, userId: string): Promise<CashBookEntry>;
+  createCashBookEntry(data: NewCashBookEntry): Promise<CashBookEntry>;
+  updateCashBookEntry(id: number, data: Partial<NewCashBookEntry>, userId: string): Promise<CashBookEntry>;
   deleteCashBookEntry(id: number, userId: string): Promise<void>;
   reconcileCashBookEntry(id: number, userId: string): Promise<CashBookEntry>;
 
   // Petty Cash operations
   getPettyCashEntries(userId: string): Promise<PettyCashEntry[]>;
   getPettyCashEntry(id: number, userId: string): Promise<PettyCashEntry | undefined>;
-  createPettyCashEntry(data: InsertPettyCashEntry): Promise<PettyCashEntry>;
-  updatePettyCashEntry(id: number, data: Partial<InsertPettyCashEntry>, userId: string): Promise<PettyCashEntry>;
+  createPettyCashEntry(data: NewPettyCashEntry): Promise<PettyCashEntry>;
+  updatePettyCashEntry(id: number, data: Partial<NewPettyCashEntry>, userId: string): Promise<PettyCashEntry>;
   approvePettyCashEntry(id: number, approvedBy: string, userId: string): Promise<PettyCashEntry>;
   rejectPettyCashEntry(id: number, userId: string): Promise<PettyCashEntry>;
   deletePettyCashEntry(id: number, userId: string): Promise<void>;
 
   // Transaction Journal operations
   getTransactionJournal(userId: string, filters?: any): Promise<TransactionJournal[]>;
-  addToTransactionJournal(data: InsertTransactionJournal): Promise<TransactionJournal>;
+  addToTransactionJournal(data: NewTransactionJournal): Promise<TransactionJournal>;
   getTransactionJournalEntry(id: number, userId: string): Promise<TransactionJournal | undefined>;
 
   // Financial Dashboard
@@ -242,25 +239,25 @@ export interface IStorage {
   // Revenue operations
   getRevenueCategories(userId: string): Promise<RevenueCategory[]>;
   getRevenueCategory(id: number, userId: string): Promise<RevenueCategory | undefined>;
-  createRevenueCategory(category: InsertRevenueCategory): Promise<RevenueCategory>;
-  updateRevenueCategory(id: number, category: Partial<InsertRevenueCategory>, userId: string): Promise<RevenueCategory>;
+  createRevenueCategory(category: NewRevenueCategory): Promise<RevenueCategory>;
+  updateRevenueCategory(id: number, category: Partial<NewRevenueCategory>, userId: string): Promise<RevenueCategory>;
   deleteRevenueCategory(id: number, userId: string): Promise<void>;
 
   getRevenues(userId: string): Promise<(Revenue & { category: RevenueCategory })[]>;
   getRevenuesByPeriod(userId: string, startDate: Date, endDate: Date): Promise<(Revenue & { category: RevenueCategory })[]>;
   getRevenue(id: number, userId: string): Promise<Revenue | undefined>;
-  createRevenue(revenue: InsertRevenue): Promise<Revenue>;
-  updateRevenue(id: number, revenue: Partial<InsertRevenue>, userId: string): Promise<Revenue>;
+  createRevenue(revenue: NewRevenue): Promise<Revenue>;
+  updateRevenue(id: number, revenue: Partial<NewRevenue>, userId: string): Promise<Revenue>;
   deleteRevenue(id: number, userId: string): Promise<void>;
 
   // Business Alerts operations
-  getBusinessAlerts(userId: string, unreadOnly?: boolean): Promise<SelectBusinessAlert[]>;
-  createBusinessAlert(alert: InsertBusinessAlert): Promise<SelectBusinessAlert>;
+  getBusinessAlerts(userId: string, unreadOnly?: boolean): Promise<BusinessAlert[]>;
+  createBusinessAlert(alert: NewBusinessAlert): Promise<BusinessAlert>;
   markAlertAsRead(id: number, userId: string): Promise<void>;
   markAlertAsResolved(id: number, userId: string): Promise<void>;
   deleteBusinessAlert(id: number, userId: string): Promise<void>;
-  generateStockAlerts(userId: string): Promise<SelectBusinessAlert[]>;
-  generateOverdueInvoiceAlerts(userId: string): Promise<SelectBusinessAlert[]>;
+  generateStockAlerts(userId: string): Promise<BusinessAlert[]>;
+  generateOverdueInvoiceAlerts(userId: string): Promise<BusinessAlert[]>;
   cleanupResolvedAlerts(userId: string, olderThanDays?: number): Promise<void>;
 }
 
@@ -398,57 +395,6 @@ export class DatabaseStorage implements IStorage {
     return { user, isLocked };
   }
 
-  async setPasswordResetToken(email: string, tokenHash: string, expiresAt: Date): Promise<void> {
-    await db
-      .update(users)
-      .set({ 
-        resetPasswordTokenHash: tokenHash,
-        resetPasswordExpires: expiresAt,
-        updatedAt: new Date() 
-      })
-      .where(eq(users.email, email));
-  }
-
-  async verifyPasswordResetToken(token: string, email: string): Promise<User | undefined> {
-    // Récupérer l'utilisateur spécifique avec un token non expiré
-    const [user] = await db
-      .select()
-      .from(users)
-      .where(
-        and(
-          eq(users.email, email),
-          isNotNull(users.resetPasswordTokenHash),
-          gte(users.resetPasswordExpires, new Date())
-        )
-      );
-
-    if (!user || !user.resetPasswordTokenHash) {
-      return undefined;
-    }
-
-    // Vérifier le token contre le hash stocké pour cet utilisateur
-    const [hashedStored, saltStored] = user.resetPasswordTokenHash.split(".");
-    if (hashedStored && saltStored) {
-      const scryptAsync = promisify(scrypt);
-      const tokenHashBuf = (await scryptAsync(token, saltStored, 64)) as Buffer;
-      if (timingSafeEqual(tokenHashBuf, Buffer.from(hashedStored, "hex"))) {
-        return user;
-      }
-    }
-    
-    return undefined;
-  }
-
-  async clearPasswordResetToken(email: string): Promise<void> {
-    await db
-      .update(users)
-      .set({ 
-        resetPasswordTokenHash: null,
-        resetPasswordExpires: null,
-        updatedAt: new Date() 
-      })
-      .where(eq(users.email, email));
-  }
 
 
 
@@ -462,12 +408,12 @@ export class DatabaseStorage implements IStorage {
     return client;
   }
 
-  async createClient(client: InsertClient): Promise<Client> {
+  async createClient(client: NewClient): Promise<Client> {
     const [newClient] = await db.insert(clients).values(client).returning();
     return newClient;
   }
 
-  async updateClient(id: number, client: Partial<InsertClient>, userId: string): Promise<Client> {
+  async updateClient(id: number, client: Partial<NewClient>, userId: string): Promise<Client> {
     const [updatedClient] = await db
       .update(clients)
       .set(client)
@@ -505,7 +451,7 @@ export class DatabaseStorage implements IStorage {
     return product;
   }
 
-  async createProduct(product: InsertProduct): Promise<Product> {
+  async createProduct(product: NewProduct): Promise<Product> {
     const [newProduct] = await db.insert(products).values(product).returning();
     
     // Automatically generate stock alerts after creating a product
@@ -514,7 +460,7 @@ export class DatabaseStorage implements IStorage {
     return newProduct;
   }
 
-  async updateProduct(id: number, product: Partial<InsertProduct>, userId: string): Promise<Product> {
+  async updateProduct(id: number, product: Partial<NewProduct>, userId: string): Promise<Product> {
     const [updatedProduct] = await db
       .update(products)
       .set(product)
@@ -575,7 +521,7 @@ export class DatabaseStorage implements IStorage {
       .orderBy(desc(stockReplenishments.createdAt));
   }
 
-  async createStockReplenishment(replenishment: InsertStockReplenishment): Promise<StockReplenishment> {
+  async createStockReplenishment(replenishment: NewStockReplenishment): Promise<StockReplenishment> {
     const [newReplenishment] = await db.insert(stockReplenishments).values(replenishment).returning();
     
     // Update product stock
@@ -606,12 +552,12 @@ export class DatabaseStorage implements IStorage {
     return category;
   }
 
-  async createCategory(category: InsertCategory): Promise<Category> {
+  async createCategory(category: NewCategory): Promise<Category> {
     const [newCategory] = await db.insert(categories).values(category).returning();
     return newCategory;
   }
 
-  async updateCategory(id: number, category: Partial<InsertCategory>, userId: string): Promise<Category> {
+  async updateCategory(id: number, category: Partial<NewCategory>, userId: string): Promise<Category> {
     const [updatedCategory] = await db
       .update(categories)
       .set(category)
@@ -652,7 +598,7 @@ export class DatabaseStorage implements IStorage {
     };
   }
 
-  async createInvoice(invoice: InsertInvoice, items: Omit<InsertInvoiceItem, 'invoiceId'>[]): Promise<Invoice> {
+  async createInvoice(invoice: NewInvoice, items: Omit<NewInvoiceItem, 'invoiceId'>[]): Promise<Invoice> {
     const [newInvoice] = await db.insert(invoices).values(invoice).returning();
     
     if (items.length > 0) {
@@ -677,7 +623,7 @@ export class DatabaseStorage implements IStorage {
     return newInvoice;
   }
 
-  async updateInvoice(id: number, invoice: Partial<InsertInvoice>, userId: string): Promise<Invoice> {
+  async updateInvoice(id: number, invoice: Partial<NewInvoice>, userId: string): Promise<Invoice> {
     // Get the current invoice before updating
     const currentInvoice = await this.getInvoice(id, userId);
     
@@ -696,7 +642,7 @@ export class DatabaseStorage implements IStorage {
   }
 
   // Helper function to update stock after invoice creation
-  private async updateStockAfterInvoiceCreation(items: InsertInvoiceItem[], userId: string): Promise<void> {
+  private async updateStockAfterInvoiceCreation(items: NewInvoiceItem[], userId: string): Promise<void> {
     // Update stock for each product (prevent negative stock)
     for (const item of items.filter(item => item.productId)) {
       await db
@@ -757,7 +703,7 @@ export class DatabaseStorage implements IStorage {
     return db.select().from(sales).where(eq(sales.userId, userId)).orderBy(desc(sales.createdAt));
   }
 
-  async createSale(sale: InsertSale): Promise<Sale> {
+  async createSale(sale: NewSale): Promise<Sale> {
     const [newSale] = await db.insert(sales).values(sale).returning();
     return newSale;
   }
@@ -942,7 +888,7 @@ export class DatabaseStorage implements IStorage {
     return db.select().from(licenses).orderBy(desc(licenses.createdAt));
   }
 
-  async createLicense(licenseData: InsertLicense): Promise<License> {
+  async createLicense(licenseData: NewLicense): Promise<License> {
     const [license] = await db.insert(licenses).values(licenseData).returning();
     return license;
   }
@@ -985,12 +931,12 @@ export class DatabaseStorage implements IStorage {
     return category;
   }
 
-  async createExpenseCategory(category: InsertExpenseCategory): Promise<ExpenseCategory> {
+  async createExpenseCategory(category: NewExpenseCategory): Promise<ExpenseCategory> {
     const [newCategory] = await db.insert(expenseCategories).values(category).returning();
     return newCategory;
   }
 
-  async updateExpenseCategory(id: number, category: Partial<InsertExpenseCategory>, userId: string): Promise<ExpenseCategory> {
+  async updateExpenseCategory(id: number, category: Partial<NewExpenseCategory>, userId: string): Promise<ExpenseCategory> {
     const [updatedCategory] = await db
       .update(expenseCategories)
       .set(category)
@@ -1093,7 +1039,7 @@ export class DatabaseStorage implements IStorage {
     return result;
   }
 
-  async createExpense(expense: InsertExpense): Promise<Expense> {
+  async createExpense(expense: NewExpense): Promise<Expense> {
     // Generate unique reference if not provided
     const reference = expense.reference || `EXP-${Date.now()}-${Math.random().toString(36).substr(2, 4).toUpperCase()}`;
     
@@ -1103,7 +1049,7 @@ export class DatabaseStorage implements IStorage {
     return newExpense;
   }
 
-  async updateExpense(id: number, expense: Partial<InsertExpense>, userId: string): Promise<Expense> {
+  async updateExpense(id: number, expense: Partial<NewExpense>, userId: string): Promise<Expense> {
     const [updatedExpense] = await db
       .update(expenses)
       .set(expense)
@@ -1227,7 +1173,7 @@ export class DatabaseStorage implements IStorage {
     return fund;
   }
 
-  async createImprestFund(fund: InsertImprestFund): Promise<ImprestFund> {
+  async createImprestFund(fund: NewImprestFund): Promise<ImprestFund> {
     // Generate unique reference
     const reference = `IMP-${Date.now()}-${Math.random().toString(36).substr(2, 4).toUpperCase()}`;
     const initialAmount = parseFloat(fund.initialAmount as any);
@@ -1240,7 +1186,7 @@ export class DatabaseStorage implements IStorage {
     return newFund;
   }
 
-  async updateImprestFund(id: number, fund: Partial<InsertImprestFund>, userId: string): Promise<ImprestFund> {
+  async updateImprestFund(id: number, fund: Partial<NewImprestFund>, userId: string): Promise<ImprestFund> {
     const [updatedFund] = await db
       .update(imprestFunds)
       .set({ ...fund, updatedAt: new Date() })
@@ -1263,7 +1209,7 @@ export class DatabaseStorage implements IStorage {
       .orderBy(desc(imprestTransactions.createdAt));
   }
 
-  async createImprestTransaction(transaction: InsertImprestTransaction): Promise<ImprestTransaction> {
+  async createImprestTransaction(transaction: NewImprestTransaction): Promise<ImprestTransaction> {
     // Generate unique reference
     const reference = `TXN-${Date.now()}-${Math.random().toString(36).substr(2, 4).toUpperCase()}`;
     
@@ -1306,7 +1252,7 @@ export class DatabaseStorage implements IStorage {
     return db.select().from(accountingReports).where(eq(accountingReports.userId, userId)).orderBy(desc(accountingReports.createdAt));
   }
 
-  async createAccountingReport(report: InsertAccountingReport): Promise<AccountingReport> {
+  async createAccountingReport(report: NewAccountingReport): Promise<AccountingReport> {
     const [newReport] = await db.insert(accountingReports).values(report).returning();
     return newReport;
   }
@@ -1656,20 +1602,20 @@ export class DatabaseStorage implements IStorage {
     return entry;
   }
 
-  async createCashBookEntry(data: InsertCashBookEntry): Promise<CashBookEntry> {
+  async createCashBookEntry(data: NewCashBookEntry): Promise<CashBookEntry> {
     // Generate unique reference
     const reference = `CB-${Date.now()}-${Math.random().toString(36).substr(2, 5).toUpperCase()}`;
     
     const [newEntry] = await db.insert(cashBookEntries).values({
       ...data,
       reference,
-      date: typeof data.date === 'string' ? data.date : data.date.toISOString().split('T')[0],
+      date: typeof data.date === 'string' ? data.date : (data.date as Date).toISOString().split('T')[0],
     }).returning();
 
     // Add to transaction journal
     await this.addToTransactionJournal({
       userId: data.userId,
-      transactionDate: data.date,
+      transactionDate: typeof data.date === 'string' ? new Date(data.date) : data.date as Date,
       reference,
       description: data.description,
       sourceModule: 'cash_book',
@@ -1684,7 +1630,7 @@ export class DatabaseStorage implements IStorage {
     return newEntry;
   }
 
-  async updateCashBookEntry(id: number, data: Partial<InsertCashBookEntry>, userId: string): Promise<CashBookEntry> {
+  async updateCashBookEntry(id: number, data: Partial<NewCashBookEntry>, userId: string): Promise<CashBookEntry> {
     const updateData: any = { ...data };
     if (updateData.date instanceof Date) {
       updateData.date = updateData.date.toISOString().split('T')[0];
@@ -1731,7 +1677,7 @@ export class DatabaseStorage implements IStorage {
     return entry;
   }
 
-  async createPettyCashEntry(data: InsertPettyCashEntry): Promise<PettyCashEntry> {
+  async createPettyCashEntry(data: NewPettyCashEntry): Promise<PettyCashEntry> {
     // Calculate running balance
     const lastEntry = await db
       .select({ runningBalance: pettyCashEntries.runningBalance })
@@ -1745,13 +1691,13 @@ export class DatabaseStorage implements IStorage {
 
     const [newEntry] = await db.insert(pettyCashEntries).values({
       ...data,
-      date: typeof data.date === 'string' ? data.date : data.date.toISOString().split('T')[0],
+      date: typeof data.date === 'string' ? data.date : (data.date as Date).toISOString().split('T')[0],
     }).returning();
 
     return newEntry;
   }
 
-  async updatePettyCashEntry(id: number, data: Partial<InsertPettyCashEntry>, userId: string): Promise<PettyCashEntry> {
+  async updatePettyCashEntry(id: number, data: Partial<NewPettyCashEntry>, userId: string): Promise<PettyCashEntry> {
     const updateData: any = { ...data };
     if (updateData.date instanceof Date) {
       updateData.date = updateData.date.toISOString().split('T')[0];
@@ -1839,7 +1785,7 @@ export class DatabaseStorage implements IStorage {
       .orderBy(desc(transactionJournal.entryDate));
   }
 
-  async addToTransactionJournal(data: InsertTransactionJournal): Promise<TransactionJournal> {
+  async addToTransactionJournal(data: NewTransactionJournal): Promise<TransactionJournal> {
     const [newEntry] = await db.insert(transactionJournal).values(data).returning();
     return newEntry;
   }
@@ -1945,7 +1891,7 @@ export class DatabaseStorage implements IStorage {
     return category;
   }
 
-  async createRevenueCategory(categoryData: InsertRevenueCategory): Promise<RevenueCategory> {
+  async createRevenueCategory(categoryData: NewRevenueCategory): Promise<RevenueCategory> {
     const [category] = await db
       .insert(revenueCategories)
       .values(categoryData)
@@ -1953,7 +1899,7 @@ export class DatabaseStorage implements IStorage {
     return category;
   }
 
-  async updateRevenueCategory(id: number, categoryData: Partial<InsertRevenueCategory>, userId: string): Promise<RevenueCategory> {
+  async updateRevenueCategory(id: number, categoryData: Partial<NewRevenueCategory>, userId: string): Promise<RevenueCategory> {
     const [category] = await db
       .update(revenueCategories)
       .set(categoryData)
@@ -2038,7 +1984,7 @@ export class DatabaseStorage implements IStorage {
     return revenue;
   }
 
-  async createRevenue(revenueData: InsertRevenue): Promise<Revenue> {
+  async createRevenue(revenueData: NewRevenue): Promise<Revenue> {
     const reference = `REV-${Date.now()}`;
     const [revenue] = await db
       .insert(revenues)
@@ -2050,7 +1996,7 @@ export class DatabaseStorage implements IStorage {
     return revenue;
   }
 
-  async updateRevenue(id: number, revenueData: Partial<InsertRevenue>, userId: string): Promise<Revenue> {
+  async updateRevenue(id: number, revenueData: Partial<NewRevenue>, userId: string): Promise<Revenue> {
     const [revenue] = await db
       .update(revenues)
       .set(revenueData)
@@ -2066,7 +2012,7 @@ export class DatabaseStorage implements IStorage {
   }
 
   // Business Alerts implementation
-  async getBusinessAlerts(userId: string, unreadOnly: boolean = false): Promise<SelectBusinessAlert[]> {
+  async getBusinessAlerts(userId: string, unreadOnly: boolean = false): Promise<BusinessAlert[]> {
     const condition = unreadOnly 
       ? and(eq(businessAlerts.userId, userId), eq(businessAlerts.isRead, false))
       : eq(businessAlerts.userId, userId);
@@ -2078,7 +2024,7 @@ export class DatabaseStorage implements IStorage {
       .orderBy(desc(businessAlerts.createdAt));
   }
 
-  async createBusinessAlert(alertData: InsertBusinessAlert): Promise<SelectBusinessAlert> {
+  async createBusinessAlert(alertData: NewBusinessAlert): Promise<BusinessAlert> {
     // Check if similar alert already exists (to avoid duplicates)
     if (alertData.entityType && alertData.entityId) {
       const existingAlert = await db
@@ -2136,7 +2082,7 @@ export class DatabaseStorage implements IStorage {
       .where(and(eq(businessAlerts.id, id), eq(businessAlerts.userId, userId)));
   }
 
-  async generateStockAlerts(userId: string): Promise<SelectBusinessAlert[]> {
+  async generateStockAlerts(userId: string): Promise<BusinessAlert[]> {
     // First, mark all existing stock alerts as resolved to refresh them
     await db
       .update(businessAlerts)
@@ -2156,7 +2102,7 @@ export class DatabaseStorage implements IStorage {
         sql`${products.stock} <= ${products.alertStock}`
       ));
 
-    const alerts: SelectBusinessAlert[] = [];
+    const alerts: BusinessAlert[] = [];
 
     for (const product of lowStockProducts) {
       const stockLevel = product.stock || 0;
@@ -2205,7 +2151,7 @@ export class DatabaseStorage implements IStorage {
     return alerts;
   }
 
-  async generateOverdueInvoiceAlerts(userId: string): Promise<SelectBusinessAlert[]> {
+  async generateOverdueInvoiceAlerts(userId: string): Promise<BusinessAlert[]> {
     // Get all unpaid invoices with due dates in the past
     const now = new Date();
     const nowString = now.toISOString();
@@ -2226,7 +2172,7 @@ export class DatabaseStorage implements IStorage {
         sql`${invoices.dueDate} < ${nowString}`
       ));
 
-    const alerts: SelectBusinessAlert[] = [];
+    const alerts: BusinessAlert[] = [];
 
     for (const invoice of overdueInvoices) {
       // Check if an alert already exists for this specific invoice

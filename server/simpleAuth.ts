@@ -39,7 +39,8 @@ async function comparePasswords(supplied: string, stored: string) {
 }
 
 // Hash factice pour éviter les timing attacks lors de l'énumération d'utilisateurs
-const DUMMY_HASH = "0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef.0123456789abcdef0123456789abcdef";
+// Généré avec scrypt(keylen=64) pour avoir la bonne longueur (128 hex chars)
+const DUMMY_HASH = "0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef.0123456789abcdef0123456789abcdef0123456789abcdef";
 
 export function setupAuth(app: Express) {
   // Configuration de la limitation de taux pour les tentatives de connexion
@@ -293,107 +294,6 @@ export function setupAuth(app: Express) {
     }
   });
 
-  // Password reset routes avec limitation de taux
-  const passwordResetLimiter = rateLimit({
-    windowMs: 15 * 60 * 1000, // 15 minutes
-    max: 3, // 3 tentatives par IP par fenêtre de 15 minutes
-    message: {
-      message: "Trop de demandes de réinitialisation. Réessayez dans 15 minutes."
-    },
-    standardHeaders: true,
-    legacyHeaders: false,
-    handler: (req, res) => {
-      res.status(429).json({
-        message: "Trop de demandes de réinitialisation. Réessayez dans 15 minutes."
-      });
-    }
-  });
-
-  app.post("/api/request-password-reset", passwordResetLimiter, async (req, res) => {
-    try {
-      const { email } = req.body;
-
-      if (!email || typeof email !== "string") {
-        return res.status(400).json({ 
-          message: "Email requis" 
-        });
-      }
-
-      // Générer un token sécurisé
-      const token = randomBytes(32).toString("hex");
-      
-      // Hasher le token avant de le stocker (utilise le hachage cryptographique)
-      const salt = randomBytes(16).toString("hex");
-      const tokenHash = (await scryptAsync(token, salt, 64)) as Buffer;
-      const hashedToken = `${tokenHash.toString("hex")}.${salt}`;
-      
-      // Token valide pendant 1 heure
-      const expiresAt = new Date();
-      expiresAt.setHours(expiresAt.getHours() + 1);
-
-      // Toujours retourner succès même si l'email n'existe pas (évite l'énumération)
-      await storage.setPasswordResetToken(email, hashedToken, expiresAt);
-      
-      // TODO: Envoyer l'email avec le token (intégration email)
-      // Ne jamais logger le token pour la sécurité
-      console.log(`Demande de réinitialisation pour ${email}`);
-      
-      res.json({ 
-        message: "Si cet email existe dans notre système, vous recevrez un lien de réinitialisation." 
-      });
-    } catch (error) {
-      console.error("Erreur lors de la demande de réinitialisation:", error);
-      res.status(500).json({ 
-        message: "Erreur serveur lors de la demande de réinitialisation" 
-      });
-    }
-  });
-
-  app.post("/api/reset-password", passwordResetLimiter, async (req, res) => {
-    try {
-      const { token, newPassword, email } = req.body;
-
-      if (!token || !newPassword || !email || typeof token !== "string" || typeof newPassword !== "string" || typeof email !== "string") {
-        return res.status(400).json({ 
-          message: "Token, email et nouveau mot de passe requis" 
-        });
-      }
-
-      if (newPassword.length < 8) {
-        return res.status(400).json({ 
-          message: "Le nouveau mot de passe doit contenir au moins 8 caractères" 
-        });
-      }
-
-      // Utiliser la méthode de storage pour vérifier le token (optimisé pour un utilisateur spécifique)
-      const validUser = await storage.verifyPasswordResetToken(token, email);
-      
-      if (!validUser) {
-        return res.status(400).json({ 
-          message: "Token invalide ou expiré" 
-        });
-      }
-
-      // Hasher le nouveau mot de passe
-      const hashedPassword = await hashPassword(newPassword);
-      
-      // Mettre à jour le mot de passe et nettoyer le token
-      await storage.updateUserProfile(validUser.id, { 
-        password: hashedPassword 
-      });
-      await storage.clearPasswordResetToken(validUser.email);
-      await storage.resetLoginAttempts(validUser.email);
-
-      res.json({ 
-        message: "Mot de passe mis à jour avec succès" 
-      });
-    } catch (error) {
-      console.error("Erreur lors de la réinitialisation du mot de passe:", error);
-      res.status(500).json({ 
-        message: "Erreur serveur lors de la réinitialisation" 
-      });
-    }
-  });
 }
 
 export function isAuthenticated(req: any, res: any, next: any) {

@@ -13,7 +13,11 @@ import {
   Lock, 
   User,
   LogIn,
-  UserPlus
+  UserPlus,
+  AlertTriangle,
+  Clock,
+  Shield,
+  ShieldX
 } from "lucide-react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -46,6 +50,7 @@ export default function AuthPage() {
   const { user, isLoading: authLoading } = useAuth();
   const [, setLocation] = useLocation();
   const [activeTab, setActiveTab] = useState("login");
+  const [consecutiveFailures, setConsecutiveFailures] = useState(0);
 
   // Rediriger si déjà connecté
   useEffect(() => {
@@ -86,12 +91,18 @@ export default function AuthPage() {
       
       if (!response.ok) {
         const error = await response.json();
-        throw new Error(error.message || "Erreur de connexion");
+        const errorData = {
+          message: error.message || "Erreur de connexion",
+          status: response.status
+        };
+        throw errorData;
       }
       
       return response.json();
     },
     onSuccess: (user) => {
+      // Réinitialiser le compteur d'échecs à la connexion réussie
+      setConsecutiveFailures(0);
       toast({
         title: "Connexion réussie !",
         description: `Bienvenue ${user.firstName} !`,
@@ -100,10 +111,34 @@ export default function AuthPage() {
       setLocation("/");
     },
     onError: (error: any) => {
+      // Incrémenter le compteur d'échecs consécutifs
+      const newFailureCount = consecutiveFailures + 1;
+      setConsecutiveFailures(newFailureCount);
+      
+      // Détection des différents types d'erreurs de sécurité
+      let title = "Erreur de connexion";
+      let description = error.message || "Email ou mot de passe incorrect";
+      let variant: "destructive" | "default" = "destructive";
+      
+      if (error.status === 429) {
+        // Rate limiting
+        title = "Trop de tentatives";
+        description = "Trop de tentatives de connexion depuis cette adresse IP. Réessayez dans 15 minutes.";
+      } else if (error.status === 401) {
+        // Gestion générique des erreurs d'authentification avec hint de sécurité après plusieurs échecs
+        if (newFailureCount >= 3) {
+          title = "Vérification de sécurité";
+          description = "Pour votre sécurité, vérifiez bien vos informations de connexion. En cas d'oubli, contactez votre administrateur.";
+        } else {
+          title = "Informations incorrectes";
+          description = "L'email ou le mot de passe saisi ne correspond pas à nos enregistrements.";
+        }
+      }
+      
       toast({
-        title: "Erreur de connexion",
-        description: error.message || "Email ou mot de passe incorrect",
-        variant: "destructive",
+        title,
+        description,
+        variant,
       });
     },
   });
@@ -227,6 +262,7 @@ export default function AuthPage() {
                             <Input
                               type="password"
                               placeholder="••••••••"
+                              data-testid="input-password"
                               {...field}
                             />
                           </FormControl>
@@ -239,8 +275,19 @@ export default function AuthPage() {
                       type="submit"
                       className="w-full"
                       disabled={loginMutation.isPending}
+                      data-testid="button-login"
                     >
-                      {loginMutation.isPending ? "Connexion..." : "Se connecter"}
+                      {loginMutation.isPending ? (
+                        <>
+                          <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2" />
+                          Connexion...
+                        </>
+                      ) : (
+                        <>
+                          <LogIn className="w-4 h-4 mr-2" />
+                          Se connecter
+                        </>
+                      )}
                     </Button>
                   </form>
                 </Form>
