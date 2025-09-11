@@ -20,7 +20,7 @@ import {
   revenues,
 
   type User,
-  type UpsertUser,
+  type NewUser,
   type Client,
   type Product,
   type Category,
@@ -40,30 +40,30 @@ import {
   type RevenueCategory,
   type Revenue,
 
-  type InsertClient,
-  type InsertProduct,
-  type InsertCategory,
-  type InsertInvoice,
-  type InsertInvoiceItem,
-  type InsertSale,
-  type InsertStockReplenishment,
-  type InsertLicense,
-  type InsertExpenseCategory,
-  type InsertExpense,
-  type InsertImprestFund,
-  type InsertImprestTransaction,
-  type InsertAccountingReport,
-  type InsertCashBookEntry,
-  type InsertPettyCashEntry,
-  type InsertTransactionJournal,
-  type InsertRevenueCategory,
-  type InsertRevenue,
+  type NewClient,
+  type NewProduct,
+  type NewCategory,
+  type NewInvoice,
+  type NewInvoiceItem,
+  type NewSale,
+  type NewStockReplenishment,
+  type NewLicense,
+  type NewExpenseCategory,
+  type NewExpense,
+  type NewImprestFund,
+  type NewImprestTransaction,
+  type NewAccountingReport,
+  type NewCashBookEntry,
+  type NewPettyCashEntry,
+  type NewTransactionJournal,
+  type NewRevenueCategory,
+  type NewRevenue,
 
   chartOfAccounts,
   businessAlerts,
-  type SelectChartOfAccounts,
-  type InsertBusinessAlert,
-  type SelectBusinessAlert,
+  type ChartOfAccount,
+  type NewBusinessAlert,
+  type BusinessAlert,
 
 } from "@shared/schema";
 import { db } from "./db";
@@ -74,8 +74,8 @@ export interface IStorage {
   // User operations
   getUser(id: string): Promise<User | undefined>;
   getUserByEmail(email: string): Promise<User | undefined>;
-  createLocalUser(user: UpsertUser): Promise<User>;
-  upsertUser(user: UpsertUser): Promise<User>;
+  createLocalUser(user: NewUser): Promise<User>;
+  upsertUser(user: NewUser): Promise<User>;
   updateUserProfile(id: string, profileData: Partial<User>): Promise<User>;
   updateUserSettings(id: string, settings: { currency?: string; language?: string }): Promise<User>;
   setUserLicenseActivated(id: string, activated: boolean): Promise<User>;
@@ -270,7 +270,7 @@ export class DatabaseStorage implements IStorage {
     return user;
   }
 
-  async upsertUser(userData: UpsertUser): Promise<User> {
+  async upsertUser(userData: NewUser): Promise<User> {
     const [user] = await db
       .insert(users)
       .values(userData)
@@ -290,7 +290,7 @@ export class DatabaseStorage implements IStorage {
     return user;
   }
 
-  async createLocalUser(userData: UpsertUser): Promise<User> {
+  async createLocalUser(userData: NewUser): Promise<User> {
     const [user] = await db.insert(users).values(userData).returning();
     return user;
   }

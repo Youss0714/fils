@@ -38,6 +38,9 @@ async function comparePasswords(supplied: string, stored: string) {
   return timingSafeEqual(hashedBuf, suppliedBuf);
 }
 
+// Hash factice pour éviter les timing attacks lors de l'énumération d'utilisateurs
+const DUMMY_HASH = "0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef.0123456789abcdef0123456789abcdef";
+
 export function setupAuth(app: Express) {
   // Configuration de la limitation de taux pour les tentatives de connexion
   const loginLimiter = rateLimit({
@@ -88,6 +91,8 @@ export function setupAuth(app: Express) {
           const { user, isLocked } = await storage.checkUserForLogin(email);
           
           if (isLocked) {
+            // Effectuer une comparaison factice pour éviter les timing attacks
+            await comparePasswords(password, DUMMY_HASH);
             return done(null, false, { 
               message: "Email ou mot de passe incorrect" // Message générique pour éviter l'énumération
             });
@@ -100,6 +105,8 @@ export function setupAuth(app: Express) {
           if (!user || !user.password) {
             // Incrémenter les tentatives pour TOUS les emails (évite l'énumération)
             await storage.incrementLoginAttempts(email);
+            // Effectuer une comparaison factice pour éviter les timing attacks
+            await comparePasswords(password, DUMMY_HASH);
             return done(null, false, { message: "Email ou mot de passe incorrect" });
           }
           
