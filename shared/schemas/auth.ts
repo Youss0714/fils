@@ -6,6 +6,7 @@ import {
   jsonb,
   index,
   boolean,
+  integer,
 } from "drizzle-orm/pg-core";
 
 // Session storage table - required for Replit Auth
@@ -36,6 +37,13 @@ export const users = pgTable("users", {
   currency: varchar("currency", { length: 10 }).default("XOF"), // XOF ou GHS
   language: varchar("language", { length: 10 }).default("fr"), // fr ou en
   licenseActivated: boolean("license_activated").default(false), // Licence activée pour cet utilisateur
+  
+  // Champs pour la sécurité et la réinitialisation de mot de passe
+  loginAttempts: integer("login_attempts").notNull().default(0), // Nombre de tentatives de connexion échouées
+  lockUntil: timestamp("lock_until"), // Date jusqu'à laquelle le compte est verrouillé
+  resetPasswordTokenHash: varchar("reset_password_token_hash", { length: 64 }).unique(), // Hash du token de réinitialisation (sécurisé)
+  resetPasswordExpires: timestamp("reset_password_expires"), // Expiration du token de réinitialisation
+  
   createdAt: timestamp("created_at").defaultNow(),
   updatedAt: timestamp("updated_at").defaultNow(),
 });

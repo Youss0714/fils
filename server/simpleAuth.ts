@@ -2,6 +2,7 @@ import passport from "passport";
 import { Strategy as LocalStrategy } from "passport-local";
 import { Express } from "express";
 import session from "express-session";
+import rateLimit from "express-rate-limit";
 import { scrypt, randomBytes, timingSafeEqual } from "crypto";
 import { promisify } from "util";
 import { storage } from "./storage";
@@ -38,6 +39,22 @@ async function comparePasswords(supplied: string, stored: string) {
 }
 
 export function setupAuth(app: Express) {
+  // Configuration de la limitation de taux pour les tentatives de connexion
+  const loginLimiter = rateLimit({
+    windowMs: 15 * 60 * 1000, // 15 minutes
+    max: 5, // 5 tentatives par IP par fenêtre de 15 minutes
+    message: {
+      message: "Trop de tentatives de connexion depuis cette adresse IP. Réessayez dans 15 minutes."
+    },
+    standardHeaders: true,
+    legacyHeaders: false,
+    handler: (req, res) => {
+      res.status(429).json({
+        message: "Trop de tentatives de connexion depuis cette adresse IP. Réessayez dans 15 minutes."
+      });
+    }
+  });
+
   // Simple session configuration using memory store
   if (!process.env.SESSION_SECRET) {
     throw new Error("SESSION_SECRET environment variable is required");
@@ -49,7 +66,7 @@ export function setupAuth(app: Express) {
     saveUninitialized: false,
     cookie: {
       httpOnly: true,
-      secure: false,
+      secure: process.env.NODE_ENV === 'production', // Sécurisé en production seulement
       maxAge: 7 * 24 * 60 * 60 * 1000, // 1 week
     },
   };
@@ -67,16 +84,45 @@ export function setupAuth(app: Express) {
       },
       async (email, password, done) => {
         try {
-          const user = await storage.getUserByEmail(email);
+          // Vérifier l'utilisateur et l'état de verrouillage en une seule requête
+          const { user, isLocked } = await storage.checkUserForLogin(email);
+          
+          if (isLocked) {
+            return done(null, false, { 
+              message: "Email ou mot de passe incorrect" // Message générique pour éviter l'énumération
+            });
+          }
+
+          // Incrémenter les tentatives pour TOUS les emails, existants ou non (évite l'énumération)
+          let shouldLock = false;
+          let attemptsCount = 0;
+
           if (!user || !user.password) {
+            // Incrémenter les tentatives pour TOUS les emails (évite l'énumération)
+            await storage.incrementLoginAttempts(email);
             return done(null, false, { message: "Email ou mot de passe incorrect" });
           }
           
           const isValid = await comparePasswords(password, user.password);
           if (!isValid) {
-            return done(null, false, { message: "Email ou mot de passe incorrect" });
+            // Incrémenter les tentatives d'échec
+            await storage.incrementLoginAttempts(email);
+            
+            // Vérifier si on doit verrouiller le compte (3 tentatives)
+            attemptsCount = (user.loginAttempts || 0) + 1;
+            if (attemptsCount >= 3) {
+              await storage.lockAccount(email, 30); // Verrouiller pendant 30 minutes
+              shouldLock = true;
+            }
+            
+            // Message générique pour éviter la fuite d'informations
+            return done(null, false, { 
+              message: "Email ou mot de passe incorrect" 
+            });
           }
           
+          // Connexion réussie : réinitialiser les tentatives
+          await storage.resetLoginAttempts(email);
           return done(null, user);
         } catch (error) {
           return done(error);
@@ -159,8 +205,8 @@ export function setupAuth(app: Express) {
     }
   });
 
-  // Login route
-  app.post("/api/login", (req, res, next) => {
+  // Login route avec limitation de taux
+  app.post("/api/login", loginLimiter, (req, res, next) => {
     passport.authenticate("local", (err: any, user: any, info: any) => {
       if (err) {
         return res.status(500).json({ message: "Erreur serveur" });

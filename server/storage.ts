@@ -68,6 +68,7 @@ import {
 } from "@shared/schema";
 import { db } from "./db";
 import { eq, desc, and, sum, count, sql, like, or, gte, lte, isNotNull, ne } from "drizzle-orm";
+import { randomBytes } from "crypto";
 
 export interface IStorage {
   // User operations
@@ -78,6 +79,16 @@ export interface IStorage {
   updateUserProfile(id: string, profileData: Partial<User>): Promise<User>;
   updateUserSettings(id: string, settings: { currency?: string; language?: string }): Promise<User>;
   setUserLicenseActivated(id: string, activated: boolean): Promise<User>;
+  
+  // Méthodes pour la gestion des tentatives de connexion et verrouillage
+  incrementLoginAttempts(email: string): Promise<void>;
+  resetLoginAttempts(email: string): Promise<void>;
+  lockAccount(email: string, lockDuration: number): Promise<void>;
+  isAccountLocked(email: string): Promise<boolean>;
+  checkUserForLogin(email: string): Promise<{ user: User | undefined; isLocked: boolean }>;
+  setPasswordResetToken(email: string, tokenHash: string, expiresAt: Date): Promise<void>;
+  verifyPasswordResetToken(tokenHash: string): Promise<User | undefined>;
+  clearPasswordResetToken(email: string): Promise<void>;
 
   
   // Client operations
@@ -312,6 +323,113 @@ export class DatabaseStorage implements IStorage {
       .where(eq(users.id, id))
       .returning();
     return user;
+  }
+
+  // Méthodes pour la gestion des tentatives de connexion et verrouillage
+  async incrementLoginAttempts(email: string): Promise<void> {
+    // Approche simplifiée : incrémenter seulement si l'utilisateur existe
+    // Pour éviter l'énumération, la logique d'authentification traitera tous les cas de la même manière
+    await db
+      .update(users)
+      .set({ 
+        loginAttempts: sql`${users.loginAttempts} + 1`,
+        updatedAt: new Date() 
+      })
+      .where(eq(users.email, email));
+  }
+
+  async resetLoginAttempts(email: string): Promise<void> {
+    await db
+      .update(users)
+      .set({ 
+        loginAttempts: 0,
+        lockUntil: null,
+        updatedAt: new Date() 
+      })
+      .where(eq(users.email, email));
+  }
+
+  async lockAccount(email: string, lockDurationMinutes: number): Promise<void> {
+    const lockUntil = new Date();
+    lockUntil.setMinutes(lockUntil.getMinutes() + lockDurationMinutes);
+    
+    await db
+      .update(users)
+      .set({ 
+        lockUntil: lockUntil,
+        updatedAt: new Date() 
+      })
+      .where(eq(users.email, email));
+  }
+
+  async isAccountLocked(email: string): Promise<boolean> {
+    const user = await this.getUserByEmail(email);
+    if (!user || !user.lockUntil) return false;
+    
+    const now = new Date();
+    const lockUntil = new Date(user.lockUntil);
+    
+    if (now < lockUntil) {
+      return true;
+    } else {
+      // Déverrouiller automatiquement si la période de verrouillage est expirée
+      await this.resetLoginAttempts(email);
+      return false;
+    }
+  }
+
+  async checkUserForLogin(email: string): Promise<{ user: User | undefined; isLocked: boolean }> {
+    const user = await this.getUserByEmail(email);
+    let isLocked = false;
+    
+    if (user && user.lockUntil) {
+      const now = new Date();
+      const lockUntil = new Date(user.lockUntil);
+      
+      if (now < lockUntil) {
+        isLocked = true;
+      } else {
+        // Déverrouiller automatiquement si la période de verrouillage est expirée
+        await this.resetLoginAttempts(email);
+      }
+    }
+    
+    return { user, isLocked };
+  }
+
+  async setPasswordResetToken(email: string, tokenHash: string, expiresAt: Date): Promise<void> {
+    await db
+      .update(users)
+      .set({ 
+        resetPasswordTokenHash: tokenHash,
+        resetPasswordExpires: expiresAt,
+        updatedAt: new Date() 
+      })
+      .where(eq(users.email, email));
+  }
+
+  async verifyPasswordResetToken(tokenHash: string): Promise<User | undefined> {
+    const [user] = await db
+      .select()
+      .from(users)
+      .where(
+        and(
+          eq(users.resetPasswordTokenHash, tokenHash),
+          gte(users.resetPasswordExpires, new Date())
+        )
+      );
+    return user;
+  }
+
+  async clearPasswordResetToken(email: string): Promise<void> {
+    await db
+      .update(users)
+      .set({ 
+        resetPasswordTokenHash: null,
+        resetPasswordExpires: null,
+        updatedAt: new Date() 
+      })
+      .where(eq(users.email, email));
   }
 
 
