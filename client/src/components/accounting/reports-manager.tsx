@@ -8,7 +8,7 @@ import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, D
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { Plus, FileText, Download, Trash2, Calendar, BarChart3 } from "lucide-react";
+import { Plus, FileText, Trash2, Calendar, BarChart3, FileSpreadsheet } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { apiRequest } from "@/lib/queryClient";
 import { useTranslation, formatPrice } from "@/lib/i18n";
@@ -138,16 +138,65 @@ export function ReportsManager() {
     createReportMutation.mutate(data);
   };
 
-  const downloadReport = (report: any) => {
-    // Generate and download report as JSON for now
-    // In a real app, this would generate PDF or Excel files
-    const blob = new Blob([JSON.stringify(report.data, null, 2)], { 
-      type: 'application/json' 
-    });
+  const downloadReportCSV = (report: any) => {
+    // Convert report data to CSV format
+    let csvContent = '';
+    const reportData = report.data;
+    
+    // Add header with report information
+    csvContent += `Rapport,${report.name}\n`;
+    csvContent += `Type,${REPORT_TYPES.find(t => t.value === report.type)?.label || report.type}\n`;
+    csvContent += `Période,"${new Date(report.periodStart).toLocaleDateString('fr-FR')} - ${new Date(report.periodEnd).toLocaleDateString('fr-FR')}"\n`;
+    csvContent += `Généré le,${new Date(report.createdAt).toLocaleDateString('fr-FR')}\n`;
+    csvContent += '\n'; // Empty line
+    
+    // Add report data based on type
+    if (reportData.summary) {
+      csvContent += 'Résumé\n';
+      Object.entries(reportData.summary).forEach(([key, value]) => {
+        const label = key === 'totalExpenses' ? 'Dépenses totales' :
+                      key === 'totalFunds' ? 'Fonds totaux' :
+                      key === 'activeFunds' ? 'Fonds actifs' :
+                      key === 'pendingExpenses' ? 'Dépenses en attente' :
+                      key === 'approvedExpenses' ? 'Dépenses approuvées' : key;
+        csvContent += `${label},${value}\n`;
+      });
+      csvContent += '\n';
+    }
+    
+    // Add expenses by category if available
+    if (reportData.expensesByCategory && reportData.expensesByCategory.length > 0) {
+      csvContent += 'Dépenses par catégorie\n';
+      csvContent += 'Catégorie,Montant\n';
+      reportData.expensesByCategory.forEach((category: any) => {
+        csvContent += `${category.category},${category.amount}\n`;
+      });
+      csvContent += '\n';
+    }
+    
+    // Add expenses data if available
+    if (reportData.expenses && reportData.expenses.byCategory) {
+      csvContent += 'Dépenses par catégorie\n';
+      csvContent += 'Catégorie,Montant\n';
+      reportData.expenses.byCategory.forEach((category: any) => {
+        csvContent += `${category.category},${category.amount}\n`;
+      });
+      csvContent += '\n';
+    }
+    
+    // Add imprest fund data if available  
+    if (reportData.imprest) {
+      csvContent += 'Fonds d\'avance\n';
+      csvContent += `Fonds totaux,${reportData.imprest.totalFunds}\n`;
+      csvContent += `Fonds actifs,${reportData.imprest.activeFunds}\n`;
+      csvContent += '\n';
+    }
+    
+    const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
     const url = URL.createObjectURL(blob);
     const a = document.createElement('a');
     a.href = url;
-    a.download = `${report.name}.json`;
+    a.download = `${report.name}.csv`;
     document.body.appendChild(a);
     a.click();
     document.body.removeChild(a);
@@ -391,15 +440,19 @@ export function ReportsManager() {
                       <Button
                         size="sm"
                         variant="outline"
-                        onClick={() => downloadReport(report)}
+                        onClick={() => downloadReportCSV(report)}
+                        data-testid={`button-download-csv-${report.id}`}
+                        title="Télécharger en CSV"
                       >
-                        <Download className="h-4 w-4" />
+                        <FileSpreadsheet className="h-4 w-4" />
                       </Button>
                       <Button
                         size="sm"
                         variant="outline"
                         onClick={() => deleteReportMutation.mutate(report.id)}
                         disabled={deleteReportMutation.isPending}
+                        data-testid={`button-delete-${report.id}`}
+                        title="Supprimer le rapport"
                       >
                         <Trash2 className="h-4 w-4" />
                       </Button>
